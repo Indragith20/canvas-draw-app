@@ -187,7 +187,10 @@ class InitCanvas {
         if (func) {
           func(ev);
         }
-      } else if (this.selectedElement) {
+      }
+    } else {
+      // special keys 
+      if (this.selectedElement) {
         // Backspace or delete key
         if (ev.which === 46 || ev.which === 8) {
           this.shapes = this.shapes.filter(shape => shape.id !== this.selectedElement.id);
@@ -209,10 +212,15 @@ class InitCanvas {
       ev._y = ev.offsetY;
     }
     console.log('Document Click EVent');
+    if (this.selectedTool === 'text') {
+      // Revertting tyhius is required.
+      this.selectedTool = 'select';
+      this.tool = new SelectTool(this.shapes);
+    }
 
-    if (this.selectedTool === 'select' || this.selectedTool === 'text') {
+    if (this.selectedTool === 'select') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-      let selectedElement = this.tool.getElementsAtPosition(ev._x, ev._y);
+      let selectedElement = this.tool.getElementsAtPosition(ev._x, ev._y, this.shapes);
       this.selectedElement = selectedElement;
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
@@ -320,7 +328,7 @@ class InitCanvas {
       this.selectedTool = 'move';
       if (!this.draggingElement) {
         // First case of move tool -> User just selected the element.events should be mousedown
-        let elementSelected = this.tool.getElementsAtPosition(this.mouseXPosition, this.mouseYPosition);
+        let elementSelected = this.tool.getElementsAtPosition(this.mouseXPosition, this.mouseYPosition, this.shapes);
         if (elementSelected) {
           this.selectedElement = elementSelected;
 

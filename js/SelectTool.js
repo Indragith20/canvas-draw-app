@@ -3,10 +3,10 @@ class SelectTool {
     this.shapes = shapes;
   }
 
-  getElementsAtPosition(x, y) {
+  getElementsAtPosition(x, y, shapes) {
     let returnElement = null;
-    if (this.shapes.length > 0) {
-      this.shapes.forEach(shape => {
+    if (shapes.length > 0) {
+      shapes.forEach(shape => {
         if (shape.type === 'rectangle') {
           if (shape.x <= x && x <= shape.endX) {
             if (shape.y <= y && y <= shape.endY) {
