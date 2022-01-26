@@ -1,3 +1,4 @@
+/** This file can be Removed. Not Necessary. Need opnly for reference or backup */
 class SelectTool {
   constructor(shapes) {
     this.shapes = shapes;
@@ -8,8 +9,12 @@ class SelectTool {
     if (shapes.length > 0) {
       shapes.forEach(shape => {
         if (shape.type === 'rectangle') {
-          if (shape.x <= x && x <= shape.endX) {
-            if (shape.y <= y && y <= shape.endY) {
+          let width = shape.width;
+          let height = shape.height;
+          let endX = shape.x + width;
+          let endY = shape.y + height;
+          if (shape.x <= x && x <= endX) {
+            if (shape.y <= y && y <= endY) {
               returnElement = shape;
             }
           }

@@ -3,8 +3,8 @@ import Arrow from './Arrow.js';
 import Line from './Line.js';
 import Rect from './Rectangle.js';
 import DrawText from './DrawText.js';
-import SelectTool from './SelectTool.js';
 import MoveTool from './MoveTool.js';
+import { getElementsAtPosition } from '../utils/getElementsAtPosition.js';
 
 
 /**
@@ -50,9 +50,8 @@ class InitCanvas {
     this.onEvent = this.onEvent.bind(this);
     this.changeToTextTool = this.changeToTextTool.bind(this);
     this.onKeyDown = this.onKeyDown.bind(this);
-    this.getElementsAtPosition = this.getElementsAtPosition.bind(this);
     this.onDocumentClick = this.onDocumentClick.bind(this);
-    this.resetInitialValues = this.resetInitialValues.bind(this);
+    this.resetDraggingValues = this.resetDraggingValues.bind(this);
 
     this.mainCanvas = canvas;
     this.mainContext = this.mainCanvas.getContext('2d');
@@ -116,40 +115,8 @@ class InitCanvas {
     document.addEventListener('click', this.onDocumentClick, false);
   }
 
-  getElementsAtPosition(x, y) {
-    // Get closely matched element with x and y coordinates
-    let returnElement = null;
-    if (this.shapes.length > 0) {
-      this.shapes.forEach(shape => {
-        if (shape.type === 'rectangle') {
-          if (shape.x <= x && x <= shape.endX) {
-            if (shape.y <= y && y <= shape.endY) {
-              returnElement = shape;
-            }
-          }
-        } else if (shape.type === 'line') {
-          let startingXBuffer = shape.x - 10;
-          let endingXBuffer = shape.endX + 10;
-          let startingYBuffer = shape.y - 10;
-          let endingYBuffer = shape.endY + 10;
-
-          if (startingXBuffer <= x && x <= endingXBuffer) {
-            if (startingYBuffer <= y && y <= endingYBuffer) {
-              returnElement = shape;
-            }
-          }
-        }
-
-      })
-    }
-    return returnElement;
-  }
-
   changeToTextTool(ev) {
     // function for typing text
-    // Temporarily updating tool manually
-    this.updateTool({ target: { value: 'text' } });
-    // After updating
     // TODO: Get the starting and ending point from coordinates(Inside Rect, or any other shapes starting point)
     if (ev.layerX || ev.layerX == 0) { // Firefox 
       ev._x = ev.layerX;
@@ -158,9 +125,13 @@ class InitCanvas {
       ev._x = ev.offsetX;
       ev._y = ev.offsetY;
     }
-    // this.tool wil be equal to text
+    let enclosedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
+
+    // Temporarily updating tool manually
+    this.updateTool({ target: { value: 'text' } });
+    this.resetDraggingValues();
+
     let func = this.tool[ev.type];
-    let enclosedElement = this.getElementsAtPosition(ev._x, ev._y);
     let width, height, x, y;
     if (enclosedElement) {
       width = enclosedElement.width;
@@ -168,6 +139,7 @@ class InitCanvas {
       x = enclosedElement.x;
       y = enclosedElement.y;
       this.selectedElement = enclosedElement;
+      console.log('Selected Elem', enclosedElement);
     }
     if (func) {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
@@ -215,12 +187,12 @@ class InitCanvas {
     if (this.selectedTool === 'text') {
       // Revertting tyhius is required.
       this.selectedTool = 'select';
-      this.tool = new SelectTool(this.shapes);
+      this.tool = null;
     }
 
     if (this.selectedTool === 'select') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-      let selectedElement = this.tool.getElementsAtPosition(ev._x, ev._y, this.shapes);
+      let selectedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
       this.selectedElement = selectedElement;
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
@@ -328,12 +300,12 @@ class InitCanvas {
       this.selectedTool = 'move';
       if (!this.draggingElement) {
         // First case of move tool -> User just selected the element.events should be mousedown
-        let elementSelected = this.tool.getElementsAtPosition(this.mouseXPosition, this.mouseYPosition, this.shapes);
+        let elementSelected = getElementsAtPosition(this.mouseXPosition, this.mouseYPosition, this.shapes);
         if (elementSelected) {
           this.selectedElement = elementSelected;
 
           this.draggingElement = elementSelected;
-          // TODO: Remove element from main canvas . Need to check whether we need to remove since we will be redrawing the entire canvas ??
+          // TODO: Remove element from main canvas . Need to check whether we need to remove since we will be resetDraggingValuesing the entire canvas ??
           console.log('Initializing Move Instace');
           this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
           this.tool = new MoveTool(this.tempCanvas, this.tempContext, this.imgUpdate, this.selectedElement);
@@ -358,7 +330,7 @@ class InitCanvas {
           }
         }
       }
-    } else {
+    } else if (this.tool) {
       let func = this.tool[ev.type];
       if (func) {
         func(ev);
@@ -391,15 +363,17 @@ class InitCanvas {
       this.shapes = [...filteredShapes, drawenImage];
 
     }
-    this.resetInitialValues();
+    this.resetDraggingValues();
 
 
     requestAnimationFrame(() => {
 
-      // if the action is delete or move. wee nneed to call redraw
+      // if the action is delete or move. wee nneed to call resetDraggingValues
       if (this.selectedTool === 'move') {
         this.redraw();
-
+        this.selectedTool = 'select';
+        //this.tool = new SelectTool(this.shapes);
+        this.tool = null;
       } else {
         this.mainContext.drawImage(this.tempCanvas, 0, 0);
         //this.tempContext.restore();
@@ -408,7 +382,8 @@ class InitCanvas {
         // Changing to select tool once we have drawn a shape except to typing text
         if (this.selectedTool !== 'text') {
           this.selectedTool = 'select';
-          this.tool = new SelectTool(this.shapes);
+          //this.tool = new SelectTool(this.shapes);
+          this.tool = null;
         }
       }
 
@@ -417,9 +392,11 @@ class InitCanvas {
 
   }
 
-  resetInitialValues() {
+  resetDraggingValues() {
     this.isUserDragging = false;
     this.draggingElement = null;
+    this.mouseXPosition = null;
+    this.mouseYPosition = null;
   }
 
   updateTool(e) {
