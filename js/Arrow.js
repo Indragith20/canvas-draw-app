@@ -58,7 +58,6 @@ class Arrow {
     this.tempContext.moveTo(e._x, e._y);
     this.tempContext.lineTo(e._x - headlen * Math.cos(angle + Math.PI / 6), e._y - headlen * Math.sin(angle + Math.PI / 6));
     this.tempContext.stroke();
-    this.tempContext.stroke();
     this.tempContext.closePath();
   }
 }

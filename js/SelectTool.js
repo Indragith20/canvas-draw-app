@@ -9,9 +9,7 @@ class SelectTool {
       this.shapes.forEach(shape => {
         if (shape.type === 'rectangle') {
           if (shape.x <= x && x <= shape.endX) {
-            console.log('Iside1 ');
             if (shape.y <= y && y <= shape.endY) {
-              console.log('Iside2')
               returnElement = shape;
             }
           }

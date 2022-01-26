@@ -1,9 +1,7 @@
 class DrawText {
   constructor(tempCanvas, tempContext, callback, id) {
-    console.log('Reitianl');
     this.started = false;
     this.id = id;
-    console.log(this.id);
     this.initialText = '';
     this.tempCanvas = tempCanvas;
     this.tempContext = tempContext;
@@ -21,7 +19,6 @@ class DrawText {
 
     this.tempContext.fillText(this.initialText, this.startX, this.startY);
     let textMetrics = this.tempContext.measureText(this.initialText);
-    console.log(this.id);
 
     //https://stackoverflow.com/questions/15823328/html5-edit-text-on-the-canvas
     this.callback({
@@ -46,8 +43,6 @@ class DrawText {
 
       this.tempContext.textAlign = "center";
       this.tempContext.textBaseline = "middle";
-      console.log(this.startX);
-      console.log(this.startY);
     }
   }
 }
