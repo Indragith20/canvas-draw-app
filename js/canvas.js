@@ -52,7 +52,6 @@ class InitCanvas {
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onDocumentClick = this.onDocumentClick.bind(this);
     this.resetDraggingValues = this.resetDraggingValues.bind(this);
-
     this.mainCanvas = canvas;
     this.mainContext = this.mainCanvas.getContext('2d');
     let parentNode = canvas.parentNode;
@@ -61,6 +60,8 @@ class InitCanvas {
       alert('Error! Cannot create a new canvas element!');
       return;
     }
+    canvas.width = window.innerWidth - 50;
+    canvas.height = window.innerHeight - 50;
     tempCanvas.id = 'tempCanvas';
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;

@@ -16,15 +16,14 @@ body {
 
 #wrapper {
   position: relative;
-  width: 960px;
-  margin: 0 auto;
-  padding-top: 75px;
+  width: 90vw;
+  margin: 10px;
 }
 
 #blackboardPlaceholder {
   /* background: url(../images/blackboard.png) no-repeat; */
-  width: 924px;
-  height: 599px;
+  width: 100%;
+  height: 100%;
   margin: 0 auto;
   padding: 14px 0 75px 14px;
   cursor: crosshair;
@@ -39,8 +38,8 @@ body {
 }
 #tempCanvas {
   position: absolute;
-  width: 897px;
-  height: 532px;
+  /* width: 1630px;
+  height: 2000px; */
   overflow: hidden;
 }
 .noscript {
@@ -56,4 +55,7 @@ select {
   font-family: Verdana, Geneva, sans-serif;
   font-size: 12px;
   background-color: #eaeaea;
+}
+
+.selectTool {
 }

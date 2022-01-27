@@ -10,6 +10,7 @@
 
   <!-- Eternal JavaScript Document(s) -->
   <script type="module" src="js/canvas.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/fontawesome.min.css" />
 
 </head>
 
@@ -17,18 +18,26 @@
 
   <!-- Wrapper Begins -->
   <div id="wrapper">
-    
+    <p>
+      <select name="selector" id="selector"> 
+        <option value="chalk">Chalk</option> 
+        <option value="line">Line</option> 
+        <option value="rect">Rectangle</option>
+        <option value="arrow">Arrow</option>  
+      </select> 
+      </p>
+    <!-- Tool Selector -->
+    <!-- <div class="selectTool">
+      <span></span>
+      <span><i class="fa fa-square-o" aria-hidden="true" size="24"></i></span>
+      <span></span>
+      <span></span>
+    </div> -->
+
     <div id="blackboardPlaceholder">
-      <p><!-- Tool Selector -->
-        <select name="selector" id="selector"> 
-          <option value="chalk">Chalk</option> 
-          <option value="line">Line</option> 
-          <option value="rect">Rectangle</option>
-          <option value="arrow">Arrow</option>  
-        </select> 
-        </p>
+      
       <!-- Canvas Begins -->
-      <canvas id="drawingCanvas" height="532" width="897">
+      <canvas id="drawingCanvas">
         <p class="noscript">We're sorry, this web application is currently not supported with your browser. Please use
           an alternate browser or download a supported <br />browser. Supported browsers: <a
             href="http://www.google.com/chrome">Google Chrome</a>, <a href="http://www.opera.com">Opera</a>, <a
