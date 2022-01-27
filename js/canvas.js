@@ -361,7 +361,7 @@ class InitCanvas {
       // }
       let filteredShapes = this.shapes.filter(shape => shape.id !== drawenImage.id);
       this.shapes = [...filteredShapes, drawenImage];
-
+      console.log(this.shapes);
     }
     this.resetDraggingValues();
 

@@ -20,7 +20,7 @@ class MoveTool {
     this.started = true;
     this.startX = e._x;
     this.startY = e._y;
-    // Temp Check. Need to adopt to all shapes. doing this for rectangle check initial.
+    // Temp Check. Need to adopt to all this.elements. doing this for rectangle check initial.
     this.diffX = Math.abs(this.element.x - this.startX);
     this.diffY = Math.abs(this.element.y - e.y);
     this.drawExisitingElementOnTemp();
@@ -31,16 +31,32 @@ class MoveTool {
     if (this.started) {
       this.mouseMove(e);
       // For rectangle
-      this.callback({
-        id: this.element.id,
-        type: 'rectangle',
-        x: e._x,
-        y: e._y,
-        width: this.element.width,
-        height: this.element.height,
-        endX: e._x,
-        endY: e._y
-      });
+      if (this.element.type === 'rectangle') {
+        this.callback({
+          id: this.element.id,
+          type: 'rectangle',
+          x: e._x,
+          y: e._y,
+          width: this.element.width,
+          height: this.element.height,
+          endX: e._x,
+          endY: e._y
+        });
+      } else if (this.element.type === 'arrow') {
+        this.callback({
+          id: this.id,
+          type: 'arrow',
+          x: e._x,
+          y: e._y,
+          startX: e._x, // for drawing rectangle around arrow. Deletion purpose
+          startY: e._y,// for drawing rectangle around arrow. Deletion purpose
+          width: this.element.width,
+          height: this.element.height,
+          endX: this.element.endX > this.element.x ? e._x + this.element.width : e._x - this.element.width,
+          endY: this.element.endY > this.element.y ? e._y + this.element.height : e._y - this.element.height
+        });
+      }
+
       this.started = false;
     }
   }
@@ -53,6 +69,39 @@ class MoveTool {
     if (this.element.type === 'rectangle') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       this.tempContext.strokeRect(e._x, e._y, this.element.width, this.element.height);
+    } else if (this.element.type === 'arrow') {
+      this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+      let headlen = 10;
+      let diffX = Math.abs(this.element.x - e._x);
+      let diffY = Math.abs(this.element.y - e._y);
+      let x = this.element.x + diffX;
+      let y = this.element.y + diffY;
+      let endX;
+      let endY;
+      if (this.element.endX > this.element.x) {
+        endX = e._x + this.element.width;
+      } else {
+        endX = e._x - this.element.width;
+      }
+
+      if (this.element.endY > this.element.y) {
+        endY = e._y + this.element.height;
+      } else {
+        endY = e._y - this.element.height;
+      }
+
+
+      let dx = endX - x;
+      let dy = endY - y;
+      let angle = Math.atan2(dy, dx);
+      this.tempContext.beginPath();
+      this.tempContext.moveTo(e._x, e._y)
+      this.tempContext.lineTo(endX, endY);
+      this.tempContext.lineTo(endX - headlen * Math.cos(angle - Math.PI / 6), endY - headlen * Math.sin(angle - Math.PI / 6));
+      this.tempContext.moveTo(endX, endY);
+      this.tempContext.lineTo(endX - headlen * Math.cos(angle + Math.PI / 6), endY - headlen * Math.sin(angle + Math.PI / 6));
+      this.tempContext.stroke();
+      this.tempContext.closePath();
     }
   }
 
@@ -63,6 +112,19 @@ class MoveTool {
     //  type === 'rectangle'
     if (this.element.type === 'rectangle') {
       this.tempContext.strokeRect(this.element.x, this.element.y, this.element.width, this.element.height);
+    } else if (this.element.type === 'arrow') {
+      let headlen = 10;
+      let dx = this.element.endX - this.element.x;
+      let dy = this.element.endY - this.element.y;
+      let angle = Math.atan2(dy, dx);
+      this.tempContext.beginPath();
+      this.tempContext.moveTo(this.element.x, this.element.y)
+      this.tempContext.lineTo(this.element.endX, this.element.endY);
+      this.tempContext.lineTo(this.element.endX - headlen * Math.cos(angle - Math.PI / 6), this.element.endY - headlen * Math.sin(angle - Math.PI / 6));
+      this.tempContext.moveTo(this.element.endX, this.element.endY);
+      this.tempContext.lineTo(this.element.endX - headlen * Math.cos(angle + Math.PI / 6), this.element.endY - headlen * Math.sin(angle + Math.PI / 6));
+      this.tempContext.stroke();
+      this.tempContext.closePath();
     }
   }
 }
