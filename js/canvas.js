@@ -60,8 +60,8 @@ class InitCanvas {
       alert('Error! Cannot create a new canvas element!');
       return;
     }
-    canvas.width = window.innerWidth - 50;
-    canvas.height = window.innerHeight - 50;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     tempCanvas.id = 'tempCanvas';
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
