@@ -14,6 +14,12 @@ body {
   line-height: 27px;
 }
 
+:root {
+  --icon-color: #000000;
+  --icon-container-color: #ffffff;
+  --selected-tool-color: #dd98d6;
+}
+
 #wrapper {
   position: relative;
   width: 100%;
@@ -58,4 +64,34 @@ select {
 }
 
 .selectTool {
+  position: fixed;
+  top: 10px;
+  left: 0px;
+  right: 0px;
+  background-color: var(--icon-container-color);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--icon-color);
+  padding: 10px;
+}
+
+.selectTool .icon {
+  display: inline-block;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.selectTool .icon .icon-class {
+  color: var(--icon-color);
+  font-size: 24px;
+}
+
+.selectTool .icon:not(:last-child) {
+  border-right: 1px solid #e6e6fa;
+}
+
+.selectTool .selected {
+  background-color: var(--selected-tool-color);
+  color: white;
 }

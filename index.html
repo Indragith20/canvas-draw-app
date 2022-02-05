@@ -6,16 +6,16 @@
   <!-- External CSS Document(s) -->
   <link rel="stylesheet" type="text/css" href="css/styles.css" />
 
-  <title>Online Drawing Application | Web Design Deluxe</title>
+  <title>Online Drawing Application</title>
 
   <!-- Eternal JavaScript Document(s) -->
   <script type="module" src="js/canvas.js"></script>
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/fontawesome.min.css" />
-
+  <script src="https://kit.fontawesome.com/8158d6441f.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
 
+  
   <!-- Wrapper Begins -->
   <div id="wrapper">
     <p>
@@ -27,13 +27,7 @@
       </select> 
       </p>
     <!-- Tool Selector -->
-    <!-- <div class="selectTool">
-      <span></span>
-      <span><i class="fa fa-square-o" aria-hidden="true" size="24"></i></span>
-      <span></span>
-      <span></span>
-    </div> -->
-
+   
     <div id="blackboardPlaceholder">
       
       <!-- Canvas Begins -->
@@ -48,6 +42,30 @@
     </div>
 
   </div>
+
+  <div class="selectTool">
+    <span class="icon selected">
+      <i class="fas fa-mouse-pointer icon-class" aria-hidden="true"></i>
+    </span>
+    <span class="icon">
+      <i class="far fa-square icon-class" aria-hidden="true"></i>
+    </span>
+    <span class="icon">
+      <i class="far fa-circle icon-class" aria-hidden="true"></i>
+    </span>
+    <span class="icon">
+      <i class="fas fa-arrow-right icon-class" aria-hidden="true"></i>
+    </span>
+    <span class="icon">
+      <svg height="24" width="24" viewbox="0 0 10 10">
+        <line x1="0" y1="10" x2="10" y2="10" stroke="var(--icon-color)" style="stroke-width:4" />
+      </svg>
+    </span>
+    <span class="icon">
+      <i class="fas fa-pencil-alt icon-class" aria-hidden="true"></i>
+    </span>
+  </div>
+
 
 </body>
 
