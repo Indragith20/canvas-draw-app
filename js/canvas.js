@@ -52,6 +52,8 @@ class InitCanvas {
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onDocumentClick = this.onDocumentClick.bind(this);
     this.resetDraggingValues = this.resetDraggingValues.bind(this);
+    this.onWheelMove = this.onWheelMove.bind(this);
+
     this.mainCanvas = canvas;
     this.mainContext = this.mainCanvas.getContext('2d');
     let parentNode = canvas.parentNode;
@@ -97,6 +99,9 @@ class InitCanvas {
 
 
 
+    // To emulate scroll behaviour
+    this.scrollX = 0;
+    this.scrollY = 0;
 
     /**
      * rect -> startX startY, width, height
@@ -114,18 +119,29 @@ class InitCanvas {
     this.tempCanvas.addEventListener('dblclick', this.changeToTextTool, false);
     document.addEventListener('keydown', this.onKeyDown, false);
     document.addEventListener('click', this.onDocumentClick, false);
+    document.addEventListener('wheel', this.onWheelMove, false);
+  }
+
+  onWheelMove(e) {
+    this.scrollX -= e.deltaX;
+    this.scrollY -= e.deltaY;
+    this.redraw();
   }
 
   changeToTextTool(ev) {
     // function for typing text
     // TODO: Get the starting and ending point from coordinates(Inside Rect, or any other shapes starting point)
-    if (ev.layerX || ev.layerX == 0) { // Firefox 
-      ev._x = ev.layerX;
-      ev._y = ev.layerY;
-    } else if (ev.offsetX || ev.offsetX == 0) { // Opera 
-      ev._x = ev.offsetX;
-      ev._y = ev.offsetY;
-    }
+    // if (ev.layerX || ev.layerX == 0) { // Firefox 
+    //   ev._x = ev.layerX;
+    //   ev._y = ev.layerY;
+    // } else if (ev.offsetX || ev.offsetX == 0) { // Opera 
+    //   ev._x = ev.offsetX;
+    //   ev._y = ev.offsetY;
+    // }
+
+    ev._x = ev.x - this.scrollX;
+    ev._y = ev.y - this.scrollY;
+
     let enclosedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
 
     // Temporarily updating tool manually
@@ -137,8 +153,8 @@ class InitCanvas {
     if (enclosedElement) {
       width = enclosedElement.width;
       height = enclosedElement.height;
-      x = enclosedElement.x;
-      y = enclosedElement.y;
+      x = enclosedElement.x + this.scrollX;
+      y = enclosedElement.y + this.scrollY;
       this.selectedElement = enclosedElement;
       console.log('Selected Elem', enclosedElement);
     }
@@ -153,9 +169,11 @@ class InitCanvas {
     if ((ev.keyCode >= 48 && ev.keyCode <= 57) || (ev.keyCode >= 65 && ev.keyCode <= 90)) {
       // 48 - 57 number 0 - 9 and 65 - 90 Alphabetys
       if (this.selectedTool === 'text') {
+        let x = this.selectedElement.x + this.scrollX;
+        let y = this.selectedElement.y + this.scrollY;
         //Bug: If we are not clearing rect, it will cause colliding effect(text will print ovber another text)
         // If we cleared then it will remove all the previous text or any other shapes
-        this.mainContext.clearRect(this.selectedElement.x, this.selectedElement.y, this.selectedElement.width, this.selectedElement.height)
+        this.mainContext.clearRect(x, y, this.selectedElement.width, this.selectedElement.height)
         let func = this.tool[ev.type];
         if (func) {
           func(ev);
@@ -177,13 +195,20 @@ class InitCanvas {
 
   onDocumentClick(ev) {
     // TODO: Get the starting and ending point from coordinates(Inside Rect, or any other shapes starting point)
-    if (ev.layerX || ev.layerX == 0) { // Firefox 
-      ev._x = ev.layerX;
-      ev._y = ev.layerY;
-    } else if (ev.offsetX || ev.offsetX == 0) { // Opera 
-      ev._x = ev.offsetX;
-      ev._y = ev.offsetY;
-    }
+    // if (ev.layerX || ev.layerX == 0) { // Firefox 
+    //   ev._x = ev.layerX;
+    //   ev._y = ev.layerY;
+    // } else if (ev.offsetX || ev.offsetX == 0) { // Opera 
+    //   ev._x = ev.offsetX;
+    //   ev._y = ev.offsetY;
+    // }
+    console.log(ev.x);
+    console.log(ev.y);
+    ev._x = ev.x - this.scrollX;
+    ev._y = ev.y - this.scrollY;
+
+    // ev._x = ev.x;
+    // ev._y = ev.y;
     console.log('Document Click EVent');
     if (this.selectedTool === 'text') {
       // Revertting tyhius is required.
@@ -197,12 +222,21 @@ class InitCanvas {
       this.selectedElement = selectedElement;
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
-          this.tempContext.strokeRect(this.selectedElement.x, this.selectedElement.y, this.selectedElement.width, this.selectedElement.height);
+          console.log(this.selectedElement);
+          let x = this.selectedElement.x + this.scrollX;
+          let y = this.selectedElement.y + this.scrollY;
+          console.log("Originng", x, y);
+          console.log("Scroll Valiues", this.scrollX, this.scrollY);
+          console.log("Adding", x + this.scrollX, y + this.scrollY);
+          console.log("Subtracging", x - this.scrollX, y - this.scrollY);
+          this.tempContext.strokeRect(x, y, this.selectedElement.width, this.selectedElement.height);
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(this.selectedElement.x - 5, this.selectedElement.y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
+          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
         } else if (this.selectedElement.type === 'line' || this.selectedElement.type === 'arrow') {
+          let x = this.selectedElement.x + this.scrollX;
+          let y = this.selectedElement.y + this.scrollY;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(this.selectedElement.startX - 5, this.selectedElement.startY - 5, this.selectedElement.width + 10, this.selectedElement.height + 10)
+          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10)
         }
       }
     }
@@ -219,31 +253,35 @@ class InitCanvas {
     this.shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
         // possible cause either fill or stroke
-        this.tempContext.strokeRect(shape.x, shape.y, shape.width, shape.height);
+        this.tempContext.strokeRect(shape.x + this.scrollX, shape.y + this.scrollY, shape.width, shape.height);
       } else if (shape.type === 'arrow') {
         let headlen = 10;
-        let dx = shape.endX - shape.x;
-        let dy = shape.endY - shape.y;
+        let x = shape.x + this.scrollX;
+        let y = shape.y + this.scrollY;
+        let endX = shape.endX + this.scrollX;
+        let endY = shape.endY + this.scrollY;
+        let dx = endX - x;
+        let dy = endY - y;
         let angle = Math.atan2(dy, dx);
         this.tempContext.beginPath();
-        this.tempContext.moveTo(shape.x, shape.y)
-        this.tempContext.lineTo(shape.endX, shape.endY);
-        this.tempContext.lineTo(shape.endX - headlen * Math.cos(angle - Math.PI / 6), shape.endY - headlen * Math.sin(angle - Math.PI / 6));
-        this.tempContext.moveTo(shape.endX, shape.endY);
-        this.tempContext.lineTo(shape.endX - headlen * Math.cos(angle + Math.PI / 6), shape.endY - headlen * Math.sin(angle + Math.PI / 6));
+        this.tempContext.moveTo(x, y)
+        this.tempContext.lineTo(endX, endY);
+        this.tempContext.lineTo(endX - headlen * Math.cos(angle - Math.PI / 6), endY - headlen * Math.sin(angle - Math.PI / 6));
+        this.tempContext.moveTo(endX, endY);
+        this.tempContext.lineTo(endX - headlen * Math.cos(angle + Math.PI / 6), endY - headlen * Math.sin(angle + Math.PI / 6));
         this.tempContext.stroke();
         this.tempContext.closePath();
       } else if (shape.type === 'line') {
         this.tempContext.beginPath();
-        this.tempContext.moveTo(shape.x, shape.y);
-        this.tempContext.lineTo(shape.endX, shape.endY);
+        this.tempContext.moveTo(shape.x + this.scrollX, shape.y + this.scrollY);
+        this.tempContext.lineTo(shape.endX + this.scrollX, shape.endY + this.scrollY);
         this.tempContext.stroke();
         this.tempContext.closePath();
       } else if (shape.type === 'text') {
         this.tempContext.font = '48px serif';
         this.tempContext.fillStyle = 'white';
 
-        this.tempContext.fillText(shape.textContent, shape.x, shape.y);
+        this.tempContext.fillText(shape.textContent, shape.x + this.scrollX, shape.y + this.scrollY);
       }
     });
 
@@ -259,13 +297,18 @@ class InitCanvas {
 
 
   onEvent(ev) {
-    if (ev.layerX || ev.layerX == 0) { // Firefox 
-      ev._x = ev.layerX;
-      ev._y = ev.layerY;
-    } else if (ev.offsetX || ev.offsetX == 0) { // Opera 
-      ev._x = ev.offsetX;
-      ev._y = ev.offsetY;
-    }
+    // if (ev.layerX || ev.layerX == 0) { // Firefox 
+    //   ev._x = ev.layerX;
+    //   ev._y = ev.layerY;
+    // } else if (ev.offsetX || ev.offsetX == 0) { // Opera 
+    //   ev._x = ev.offsetX;
+    //   ev._y = ev.offsetY;
+    // }
+
+    // ev._x = ev.x - this.scrollX;
+    // ev._y = ev.y - this.scrollY;
+    ev._x = ev.x;
+    ev._y = ev.y;
 
     // let isUserDragging = false;
 
@@ -295,7 +338,7 @@ class InitCanvas {
       this.mouseYPosition = null;
     }
     // Get the tool's event handler. 
-    console.log('user dragging', this.isUserDragging);
+    //console.log('user dragging', this.isUserDragging, ev._x, ev._y);
     if (this.isUserDragging) {
       // Handlinng the case for move
       this.selectedTool = 'move';
@@ -360,8 +403,18 @@ class InitCanvas {
       //     this.shapes.push(drawenImage);
       //   }
       // }
+      console.log(drawenImage);
+      console.log(this.scrollX);
+      console.log(this.scrollY);
+      let modifiedImage = {
+        ...drawenImage,
+        x: drawenImage.x - this.scrollX,
+        y: drawenImage.y - this.scrollY,
+        endX: drawenImage.endX - this.scrollX,
+        endY: drawenImage.endY - this.scrollY
+      }
       let filteredShapes = this.shapes.filter(shape => shape.id !== drawenImage.id);
-      this.shapes = [...filteredShapes, drawenImage];
+      this.shapes = [...filteredShapes, modifiedImage];
       console.log(this.shapes);
     }
     this.resetDraggingValues();
@@ -376,9 +429,11 @@ class InitCanvas {
         //this.tool = new SelectTool(this.shapes);
         this.tool = null;
       } else {
+        console.log(isDrawnOn(this.tempContext, this.tempCanvas));
         this.mainContext.drawImage(this.tempCanvas, 0, 0);
         //this.tempContext.restore();
         this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+        //this.renderParticularShape(modifiedImage);
 
         // Changing to select tool once we have drawn a shape except to typing text
         if (this.selectedTool !== 'text') {
@@ -387,10 +442,54 @@ class InitCanvas {
           this.tool = null;
         }
       }
-
+      // this.redraw();
 
     })
 
+  }
+
+
+  renderParticularShape(shape) {
+    this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+    this.tempContext.restore();
+    this.mainContext.setLineDash([]);
+    this.mainContext.strokeStyle = 'white';
+    this.mainContext.fillStyle = '#424242';
+    // TODO: Move to utility for each shape.
+    if (shape.type === 'rectangle') {
+      // possible cause either fill or stroke
+      this.mainContext.strokeRect(isWheelMovement ? shape.x + this.scrollX : shape.x, isWheelMovement ? shape.y + this.scrollY : shape.y, shape.width, shape.height);
+    } else if (shape.type === 'arrow') {
+      let headlen = 10;
+      let dx = shape.endX - shape.x;
+      let dy = shape.endY - shape.y;
+      let angle = Math.atan2(dy, dx);
+      this.mainContext.beginPath();
+      this.mainContext.moveTo(shape.x, shape.y)
+      this.mainContext.lineTo(shape.endX, shape.endY);
+      this.mainContext.lineTo(shape.endX - headlen * Math.cos(angle - Math.PI / 6), shape.endY - headlen * Math.sin(angle - Math.PI / 6));
+      this.mainContext.moveTo(shape.endX, shape.endY);
+      this.mainContext.lineTo(shape.endX - headlen * Math.cos(angle + Math.PI / 6), shape.endY - headlen * Math.sin(angle + Math.PI / 6));
+      this.mainContext.stroke();
+      this.mainContext.closePath();
+    } else if (shape.type === 'line') {
+      this.mainContext.beginPath();
+      this.mainContext.moveTo(shape.x, shape.y);
+      this.mainContext.lineTo(shape.endX, shape.endY);
+      this.mainContext.stroke();
+      this.mainContext.closePath();
+    } else if (shape.type === 'text') {
+      this.mainContext.font = '48px serif';
+      this.mainContext.fillStyle = 'white';
+
+      this.mainContext.fillText(shape.textContent, shape.x, shape.y);
+    }
+
+
+    //this.mainContext.clearRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
+    //this.mainContext.drawImage(this.tempCanvas, 0, 0);
+    this.tempContext.restore();
+    this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
   }
 
   resetDraggingValues() {
