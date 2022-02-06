@@ -72,6 +72,16 @@ class MoveTool {
           endX,
           endY
         });
+      } else if (this.element.type === 'circle') {
+        this.callback({
+          id: this.id,
+          type: 'circle',
+          x: e._x,
+          y: e._y,
+          radius: this.element.radius,
+          width: this.element.width,
+          height: this.element.height
+        });
       }
 
       this.started = false;
@@ -139,6 +149,11 @@ class MoveTool {
       this.tempContext.lineTo(endX, endY);
       this.tempContext.stroke();
       this.tempContext.closePath();
+    } else if (this.element.type === 'circle') {
+      this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+      this.tempContext.beginPath();
+      this.tempContext.arc(e._x, e._y, this.element.radius, 0, 2 * Math.PI);
+      this.tempContext.stroke();
     }
   }
 
@@ -168,6 +183,10 @@ class MoveTool {
       this.tempContext.lineTo(this.element.endX, this.element.endY);
       this.tempContext.stroke();
       this.tempContext.closePath();
+    } else if (this.element.type === 'circle') {
+      this.tempContext.beginPath();
+      this.tempContext.arc(this.element.x, this.element.y, this.element.radius, 0, 2 * Math.PI);
+      this.tempContext.stroke();
     }
   }
 }

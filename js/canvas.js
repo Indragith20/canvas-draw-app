@@ -5,6 +5,7 @@ import Rect from './Rectangle.js';
 import DrawText from './DrawText.js';
 import MoveTool from './MoveTool.js';
 import { getElementsAtPosition } from '../utils/getElementsAtPosition.js';
+import Circle from './Circle.js';
 
 
 /**
@@ -16,6 +17,15 @@ import { getElementsAtPosition } from '../utils/getElementsAtPosition.js';
  * }
  * 
  * Hoping this will reduce the amout of pixels to redraw
+ */
+
+/**
+ * 
+ * Check: 1) shape draw
+ * 2) shape redraw
+ * 3) shape select
+ * 4) delete shape
+ * 5) shape move
  */
 
 
@@ -237,6 +247,13 @@ class InitCanvas {
           let y = this.selectedElement.y + this.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10)
+        } else if (this.selectedElement.type === 'circle') {
+          let x = this.selectedElement.x + this.scrollX;
+          let y = this.selectedElement.y + this.scrollY;
+          this.tempContext.setLineDash([6]);
+          this.tempContext.beginPath();
+          this.tempContext.arc(x, y, this.selectedElement.radius + 10, 0, 2 * Math.PI);
+          this.tempContext.stroke();
         }
       }
     }
@@ -282,6 +299,12 @@ class InitCanvas {
         this.tempContext.fillStyle = 'white';
 
         this.tempContext.fillText(shape.textContent, shape.x + this.scrollX, shape.y + this.scrollY);
+      } else if (shape.type === 'circle') {
+        let x = shape.x + this.scrollX;
+        let y = shape.y + this.scrollY;
+        this.tempContext.beginPath();
+        this.tempContext.arc(x, y, shape.radius, 0, 2 * Math.PI);
+        this.tempContext.stroke();
       }
     });
 
@@ -495,7 +518,8 @@ window.addEventListener('load', function () {
       line: Line,
       rect: Rect,
       arrow: Arrow,
-      text: DrawText
+      text: DrawText,
+      circle: Circle
     };
 
     let drawingTool = new InitCanvas(document.getElementById('drawingCanvas'), tools);
