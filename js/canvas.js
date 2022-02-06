@@ -6,8 +6,11 @@ import DrawText from './DrawText.js';
 import MoveTool from './MoveTool.js';
 import { getElementsAtPosition } from '../utils/getElementsAtPosition.js';
 import Circle from './Circle.js';
+import Diamond from './Diamond.js';
 
 
+
+//getElementBounds in bounds.ts excalidraw ??
 /**
  * Plan is to have map for coordinates
  * 
@@ -155,7 +158,7 @@ class InitCanvas {
     let enclosedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
 
     // Temporarily updating tool manually
-    this.updateTool({ target: { value: 'text' } });
+    this.updateTool('text');
     this.resetDraggingValues();
 
     let func = this.tool[ev.type];
@@ -519,7 +522,8 @@ window.addEventListener('load', function () {
       rect: Rect,
       arrow: Arrow,
       text: DrawText,
-      circle: Circle
+      circle: Circle,
+      diamond: Diamond
     };
 
     let drawingTool = new InitCanvas(document.getElementById('drawingCanvas'), tools);
