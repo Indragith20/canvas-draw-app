@@ -427,6 +427,13 @@ class InitCanvas {
         this.redraw();
         this.selectedTool = 'select';
         //this.tool = new SelectTool(this.shapes);
+        /**CHange this to util */
+        let element = document.getElementById('select');
+        let previousSelectedEle = document.querySelector('.selected');
+        previousSelectedEle.classList.remove('selected');
+        element.classList.add('selected');
+        /** */
+
         this.tool = null;
       } else {
         console.log(isDrawnOn(this.tempContext, this.tempCanvas));
@@ -439,6 +446,15 @@ class InitCanvas {
         if (this.selectedTool !== 'text') {
           this.selectedTool = 'select';
           //this.tool = new SelectTool(this.shapes);
+
+          /**CHange this to util */
+          let element = document.getElementById('select');
+          let previousSelectedEle = document.querySelector('.selected');
+          previousSelectedEle.classList.remove('selected');
+          element.classList.add('selected');
+          /** */
+
+
           this.tool = null;
         }
       }
@@ -448,50 +464,6 @@ class InitCanvas {
 
   }
 
-
-  renderParticularShape(shape) {
-    this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-    this.tempContext.restore();
-    this.mainContext.setLineDash([]);
-    this.mainContext.strokeStyle = 'white';
-    this.mainContext.fillStyle = '#424242';
-    // TODO: Move to utility for each shape.
-    if (shape.type === 'rectangle') {
-      // possible cause either fill or stroke
-      this.mainContext.strokeRect(isWheelMovement ? shape.x + this.scrollX : shape.x, isWheelMovement ? shape.y + this.scrollY : shape.y, shape.width, shape.height);
-    } else if (shape.type === 'arrow') {
-      let headlen = 10;
-      let dx = shape.endX - shape.x;
-      let dy = shape.endY - shape.y;
-      let angle = Math.atan2(dy, dx);
-      this.mainContext.beginPath();
-      this.mainContext.moveTo(shape.x, shape.y)
-      this.mainContext.lineTo(shape.endX, shape.endY);
-      this.mainContext.lineTo(shape.endX - headlen * Math.cos(angle - Math.PI / 6), shape.endY - headlen * Math.sin(angle - Math.PI / 6));
-      this.mainContext.moveTo(shape.endX, shape.endY);
-      this.mainContext.lineTo(shape.endX - headlen * Math.cos(angle + Math.PI / 6), shape.endY - headlen * Math.sin(angle + Math.PI / 6));
-      this.mainContext.stroke();
-      this.mainContext.closePath();
-    } else if (shape.type === 'line') {
-      this.mainContext.beginPath();
-      this.mainContext.moveTo(shape.x, shape.y);
-      this.mainContext.lineTo(shape.endX, shape.endY);
-      this.mainContext.stroke();
-      this.mainContext.closePath();
-    } else if (shape.type === 'text') {
-      this.mainContext.font = '48px serif';
-      this.mainContext.fillStyle = 'white';
-
-      this.mainContext.fillText(shape.textContent, shape.x, shape.y);
-    }
-
-
-    //this.mainContext.clearRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
-    //this.mainContext.drawImage(this.tempCanvas, 0, 0);
-    this.tempContext.restore();
-    this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-  }
-
   resetDraggingValues() {
     this.isUserDragging = false;
     this.draggingElement = null;
@@ -499,10 +471,11 @@ class InitCanvas {
     this.mouseYPosition = null;
   }
 
-  updateTool(e) {
-    if (this.tools[e.target.value]) {
-      this.selectedTool = e.target.value;
+  updateTool(value) {
+    if (this.tools[value]) {
+      this.selectedTool = value;
       let selectedOne = this.tools[this.selectedTool];
+      // For storing the shapes. we are generating ids.
       this.id = this.id + 1;
       this.tool = new selectedOne(this.tempCanvas, this.tempContext, this.imgUpdate, this.id);
     }
@@ -527,13 +500,20 @@ window.addEventListener('load', function () {
 
     let drawingTool = new InitCanvas(document.getElementById('drawingCanvas'), tools);
 
-    // Create a select field with our tools. 
-    var tool_select = document.getElementById('selector');
-    if (!tool_select) {
-      alert('Error! Failed to get the select element!');
-      return;
+    let toolCollections = document.getElementsByClassName('tool-icon');
+
+    function updateTool(e) {
+      let element = e.currentTarget;
+      let previousSelectedEle = document.querySelector('.selected');
+      previousSelectedEle.classList.remove('selected');
+      element.classList.add('selected');
+      drawingTool.updateTool(element.id);
     }
-    tool_select.addEventListener('change', drawingTool.updateTool, false);
+
+    for (var i = 0; i < toolCollections.length; i++) {
+      toolCollections[i].addEventListener('click', updateTool, false);
+    }
+
   }
 
 

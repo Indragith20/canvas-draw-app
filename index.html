@@ -18,15 +18,7 @@
   
   <!-- Wrapper Begins -->
   <div id="wrapper">
-    <p>
-      <select name="selector" id="selector"> 
-        <option value="chalk">Chalk</option> 
-        <option value="line">Line</option> 
-        <option value="rect">Rectangle</option>
-        <option value="arrow">Arrow</option>  
-      </select> 
-      </p>
-    <!-- Tool Selector -->
+   
    
     <div id="blackboardPlaceholder">
       
@@ -44,24 +36,24 @@
   </div>
 
   <div class="selectTool">
-    <span class="icon selected">
+    <span class="tool-icon selected" id="select">
       <i class="fas fa-mouse-pointer icon-class" aria-hidden="true"></i>
     </span>
-    <span class="icon">
+    <span class="tool-icon" id="rect">
       <i class="far fa-square icon-class" aria-hidden="true"></i>
     </span>
-    <span class="icon">
+    <span class="tool-icon" id="circle">
       <i class="far fa-circle icon-class" aria-hidden="true"></i>
     </span>
-    <span class="icon">
+    <span class="tool-icon" id="arrow">
       <i class="fas fa-arrow-right icon-class" aria-hidden="true"></i>
     </span>
-    <span class="icon">
+    <span class="tool-icon" id="line">
       <svg height="24" width="24" viewbox="0 0 10 10">
         <line x1="0" y1="10" x2="10" y2="10" stroke="var(--icon-color)" style="stroke-width:4" />
       </svg>
     </span>
-    <span class="icon">
+    <span class="tool-icon" id="chalk">
       <i class="fas fa-pencil-alt icon-class" aria-hidden="true"></i>
     </span>
   </div>

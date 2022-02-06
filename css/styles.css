@@ -76,19 +76,24 @@ select {
   padding: 10px;
 }
 
-.selectTool .icon {
+.selectTool .tool-icon {
   display: inline-block;
   padding: 10px;
   border-radius: 5px;
 }
 
-.selectTool .icon .icon-class {
+.selectTool .tool-icon .icon-class {
   color: var(--icon-color);
   font-size: 24px;
+  /* margin: 10px; */
 }
 
-.selectTool .icon:not(:last-child) {
+.selectTool .tool-icon:not(:last-child) {
   border-right: 1px solid #e6e6fa;
+}
+
+.selectTool .tool-icon:hover {
+  cursor: pointer;
 }
 
 .selectTool .selected {
