@@ -1,4 +1,4 @@
-import { getDistance } from "../utils/getElementsAtPosition.js";
+import { drawDiamond } from "../utils/drawShapes.js";
 
 class Diamond {
   constructor(tempCanvas, tempContext, callback, id) {
@@ -21,17 +21,17 @@ class Diamond {
     if (this.started) {
       this.mousemove(e);
       this.started = false;
-      let radius = getDistance(this.startX, this.startY, e._x, e._y);
       this.callback({
         id: this.id,
         type: 'diamond',
         x: this.startX,
         y: this.startY,
-        width: radius * radius,
-        height: radius * radius,
+        xCenter: this.startX,
+        yCenter: e._y,
+        width: this.startX - e._x,
+        height: this.startY - e._y,
         endX: e._x,
-        endY: e._y,
-        radius
+        endY: e._y
       });
     }
   }
@@ -44,18 +44,25 @@ class Diamond {
 
   mouseMove(e) {
     if (this.started) {
-      let diffX = e._x - this.startX;
-      let diffY = e._y - this.startY;
-      console.log(diffX, diffY)
-      this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-      this.tempContext.beginPath();
-      this.tempContext.moveTo(this.startX, this.startY);
-      this.tempContext.lineTo(e._x, e._y);
+      let width = this.startX - e._x;
 
-      this.tempContext.lineTo(diffX, diffY)
-      //this.tempContext.lineTo(-e._x, -e._y);
-      this.tempContext.stroke();
-      this.tempContext.closePath();
+      let xCenter = this.startX;
+      let yCenter = e._y;
+      let numberOfSides = 4; // diamond shape 4 sides
+      let size = width;
+
+      this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+      // this.tempContext.beginPath();
+      // this.tempContext.moveTo(xCenter + size * Math.cos(0), yCenter + size * Math.sin(0));
+
+      // for (var i = 1; i <= numberOfSides; i += 1) {
+      //   this.tempContext.lineTo(xCenter + size * Math.cos(i * 2 * Math.PI / numberOfSides), yCenter + size * Math.sin(i * 2 * Math.PI / numberOfSides));
+      // }
+
+      // this.tempContext.stroke();
+
+      drawDiamond(xCenter, yCenter, width, this.tempContext)
+
     }
   }
 }

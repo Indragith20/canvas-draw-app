@@ -7,6 +7,7 @@ import MoveTool from './MoveTool.js';
 import { getElementsAtPosition } from '../utils/getElementsAtPosition.js';
 import Circle from './Circle.js';
 import Diamond from './Diamond.js';
+import { drawDiamond } from '../utils/drawShapes.js';
 
 
 
@@ -24,7 +25,7 @@ import Diamond from './Diamond.js';
 
 /**
  * 
- * Check: 1) shape draw
+ * CheckList: 1) shape draw
  * 2) shape redraw
  * 3) shape select
  * 4) delete shape
@@ -308,6 +309,11 @@ class InitCanvas {
         this.tempContext.beginPath();
         this.tempContext.arc(x, y, shape.radius, 0, 2 * Math.PI);
         this.tempContext.stroke();
+      } else if (shape.type === 'diamond') {
+        let xCenter = shape.xCenter + this.scrollX;
+        let yCenter = shape.yCenter + this.scrollY;
+
+        drawDiamond(xCenter, yCenter, shape.width, this.tempContext);
       }
     });
 
