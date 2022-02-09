@@ -52,7 +52,6 @@ class Rect {
       }
       this.width = width;
       this.height = height;
-      console.log('stoking', x, y, width, height);
       this.tempContext.strokeRect(x, y, width, height);
     }
   }

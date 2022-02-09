@@ -37,6 +37,18 @@ function getElementsAtPosition(x, y, shapes) {
           returnElement = shape;
         }
 
+      } else if (shape.type === 'diamond') {
+        // let startX = shape.x - (shape.width / 2);
+        // let startY = shape.y;
+        let width = shape.width;
+        let height = shape.height;
+        let endX = shape.startX + width;
+        let endY = shape.startY + height;
+        if (shape.startX <= x && x <= endX) {
+          if (shape.startY <= y && y <= endY) {
+            returnElement = shape;
+          }
+        }
       }
 
     })

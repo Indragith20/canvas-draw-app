@@ -27,9 +27,11 @@ import { drawDiamond } from '../utils/drawShapes.js';
  * 
  * CheckList: 1) shape draw
  * 2) shape redraw
+ *  2.1) Adding sscroll buffer while pushing to shapes array (imgupdate) only If extra params included
  * 3) shape select
  * 4) delete shape
  * 5) shape move
+ * 
  */
 
 
@@ -233,6 +235,7 @@ class InitCanvas {
     if (this.selectedTool === 'select') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       let selectedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
+      console.log(selectedElement);
       this.selectedElement = selectedElement;
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
@@ -258,6 +261,12 @@ class InitCanvas {
           this.tempContext.beginPath();
           this.tempContext.arc(x, y, this.selectedElement.radius + 10, 0, 2 * Math.PI);
           this.tempContext.stroke();
+        } else if (this.selectedElement.type === 'diamond') {
+          let x = this.selectedElement.startX + this.scrollX;
+          let y = this.selectedElement.startY + this.scrollY;
+          //this.tempContext.strokeRect(x, y, this.selectedElement.width, this.selectedElement.height);
+          this.tempContext.setLineDash([6]);
+          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
         }
       }
     }
@@ -310,10 +319,10 @@ class InitCanvas {
         this.tempContext.arc(x, y, shape.radius, 0, 2 * Math.PI);
         this.tempContext.stroke();
       } else if (shape.type === 'diamond') {
-        let xCenter = shape.xCenter + this.scrollX;
-        let yCenter = shape.yCenter + this.scrollY;
-
-        drawDiamond(xCenter, yCenter, shape.width, this.tempContext);
+        let xCenter = shape.x + this.scrollX;
+        let yCenter = shape.y + this.scrollY;
+        let size = shape.x - shape.endX;
+        drawDiamond(xCenter, yCenter, size, this.tempContext);
       }
     });
 

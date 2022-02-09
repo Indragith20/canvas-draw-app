@@ -21,15 +21,19 @@ class Diamond {
     if (this.started) {
       this.mousemove(e);
       this.started = false;
+      let width = (Math.abs(this.startX - e._x)) * 2;
+      // width and height will be same for the diamond 
       this.callback({
         id: this.id,
         type: 'diamond',
         x: this.startX,
-        y: this.startY,
-        xCenter: this.startX,
-        yCenter: e._y,
-        width: this.startX - e._x,
-        height: this.startY - e._y,
+        y: e._y,
+        startX: this.startX - (width / 2),
+        startY: e._y - (width / 2),
+        // xCenter: this.startX,
+        // yCenter: e._y,
+        width: width,
+        height: width,
         endX: e._x,
         endY: e._y
       });
@@ -44,12 +48,11 @@ class Diamond {
 
   mouseMove(e) {
     if (this.started) {
-      let width = this.startX - e._x;
+      let size = this.startX - e._x;
 
       let xCenter = this.startX;
       let yCenter = e._y;
-      let numberOfSides = 4; // diamond shape 4 sides
-      let size = width;
+
 
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       // this.tempContext.beginPath();
@@ -61,7 +64,7 @@ class Diamond {
 
       // this.tempContext.stroke();
 
-      drawDiamond(xCenter, yCenter, width, this.tempContext)
+      drawDiamond(xCenter, yCenter, size, this.tempContext)
 
     }
   }
