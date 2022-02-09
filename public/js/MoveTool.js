@@ -1,3 +1,5 @@
+import { drawDiamond } from "../utils/drawShapes.js";
+
 class MoveTool {
   constructor(tempCanvas, tempContext, callback, element) {
     this.id = element.id;
@@ -82,6 +84,21 @@ class MoveTool {
           width: this.element.width,
           height: this.element.height
         });
+      } else if (this.element.type === 'diamond') {
+        this.callback({
+          id: this.id,
+          type: 'diamond',
+          x: e._x,
+          y: e._y,
+          startX: e._x - (this.element.width / 2),
+          startY: e._y - (this.element.width / 2),
+          // xCenter: this.startX,
+          // yCenter: e._y,
+          width: this.element.width,
+          height: this.element.height,
+          endX: e._x + (this.element.width / 2),
+          endY: e._y + this.element.height
+        });
       }
 
       this.started = false;
@@ -154,6 +171,9 @@ class MoveTool {
       this.tempContext.beginPath();
       this.tempContext.arc(e._x, e._y, this.element.radius, 0, 2 * Math.PI);
       this.tempContext.stroke();
+    } else if (this.element.type === 'diamond') {
+      this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+      drawDiamond(e._x, e._y, this.element.width / 2, this.tempContext)
     }
   }
 
@@ -187,6 +207,11 @@ class MoveTool {
       this.tempContext.beginPath();
       this.tempContext.arc(this.element.x, this.element.y, this.element.radius, 0, 2 * Math.PI);
       this.tempContext.stroke();
+    } else if (this.element.type === 'diamond') {
+      let xCenter = this.element.x;
+      let yCenter = this.element.y;
+      let size = this.element.x - this.element.endX;
+      drawDiamond(xCenter, yCenter, size, this.tempContext);
     }
   }
 }

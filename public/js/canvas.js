@@ -322,6 +322,7 @@ class InitCanvas {
         let xCenter = shape.x + this.scrollX;
         let yCenter = shape.y + this.scrollY;
         let size = shape.x - shape.endX;
+        console.log('Drawing diamond');
         drawDiamond(xCenter, yCenter, size, this.tempContext);
       }
     });
