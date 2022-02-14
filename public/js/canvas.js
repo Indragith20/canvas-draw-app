@@ -380,13 +380,16 @@ class InitCanvas {
       this.mouseYPosition = null;
     }
     // Get the tool's event handler. 
-    //console.log('user dragging', this.isUserDragging, ev._x, ev._y);
+
     if (this.isUserDragging) {
       // Handlinng the case for move
       this.selectedTool = 'move';
+      // since we are moving across the canvas. we need to take into the account of scrollx and scrolly values
+      ev._x = ev.x - this.scrollX;
+      ev._y = ev.y - this.scrollY;
       if (!this.draggingElement) {
         // First case of move tool -> User just selected the element.events should be mousedown
-        let elementSelected = getElementsAtPosition(this.mouseXPosition, this.mouseYPosition, this.shapes);
+        let elementSelected = getElementsAtPosition(this.mouseXPosition - this.scrollX, this.mouseYPosition - this.scrollY, this.shapes);
         if (elementSelected) {
           this.selectedElement = elementSelected;
 
