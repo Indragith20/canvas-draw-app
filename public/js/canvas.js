@@ -78,6 +78,11 @@ class InitCanvas {
       alert('Error! Cannot create a new canvas element!');
       return;
     }
+
+    // theme support
+    this.selectedTheme = 'light'; // theme can be dark or light
+
+    // setting up the initial canvas sizes
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     tempCanvas.id = 'tempCanvas';
@@ -88,11 +93,11 @@ class InitCanvas {
 
     this.tempContext = this.tempCanvas.getContext('2d');
 
-    this.tempContext.strokeStyle = "#FFFFFF";// Default line color. 
+    this.tempContext.strokeStyle = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';// Default line color. 
     this.tempContext.lineWidth = 1.0;// Default stroke weight. 
 
     // Fill transparent canvas with dark grey (So we can use the color to erase). 
-    this.tempContext.fillStyle = "#424242";
+    this.tempContext.fillStyle = this.selectedTheme === 'dark' ? "#424242" : '#FFFFFF';
     this.tempContext.fillRect(0, 0, tempCanvas.width, tempCanvas.height);//Top, Left, Width, Height of canvas
 
     this.tools = tools;
@@ -118,12 +123,6 @@ class InitCanvas {
     // To emulate scroll behaviour
     this.scrollX = 0;
     this.scrollY = 0;
-
-    /**
-     * rect -> startX startY, width, height
-     * arrow -> startX startY, width
-     * 
-     */
 
     this.addEventListeners();
   }
@@ -172,7 +171,6 @@ class InitCanvas {
       x = enclosedElement.x + this.scrollX;
       y = enclosedElement.y + this.scrollY;
       this.selectedElement = enclosedElement;
-      console.log('Selected Elem', enclosedElement);
     }
     if (func) {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
@@ -218,14 +216,11 @@ class InitCanvas {
     //   ev._x = ev.offsetX;
     //   ev._y = ev.offsetY;
     // }
-    console.log(ev.x);
-    console.log(ev.y);
     ev._x = ev.x - this.scrollX;
     ev._y = ev.y - this.scrollY;
 
     // ev._x = ev.x;
     // ev._y = ev.y;
-    console.log('Document Click EVent');
     if (this.selectedTool === 'text') {
       // Revertting tyhius is required.
       this.selectedTool = 'select';
@@ -235,17 +230,11 @@ class InitCanvas {
     if (this.selectedTool === 'select') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       let selectedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
-      console.log(selectedElement);
       this.selectedElement = selectedElement;
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
-          console.log(this.selectedElement);
           let x = this.selectedElement.x + this.scrollX;
           let y = this.selectedElement.y + this.scrollY;
-          console.log("Originng", x, y);
-          console.log("Scroll Valiues", this.scrollX, this.scrollY);
-          console.log("Adding", x + this.scrollX, y + this.scrollY);
-          console.log("Subtracging", x - this.scrollX, y - this.scrollY);
           this.tempContext.strokeRect(x, y, this.selectedElement.width, this.selectedElement.height);
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
@@ -273,12 +262,11 @@ class InitCanvas {
   }
 
   redraw() {
-    console.log('redrwa')
     this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
     this.tempContext.restore();
     this.tempContext.setLineDash([]);
-    this.tempContext.strokeStyle = 'white';
-    this.tempContext.fillStyle = '#424242';
+    this.tempContext.strokeStyle = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';;
+    this.tempContext.fillStyle = this.selectedTheme === 'dark' ? "#424242" : '#000000';;
     // TODO: Move to utility for each shape.
     this.shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
@@ -322,14 +310,12 @@ class InitCanvas {
         let xCenter = shape.x + this.scrollX;
         let yCenter = shape.y + this.scrollY;
         let size = shape.x - shape.endX;
-        console.log('Drawing diamond');
         drawDiamond(xCenter, yCenter, size, this.tempContext);
       }
     });
 
 
     // clear the present canvas
-    console.log(isDrawnOn(this.tempContext, this.tempCanvas));
     this.mainContext.clearRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
     this.mainContext.drawImage(this.tempCanvas, 0, 0);
     this.tempContext.restore();
@@ -395,7 +381,6 @@ class InitCanvas {
 
           this.draggingElement = elementSelected;
           // TODO: Remove element from main canvas . Need to check whether we need to remove since we will be resetDraggingValuesing the entire canvas ??
-          console.log('Initializing Move Instace');
           this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
           this.tool = new MoveTool(this.tempCanvas, this.tempContext, this.imgUpdate, this.selectedElement);
           // element is present. we need to call movetool
@@ -448,9 +433,6 @@ class InitCanvas {
       //     this.shapes.push(drawenImage);
       //   }
       // }
-      console.log(drawenImage);
-      console.log(this.scrollX);
-      console.log(this.scrollY);
       let modifiedImage = {
         ...drawenImage,
         x: drawenImage.x - this.scrollX,
@@ -460,7 +442,6 @@ class InitCanvas {
       }
       let filteredShapes = this.shapes.filter(shape => shape.id !== drawenImage.id);
       this.shapes = [...filteredShapes, modifiedImage];
-      console.log(this.shapes);
     }
     this.resetDraggingValues();
 
@@ -481,7 +462,6 @@ class InitCanvas {
 
         this.tool = null;
       } else {
-        console.log(isDrawnOn(this.tempContext, this.tempCanvas));
         this.mainContext.drawImage(this.tempCanvas, 0, 0);
         //this.tempContext.restore();
         this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
@@ -525,6 +505,25 @@ class InitCanvas {
       this.tool = new selectedOne(this.tempCanvas, this.tempContext, this.imgUpdate, this.id);
     }
   }
+
+  updateCanvas({ width, height }) {
+    this.mainCanvas.width = width;
+    this.mainCanvas.height = height;
+    this.tempCanvas.width = width;
+    this.tempCanvas.height = height;
+    this.redraw();
+  }
+
+  updateTheme() {
+    this.selectedTheme = this.selectedTheme === 'dark' ? 'light' : 'dark';
+    this.tempContext.strokeStyle = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';// Default line color. 
+    this.tempContext.lineWidth = 1.0;// Default stroke weight. 
+
+    // Fill transparent canvas with dark grey (So we can use the color to erase). 
+    this.tempContext.fillStyle = this.selectedTheme === 'dark' ? "#424242" : '#FFFFFF';
+    this.tempContext.fillRect(0, 0, tempCanvas.width, tempCanvas.height);//Top, Left, Width, Height of canvas
+    this.redraw();
+  }
 }
 
 
@@ -545,7 +544,8 @@ window.addEventListener('load', function () {
       diamond: Diamond
     };
 
-    let drawingTool = new InitCanvas(document.getElementById('drawingCanvas'), tools);
+    let canvas = document.getElementById('drawingCanvas');
+    let drawingTool = new InitCanvas(canvas, tools);
 
     let toolCollections = document.getElementsByClassName('tool-icon');
 
@@ -557,9 +557,25 @@ window.addEventListener('load', function () {
       drawingTool.updateTool(element.id);
     }
 
+    function switchTheme(event) {
+      event.stopPropagation();
+      document.body.classList.toggle('dark-mode');
+      drawingTool.updateTheme();
+    }
+
     for (var i = 0; i < toolCollections.length; i++) {
       toolCollections[i].addEventListener('click', updateTool, false);
     }
+
+    function onResize(ev) {
+      drawingTool.updateCanvas({ width: window.innerWidth, height: window.innerHeight })
+    }
+
+    let toggleModeEle = document.getElementById('toggleDarkMode');
+
+    toggleModeEle.addEventListener('click', switchTheme);
+
+    window.addEventListener('resize', onResize);
 
   }
 
