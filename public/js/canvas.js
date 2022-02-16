@@ -7,7 +7,7 @@ import MoveTool from './MoveTool.js';
 import { getElementsAtPosition } from '../utils/getElementsAtPosition.js';
 import Circle from './Circle.js';
 import Diamond from './Diamond.js';
-import { drawDiamond } from '../utils/drawShapes.js';
+import { drawDiamond, drawText } from '../utils/drawShapes.js';
 
 
 
@@ -138,6 +138,10 @@ class InitCanvas {
   }
 
   onWheelMove(e) {
+    if (this.selectedTool === 'text') {
+      // Drawing text on canvas before scroll move
+      this.tool['onBlur']();
+    }
     this.scrollX -= e.deltaX;
     this.scrollY -= e.deltaY;
     this.redraw();
@@ -163,19 +167,44 @@ class InitCanvas {
     this.updateTool('text');
     this.resetDraggingValues();
 
+    /** */
+
+    // let textBoxContainer = document.getElementById('textBoxContainerId');
+    // let textBox = document.getElementById('textAreaId');
+    // textBoxContainer.style.top = ev.y;
+    // textBoxContainer.style.left = ev.x;
+    // textBoxContainer.style.display = 'block';
+    // textBox.focus();
+
+    // if (enclosedElement && enclosedElement.type === 'rectangle') {
+    //   textBoxContainer.style.width = `${Math.abs(enclosedElement.endX - ev._x) - 10}px`;
+    //   textBoxContainer.style.height = `${Math.abs(enclosedElement.endY - ev._y) - 10}px`;
+    // } else {
+    //   textBoxContainer.style.width = Math.abs(this.mainCanvas.width - Math.abs(ev.x))
+    //   textBoxContainer.style.height = Math.abs(this.mainCanvas.height - Math.abs(ev.y))
+    // }
+
     let func = this.tool[ev.type];
-    let width, height, x, y;
-    if (enclosedElement) {
-      width = enclosedElement.width;
-      height = enclosedElement.height;
-      x = enclosedElement.x + this.scrollX;
-      y = enclosedElement.y + this.scrollY;
-      this.selectedElement = enclosedElement;
-    }
     if (func) {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-      func(ev, { width, height, x, y });
+      // func will be dbclick in drawtext
+      func(ev, enclosedElement);
     }
+    /** */
+
+    // let func = this.tool[ev.type];
+    // let width, height, x, y;
+    // if (enclosedElement) {
+    //   width = enclosedElement.width;
+    //   height = enclosedElement.height;
+    //   x = enclosedElement.x + this.scrollX;
+    //   y = enclosedElement.y + this.scrollY;
+    //   this.selectedElement = enclosedElement;
+    // }
+    // if (func) {
+    //   this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+    //   func(ev, { width, height, x, y });
+    // }
   }
 
   onKeyDown(ev) {
@@ -183,15 +212,16 @@ class InitCanvas {
     if ((ev.keyCode >= 48 && ev.keyCode <= 57) || (ev.keyCode >= 65 && ev.keyCode <= 90)) {
       // 48 - 57 number 0 - 9 and 65 - 90 Alphabetys
       if (this.selectedTool === 'text') {
-        let x = this.selectedElement.x + this.scrollX;
-        let y = this.selectedElement.y + this.scrollY;
-        //Bug: If we are not clearing rect, it will cause colliding effect(text will print ovber another text)
-        // If we cleared then it will remove all the previous text or any other shapes
-        this.mainContext.clearRect(x, y, this.selectedElement.width, this.selectedElement.height)
-        let func = this.tool[ev.type];
-        if (func) {
-          func(ev);
-        }
+        // let x = this.selectedElement.x + this.scrollX;
+        // let y = this.selectedElement.y + this.scrollY;
+        // //Bug: If we are not clearing rect, it will cause colliding effect(text will print ovber another text)
+        // // If we cleared then it will remove all the previous text or any other shapes
+        // this.mainContext.clearRect(x, y, this.selectedElement.width, this.selectedElement.height)
+        // let func = this.tool[ev.type];
+        // if (func) {
+        //   func(ev);
+        // }
+        return;
       }
     } else {
       // special keys 
@@ -222,9 +252,19 @@ class InitCanvas {
     // ev._x = ev.x;
     // ev._y = ev.y;
     if (this.selectedTool === 'text') {
-      // Revertting tyhius is required.
+      // console.log(ev.type);
+      // let func = this.tool[ev.type];
+      // if (func) {
+      //   console.log('calling func')
+      //   func(ev);
+      // }
+      //Revertting tyhius is required.
       this.selectedTool = 'select';
       this.tool = null;
+      return;
+      // Revertting tyhius is required.
+      // this.selectedTool = 'select';
+      // this.tool = null;
     }
 
     if (this.selectedTool === 'select') {
@@ -296,10 +336,8 @@ class InitCanvas {
         this.tempContext.stroke();
         this.tempContext.closePath();
       } else if (shape.type === 'text') {
-        this.tempContext.font = '48px serif';
-        this.tempContext.fillStyle = 'white';
-
-        this.tempContext.fillText(shape.textContent, shape.x + this.scrollX, shape.y + this.scrollY);
+        let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
+        drawText(shape.textContent, this.tempContext, shape.x + this.scrollX, shape.y + this.scrollY, shape.width, 24, color);
       } else if (shape.type === 'circle') {
         let x = shape.x + this.scrollX;
         let y = shape.y + this.scrollY;
@@ -443,6 +481,7 @@ class InitCanvas {
       let filteredShapes = this.shapes.filter(shape => shape.id !== drawenImage.id);
       this.shapes = [...filteredShapes, modifiedImage];
     }
+    console.log(this.shapes);
     this.resetDraggingValues();
 
 
@@ -502,7 +541,7 @@ class InitCanvas {
       let selectedOne = this.tools[this.selectedTool];
       // For storing the shapes. we are generating ids.
       this.id = this.id + 1;
-      this.tool = new selectedOne(this.tempCanvas, this.tempContext, this.imgUpdate, this.id);
+      this.tool = new selectedOne(this.tempCanvas, this.tempContext, this.imgUpdate, this.id, this.selectedTheme);
     }
   }
 
