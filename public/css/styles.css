@@ -12,6 +12,7 @@ body {
   font-family: "Belle", "Comic Sans MS", cursive;
   font-size: 25px;
   line-height: 27px;
+  overscroll-behavior: contain;
 }
 
 :root {
