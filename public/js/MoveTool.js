@@ -1,7 +1,7 @@
-import { drawDiamond } from "../utils/drawShapes.js";
+import { drawDiamond, drawText } from "../utils/drawShapes.js";
 
 class MoveTool {
-  constructor(tempCanvas, tempContext, callback, element) {
+  constructor(tempCanvas, tempContext, callback, element, theme) {
     this.id = element.id;
     this.started = false;
     this.startX = null;
@@ -15,6 +15,7 @@ class MoveTool {
     this.mousedown = this.mouseDown.bind(this);
     this.mousemove = this.mouseMove.bind(this);
     this.element = element;
+    this.selectedTheme = theme;
     //this.drawExisitingElementOnTemp();
   }
 
@@ -99,6 +100,19 @@ class MoveTool {
           endX: e._x + (this.element.width / 2),
           endY: e._y + this.element.height
         });
+      } else if (this.element.type === 'text') {
+        this.callback({
+          id: this.id,
+          type: 'text',
+          x: e._x,
+          y: e._y,
+          textContent: this.element.textContent,
+          endX: e._x + Number(this.element.width),
+          endY: e._y + this.element.height,
+          //width: Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight),
+          width: Number(this.element.width),
+          height: this.element.height
+        });
       }
 
       this.started = false;
@@ -174,6 +188,10 @@ class MoveTool {
     } else if (this.element.type === 'diamond') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       drawDiamond(e._x, e._y, this.element.width / 2, this.tempContext)
+    } else if (this.element.type === 'text') {
+      this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+      let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
+      drawText(this.element.textContent, this.tempContext, e._x, e._y, this.element.width, undefined, color)
     }
   }
 
@@ -212,6 +230,9 @@ class MoveTool {
       let yCenter = this.element.y;
       let size = this.element.x - this.element.endX;
       drawDiamond(xCenter, yCenter, size, this.tempContext);
+    } else if (this.element.type === 'text') {
+      let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
+      drawText(this.element.textContent, this.tempContext, this.element.x, this.element.y, this.element.width, undefined, color);
     }
   }
 }

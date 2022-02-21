@@ -31,6 +31,11 @@ function getElementsAtPosition(x, y, shapes) {
         }
       } else if (shape.type === 'text') {
         //
+        if (shape.x <= x && x <= shape.endX) {
+          if (shape.y <= y && y <= shape.endY) {
+            returnElement = shape;
+          }
+        }
       } else if (shape.type === 'circle') {
         let distancesquared = (x - shape.x) * (x - shape.x) + (y - shape.y) * (y - shape.y);
         if (distancesquared <= shape.radius * shape.radius) {

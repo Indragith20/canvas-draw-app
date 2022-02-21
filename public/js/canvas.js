@@ -275,7 +275,7 @@ class InitCanvas {
         if (this.selectedElement.type === 'rectangle') {
           let x = this.selectedElement.x + this.scrollX;
           let y = this.selectedElement.y + this.scrollY;
-          this.tempContext.strokeRect(x, y, this.selectedElement.width, this.selectedElement.height);
+          //this.tempContext.strokeRect(x, y, this.selectedElement.width, this.selectedElement.height);
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
         } else if (this.selectedElement.type === 'line' || this.selectedElement.type === 'arrow') {
@@ -296,6 +296,12 @@ class InitCanvas {
           //this.tempContext.strokeRect(x, y, this.selectedElement.width, this.selectedElement.height);
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
+        } else if (this.selectedElement.type === 'text') {
+          let x = this.selectedElement.x + this.scrollX;
+          let y = this.selectedElement.y + this.scrollY;
+          //this.tempContext.strokeRect(x, y, this.selectedElement.width, this.selectedElement.height);
+          this.tempContext.setLineDash([6]);
+          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width, this.selectedElement.height);
         }
       }
     }
@@ -420,7 +426,7 @@ class InitCanvas {
           this.draggingElement = elementSelected;
           // TODO: Remove element from main canvas . Need to check whether we need to remove since we will be resetDraggingValuesing the entire canvas ??
           this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-          this.tool = new MoveTool(this.tempCanvas, this.tempContext, this.imgUpdate, this.selectedElement);
+          this.tool = new MoveTool(this.tempCanvas, this.tempContext, this.imgUpdate, this.selectedElement, this.selectedTheme);
           // element is present. we need to call movetool
           this.tool['mousedown'](ev);
 
