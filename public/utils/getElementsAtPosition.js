@@ -1,5 +1,7 @@
 function getElementsAtPosition(x, y, shapes) {
   let returnElement = null;
+  let diffX = null;
+  let diffY = null;
   if (shapes.length > 0) {
     shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
@@ -9,7 +11,20 @@ function getElementsAtPosition(x, y, shapes) {
         let endY = shape.y + height;
         if (shape.x <= x && x <= endX) {
           if (shape.y <= y && y <= endY) {
-            returnElement = shape;
+            if (!diffX || !diffY) {
+              returnElement = shape;
+              diffX = Math.min(x - shape.x, endX - x);
+              diffY = Math.min(y - shape.y, endY - y);
+            } else {
+              let currentDiffX = Math.min(x - shape.x, endX - x);
+              let currentDiffY = Math.min(y - shape.y, endY - y);
+              if (currentDiffX < diffX || currentDiffY < diffY) {
+                returnElement = shape;
+                diffX = currentDiffX;
+                diffY = currentDiffY;
+              }
+            }
+
           }
         }
       } else if (shape.type === 'line' || shape.type === 'arrow') {
@@ -26,19 +41,44 @@ function getElementsAtPosition(x, y, shapes) {
 
         if (minX <= x && x <= maxX) {
           if (minY <= y && y <= maxY) {
-            returnElement = shape;
+            if (!diffX || !diffY) {
+              returnElement = shape;
+              diffX = Math.min(x - minX, maxX - x);
+              diffY = Math.min(y - minY, maxY - y);
+            } else {
+              let currentDiffX = Math.min(x - minX, maxX - x);
+              let currentDiffY = Math.min(y - minY, maxY - y);
+              if (currentDiffX < diffX || currentDiffY < diffY) {
+                returnElement = shape;
+                diffX = currentDiffX;
+                diffY = currentDiffY;
+              }
+            }
           }
         }
       } else if (shape.type === 'text') {
         //
         if (shape.x <= x && x <= shape.endX) {
           if (shape.y <= y && y <= shape.endY) {
-            returnElement = shape;
+            if (!diffX || !diffY) {
+              returnElement = shape;
+              diffX = Math.min(x - shape.x, shape.endX - x);
+              diffY = Math.min(y - shape.y, shape.endY - y);
+            } else {
+              let currentDiffX = Math.min(x - shape.x, shape.endX - x);
+              let currentDiffY = Math.min(y - shape.y, shape.endY - y);
+              if (currentDiffX < diffX || currentDiffY < diffY) {
+                returnElement = shape;
+                diffX = currentDiffX;
+                diffY = currentDiffY;
+              }
+            }
           }
         }
       } else if (shape.type === 'circle') {
         let distancesquared = (x - shape.x) * (x - shape.x) + (y - shape.y) * (y - shape.y);
         if (distancesquared <= shape.radius * shape.radius) {
+          // ??? how to calculate diff. buggy behaviour
           returnElement = shape;
         }
 
@@ -51,7 +91,19 @@ function getElementsAtPosition(x, y, shapes) {
         let endY = shape.startY + height;
         if (shape.startX <= x && x <= endX) {
           if (shape.startY <= y && y <= endY) {
-            returnElement = shape;
+            if (!diffX || !diffY) {
+              returnElement = shape;
+              diffX = Math.min(x - shape.startX, endX - x);
+              diffY = Math.min(y - shape.startY, endY - y);
+            } else {
+              let currentDiffX = Math.min(x - shape.startX, endX - x);
+              let currentDiffY = Math.min(y - shape.startY, endY - y);
+              if (currentDiffX < diffX || currentDiffY < diffY) {
+                returnElement = shape;
+                diffX = currentDiffX;
+                diffY = currentDiffY;
+              }
+            }
           }
         }
       }
