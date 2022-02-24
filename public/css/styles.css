@@ -205,17 +205,21 @@ input:checked + .slider:before {
 
 .textTool {
   position: fixed;
-  top: 0px;
+  top: 100px;
   left: 0px;
-  display: none;
+  display: block;
   background-color: var(--text-area-background);
   color: var(--font-color);
+  padding: 0;
+  margin: 0;
+  border: 1px solid red;
 }
 
 .textarea {
   border: none;
   outline: none;
-  font-family: "Comic Sans MS", cursive;
+  font-family: "Arial";
+  font-style: normal;
   font-size: 24px;
   overflow: scroll;
   color: inherit;
@@ -224,9 +228,8 @@ input:checked + .slider:before {
   height: 100%;
   margin: 0;
   padding: 0;
-  line-height: 24px;
+  line-height: 2rem;
   background-color: var(--text-area-background);
-  padding: 10px 10px;
 
   display: block;
   width: 100%;

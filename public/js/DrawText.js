@@ -35,11 +35,12 @@ class DrawText {
 
       // TODO: Replace undefined with exact line height
       let textareaStyle = window.getComputedStyle(this.textBox);
+      let tetxtareaClientStyle = this.textBox.getBoundingClientRect();
       console.log(textareaStyle);
       let width = Math.ceil(Number(textareaStyle.width.slice(0, -2)));
       let height = Math.ceil(Number(textareaStyle.height.slice(0, -2)));
       console.log(width);
-      let numberOfLines = drawText(text, this.tempContext, this.startX, this.startY, Math.ceil(width), undefined, color);
+      let numberOfLines = drawText(text, this.tempContext, tetxtareaClientStyle.x, tetxtareaClientStyle.y, Math.ceil(width), undefined, color);
 
 
       //let textMetrics = this.tempContext.measureText(text);
@@ -50,8 +51,8 @@ class DrawText {
       this.callback({
         id: this.id,
         type: 'text',
-        x: this.startX,
-        y: this.startY,
+        x: tetxtareaClientStyle.left,
+        y: tetxtareaClientStyle.top,
         textContent: text,
         endX: this.startX + width,
         endY: this.startY + height,
@@ -95,13 +96,15 @@ class DrawText {
         this.textBoxContainer.style.width = this.width + 'px';
         this.textBoxContainer.style.height = this.height + 'px';
       } else if (enclosedElement.type === 'text') {
+        this.textBoxContainer.style.top = enclosedElement.y + scrollY;
+        this.textBoxContainer.style.left = enclosedElement.x + scrollX;
         this.textBox.innerHTML = enclosedElement.textContent;
         this.width = enclosedElement.width;
         this.height = enclosedElement.height;
-        this.startX = enclosedElement.x + scrollX;
-        this.startY = enclosedElement.y + scrollY;
-        this.textBoxContainer.style.width = this.width + 'px';
-        this.textBoxContainer.style.height = this.height + 'px';
+        // this.startX = enclosedElement.x;
+        // this.startY = enclosedElement.y;
+        // this.textBoxContainer.style.width = this.width + 'px';
+        // this.textBoxContainer.style.height = this.height + 'px';
       } else {
         // TODO: to have equi space around the horizontal edge
 

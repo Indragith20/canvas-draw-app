@@ -11,7 +11,7 @@ function drawDiamond(xCenter, yCenter, size, context) {
 }
 
 function drawText(text, context, x, y, maxWidth, lineHeight = 24, color) {
-  context.font = '24px Comic Sans MS';
+  context.font = 'normal 24px Arial';
   context.fillStyle = color;
   context.textBaseline = "top";
   let words = text.split('');
