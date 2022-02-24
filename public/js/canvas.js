@@ -164,7 +164,7 @@ class InitCanvas {
     let enclosedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
 
     // Temporarily updating tool manually
-    this.updateTool('text');
+    this.updateTool('text', enclosedElement && enclosedElement.type === 'text' ? enclosedElement.id : null);
     this.resetDraggingValues();
 
     /** */
@@ -184,11 +184,17 @@ class InitCanvas {
     //   textBoxContainer.style.height = Math.abs(this.mainCanvas.height - Math.abs(ev.y))
     // }
 
+    if (enclosedElement && enclosedElement.type === 'text') {
+      // clearing the main context
+      console.log('clearing the main contextt', enclosedElement.x, enclosedElement.y, enclosedElement.width, enclosedElement.height);
+      this.mainContext.clearRect(enclosedElement.x + this.scrollX - 5, enclosedElement.y + this.scrollY - 5, enclosedElement.width + 10, enclosedElement.height + 10)
+    }
+
     let func = this.tool[ev.type];
     if (func) {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       // func will be dbclick in drawtext
-      func(ev, enclosedElement);
+      func(ev, enclosedElement, { scrollX: this.scrollX, scrollY: this.scrollY });
     }
     /** */
 
@@ -541,13 +547,18 @@ class InitCanvas {
     this.mouseYPosition = null;
   }
 
-  updateTool(value) {
+  updateTool(value, id = null) {
     if (this.tools[value]) {
       this.selectedTool = value;
       let selectedOne = this.tools[this.selectedTool];
       // For storing the shapes. we are generating ids.
-      this.id = this.id + 1;
-      this.tool = new selectedOne(this.tempCanvas, this.tempContext, this.imgUpdate, this.id, this.selectedTheme);
+      if (!id) {
+        this.id = this.id + 1;
+        this.tool = new selectedOne(this.tempCanvas, this.tempContext, this.imgUpdate, this.id, this.selectedTheme);
+      } else {
+        this.tool = new selectedOne(this.tempCanvas, this.tempContext, this.imgUpdate, id, this.selectedTheme);
+      }
+
     }
   }
 

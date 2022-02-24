@@ -227,3 +227,17 @@ input:checked + .slider:before {
   line-height: 24px;
   background-color: var(--text-area-background);
 }
+
+.textarea {
+  border: 1px solid #ccc;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 1px 6px;
+
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  resize: none;
+  min-height: 40px;
+  line-height: 24px;
+}

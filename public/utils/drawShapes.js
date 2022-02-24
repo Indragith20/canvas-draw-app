@@ -19,18 +19,25 @@ function drawText(text, context, x, y, maxWidth, lineHeight = 24, color) {
   let numberOfLines = 1;
 
   for (let n = 0; n < words.length; n++) {
-    let testLine = line + words[n] + '';
-    let metrics = context.measureText(testLine);
-    let testWidth = metrics.width;
-    if (testWidth > maxWidth && n > 0) {
+    if (words[n] === '\n') {
       context.fillText(line, x, y);
-      line = words[n] + '';
+      line = '';
       y += lineHeight;
       numberOfLines++;
+    } else {
+      let testLine = line + words[n] + '';
+      let metrics = context.measureText(testLine);
+      let testWidth = metrics.width;
+      if (testWidth > maxWidth && n > 0) {
+        context.fillText(line, x, y);
+        line = words[n] + '';
+        y += lineHeight;
+        numberOfLines++;
+      } else {
+        line = testLine;
+      }
     }
-    else {
-      line = testLine;
-    }
+
   }
   context.fillText(line, x, y);
   return numberOfLines;
