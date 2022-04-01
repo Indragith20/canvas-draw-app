@@ -285,8 +285,8 @@ class InitCanvas {
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
         } else if (this.selectedElement.type === 'line' || this.selectedElement.type === 'arrow') {
-          let x = this.selectedElement.x + this.scrollX;
-          let y = this.selectedElement.y + this.scrollY;
+          let x = this.selectedElement.startX + this.scrollX;
+          let y = this.selectedElement.startY + this.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10)
         } else if (this.selectedElement.type === 'circle') {
@@ -488,7 +488,9 @@ class InitCanvas {
         x: drawenImage.x - this.scrollX,
         y: drawenImage.y - this.scrollY,
         endX: drawenImage.endX - this.scrollX,
-        endY: drawenImage.endY - this.scrollY
+        endY: drawenImage.endY - this.scrollY,
+        startX: drawenImage.startX - this.scrollX,
+        startY: drawenImage.startY - this.scrollY
       }
       let filteredShapes = this.shapes.filter(shape => shape.id !== drawenImage.id);
       this.shapes = [...filteredShapes, modifiedImage];
