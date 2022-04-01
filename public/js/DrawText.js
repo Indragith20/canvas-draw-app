@@ -66,6 +66,8 @@ class DrawText {
       this.textBoxContainer.style.top = '0px';
       this.textBoxContainer.style.left = '0px';
       this.textBoxContainer.style.display = 'none';
+      this.textBoxContainer.style.minWidth = '1px';
+      this.textBoxContainer.style.minHeight = '42px';
       this.textBox.innerHTML = '';
       this.textBoxContainer = null;
       this.textBox = null;

@@ -22,12 +22,12 @@ class Rect {
       this.callback({
         id: this.id,
         type: 'rectangle',
-        x: this.startX,
-        y: this.startY,
+        x: Math.min(this.startX, e._x),
+        y: Math.min(this.startY, e._y),
         width: this.width,
         height: this.height,
-        endX: e._x,
-        endY: e._y
+        endX: Math.max(this.startX, e._x),
+        endY: Math.max(this.startY, e._y)
       });
     }
   }
