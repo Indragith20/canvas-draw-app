@@ -10,7 +10,7 @@ import Diamond from './Diamond.js';
 import { drawDiamond, drawText } from '../utils/drawShapes.js';
 
 
-// https://codepen.io/chengarda/pen/wRxoyB?editors=1010
+// https://codepen.io/chengarda/pen/wRxoyB?editors=1010 - For Zoom in and out
 //getElementBounds in bounds.ts excalidraw ??
 /**
  * Plan is to have map for coordinates
