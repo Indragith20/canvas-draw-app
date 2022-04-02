@@ -135,6 +135,10 @@ class InitCanvas {
     document.addEventListener('keydown', this.onKeyDown, false);
     document.addEventListener('click', this.onDocumentClick, false);
     document.addEventListener('wheel', this.onWheelMove, false);
+    document.getElementById('textAreaId').addEventListener('click', (e) => {
+      // Preventing is required as the click is inside the textarea.
+      e.stopPropagation();
+    })
   }
 
   onWheelMove(e) {
@@ -148,15 +152,6 @@ class InitCanvas {
   }
 
   changeToTextTool(ev) {
-    // function for typing text
-    // TODO: Get the starting and ending point from coordinates(Inside Rect, or any other shapes starting point)
-    // if (ev.layerX || ev.layerX == 0) { // Firefox 
-    //   ev._x = ev.layerX;
-    //   ev._y = ev.layerY;
-    // } else if (ev.offsetX || ev.offsetX == 0) { // Opera 
-    //   ev._x = ev.offsetX;
-    //   ev._y = ev.offsetY;
-    // }
 
     ev._x = ev.x - this.scrollX;
     ev._y = ev.y - this.scrollY;
@@ -167,27 +162,11 @@ class InitCanvas {
     this.updateTool('text', enclosedElement && enclosedElement.type === 'text' ? enclosedElement.id : null);
     this.resetDraggingValues();
 
-    /** */
 
-    // let textBoxContainer = document.getElementById('textBoxContainerId');
-    // let textBox = document.getElementById('textAreaId');
-    // textBoxContainer.style.top = ev.y;
-    // textBoxContainer.style.left = ev.x;
-    // textBoxContainer.style.display = 'block';
-    // textBox.focus();
-
-    // if (enclosedElement && enclosedElement.type === 'rectangle') {
-    //   textBoxContainer.style.width = `${Math.abs(enclosedElement.endX - ev._x) - 10}px`;
-    //   textBoxContainer.style.height = `${Math.abs(enclosedElement.endY - ev._y) - 10}px`;
-    // } else {
-    //   textBoxContainer.style.width = Math.abs(this.mainCanvas.width - Math.abs(ev.x))
-    //   textBoxContainer.style.height = Math.abs(this.mainCanvas.height - Math.abs(ev.y))
-    // }
 
     if (enclosedElement && enclosedElement.type === 'text') {
-      // clearing the main context
-      console.log('clearing the main contextt', enclosedElement.x, enclosedElement.y, enclosedElement.width, enclosedElement.height);
-      this.mainContext.clearRect(enclosedElement.x + this.scrollX - 5, enclosedElement.y + this.scrollY - 5, enclosedElement.width + 10, enclosedElement.height + 10)
+      this.shapes = this.shapes.filter(shape => shape.id !== this.selectedElement.id);
+      this.redraw();
     }
 
     let func = this.tool[ev.type];
@@ -196,21 +175,7 @@ class InitCanvas {
       // func will be dbclick in drawtext
       func(ev, enclosedElement, { scrollX: this.scrollX, scrollY: this.scrollY });
     }
-    /** */
 
-    // let func = this.tool[ev.type];
-    // let width, height, x, y;
-    // if (enclosedElement) {
-    //   width = enclosedElement.width;
-    //   height = enclosedElement.height;
-    //   x = enclosedElement.x + this.scrollX;
-    //   y = enclosedElement.y + this.scrollY;
-    //   this.selectedElement = enclosedElement;
-    // }
-    // if (func) {
-    //   this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-    //   func(ev, { width, height, x, y });
-    // }
   }
 
   onKeyDown(ev) {
@@ -218,15 +183,7 @@ class InitCanvas {
     if ((ev.keyCode >= 48 && ev.keyCode <= 57) || (ev.keyCode >= 65 && ev.keyCode <= 90)) {
       // 48 - 57 number 0 - 9 and 65 - 90 Alphabetys
       if (this.selectedTool === 'text') {
-        // let x = this.selectedElement.x + this.scrollX;
-        // let y = this.selectedElement.y + this.scrollY;
-        // //Bug: If we are not clearing rect, it will cause colliding effect(text will print ovber another text)
-        // // If we cleared then it will remove all the previous text or any other shapes
-        // this.mainContext.clearRect(x, y, this.selectedElement.width, this.selectedElement.height)
-        // let func = this.tool[ev.type];
-        // if (func) {
-        //   func(ev);
-        // }
+
         return;
       }
     } else {
@@ -252,25 +209,18 @@ class InitCanvas {
     //   ev._x = ev.offsetX;
     //   ev._y = ev.offsetY;
     // }
+
     ev._x = ev.x - this.scrollX;
     ev._y = ev.y - this.scrollY;
 
-    // ev._x = ev.x;
-    // ev._y = ev.y;
     if (this.selectedTool === 'text') {
-      // console.log(ev.type);
-      // let func = this.tool[ev.type];
-      // if (func) {
-      //   console.log('calling func')
-      //   func(ev);
-      // }
       //Revertting tyhius is required.
+
+
+      this.tool['onBlur']();
       this.selectedTool = 'select';
       this.tool = null;
       return;
-      // Revertting tyhius is required.
-      // this.selectedTool = 'select';
-      // this.tool = null;
     }
 
     if (this.selectedTool === 'select') {
@@ -281,7 +231,6 @@ class InitCanvas {
         if (this.selectedElement.type === 'rectangle') {
           let x = this.selectedElement.x + this.scrollX;
           let y = this.selectedElement.y + this.scrollY;
-          //this.tempContext.strokeRect(x, y, this.selectedElement.width, this.selectedElement.height);
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
         } else if (this.selectedElement.type === 'line' || this.selectedElement.type === 'arrow') {
@@ -299,13 +248,11 @@ class InitCanvas {
         } else if (this.selectedElement.type === 'diamond') {
           let x = this.selectedElement.startX + this.scrollX;
           let y = this.selectedElement.startY + this.scrollY;
-          //this.tempContext.strokeRect(x, y, this.selectedElement.width, this.selectedElement.height);
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
         } else if (this.selectedElement.type === 'text') {
           let x = this.selectedElement.x + this.scrollX;
           let y = this.selectedElement.y + this.scrollY;
-          //this.tempContext.strokeRect(x, y, this.selectedElement.width, this.selectedElement.height);
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width, this.selectedElement.height);
         }
@@ -349,6 +296,7 @@ class InitCanvas {
         this.tempContext.closePath();
       } else if (shape.type === 'text') {
         let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
+        console.log('Draqwinf test');
         drawText(shape.textContent, this.tempContext, shape.x + this.scrollX, shape.y + this.scrollY, shape.width, 24, color);
       } else if (shape.type === 'circle') {
         let x = shape.x + this.scrollX;
@@ -467,22 +415,7 @@ class InitCanvas {
   imgUpdate(drawenImage) {
     if (drawenImage && drawenImage.type) {
       /** TODO: Change this logic to object key value structure */
-      // if (this.shapes.length === 0) {
-      //   this.shapes.push(drawenImage);
-      // } else {
-      //   let isMatched = false;
-      //   this.shapes = this.shapes.map(shape => {
-      //     if (shape.id === drawenImage.id) {
-      //       isMatched = true;
-      //       return drawenImage;
-      //     } else {
-      //       return shape;
-      //     }
-      //   });
-      //   if (!isMatched) {
-      //     this.shapes.push(drawenImage);
-      //   }
-      // }
+
       let modifiedImage = {
         ...drawenImage,
         x: drawenImage.x - this.scrollX,
@@ -495,14 +428,14 @@ class InitCanvas {
       let filteredShapes = this.shapes.filter(shape => shape.id !== drawenImage.id);
       this.shapes = [...filteredShapes, modifiedImage];
     }
-    console.log(this.shapes);
+    console.log(this.shapes, this.selectedTool);
     this.resetDraggingValues();
 
 
     requestAnimationFrame(() => {
 
       // if the action is delete or move. wee nneed to call resetDraggingValues
-      if (this.selectedTool === 'move') {
+      if (this.selectedTool === 'move' || this.selectedTool === 'text') {
         this.redraw();
         this.selectedTool = 'select';
         //this.tool = new SelectTool(this.shapes);

@@ -26,8 +26,8 @@ class DrawText {
 
   onBlur() {
     if (this.textBox) {
-      console.log('Drawing text');
-      let text = this.textBox.innerHTML.replace(/<div>/g, "\n").replace(/<\/div>/g, "").replace(/<br>/g, "\n");
+      console.log('Drawing text', this.textBox.innerHTML);
+      let text = this.textBox.innerHTML.replace(/<div>/g, "\n").replace(/<\/div>/g, "").replace(/<br>/g, "\n").replace('&nbsp;', ' ');
       console.log(text);
       let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
 
@@ -54,6 +54,7 @@ class DrawText {
         x: tetxtareaClientStyle.left,
         y: tetxtareaClientStyle.top,
         textContent: text,
+        innerHtml: this.textBox.innerHTML,
         endX: this.startX + width,
         endY: this.startY + height,
         //width: Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight),
@@ -100,9 +101,11 @@ class DrawText {
       } else if (enclosedElement.type === 'text') {
         this.textBoxContainer.style.top = enclosedElement.y + scrollY;
         this.textBoxContainer.style.left = enclosedElement.x + scrollX;
-        this.textBox.innerHTML = enclosedElement.textContent;
+        this.textBox.innerHTML = enclosedElement.innerHtml;
         this.width = enclosedElement.width;
         this.height = enclosedElement.height;
+        window.getSelection().selectAllChildren(this.textBox)
+        window.getSelection().collapseToEnd();
         // this.startX = enclosedElement.x;
         // this.startY = enclosedElement.y;
         // this.textBoxContainer.style.width = this.width + 'px';

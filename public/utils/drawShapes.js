@@ -10,8 +10,8 @@ function drawDiamond(xCenter, yCenter, size, context) {
   context.stroke();
 }
 
-function drawText(text, context, x, y, maxWidth, lineHeight = 24, color) {
-  context.font = 'normal 24px Arial';
+function drawText(text, context, x, y, maxWidth, lineHeight = 32, color) {
+  context.font = 'normal 24px/32px Arial';
   context.fillStyle = color;
   context.textBaseline = "top";
   let words = text.split('');
