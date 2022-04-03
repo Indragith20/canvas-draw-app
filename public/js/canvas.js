@@ -69,6 +69,8 @@ class InitCanvas {
     this.onDocumentClick = this.onDocumentClick.bind(this);
     this.resetDraggingValues = this.resetDraggingValues.bind(this);
     this.onWheelMove = this.onWheelMove.bind(this);
+    this.zoomIn = this.zoomIn.bind(this);
+    this.zoomOut = this.zoomOut.bind(this);
 
     this.mainCanvas = canvas;
     this.mainContext = this.mainCanvas.getContext('2d');
@@ -124,7 +126,40 @@ class InitCanvas {
     this.scrollX = 0;
     this.scrollY = 0;
 
+    // scaling factor
+    this.scalingFactor = 1;
+
     this.addEventListeners();
+
+    // updating font size
+    this.baseFontSize = 24;
+    this.baseLineHeight = (150 * this.baseFontSize) / 100;
+    this.updateFontProperties();
+  }
+
+  zoomIn(e) {
+    e.stopPropagation();
+    this.scalingFactor -= 0.1;
+    this.scalingFactor = Number(this.scalingFactor.toFixed(1));
+    this.baseFontSize = this.baseFontSize + 5;
+    this.baseLineHeight = (150 * this.baseFontSize) / 100;
+    this.updateFontProperties();
+    this.redraw();
+  }
+
+  zoomOut(e) {
+    e.stopPropagation();
+    this.scalingFactor += 0.1;
+    this.scalingFactor = Number(this.scalingFactor.toFixed(1));
+    this.baseFontSize = this.baseFontSize - 5;
+    this.baseLineHeight = (150 * this.baseFontSize) / 100;
+    this.updateFontProperties();
+    this.redraw();
+  }
+
+  updateFontProperties() {
+    document.documentElement.style.setProperty('--font-size', `${this.baseFontSize}px`);
+    document.documentElement.style.setProperty('--line-height', `${this.baseLineHeight}px`);
   }
 
   addEventListeners() {
@@ -139,6 +174,10 @@ class InitCanvas {
       // Preventing is required as the click is inside the textarea.
       e.stopPropagation();
     })
+
+
+    document.getElementById('plus').addEventListener('click', this.zoomIn, false);
+    document.getElementById('minus').addEventListener('click', this.zoomOut, false)
   }
 
   onWheelMove(e) {
@@ -153,8 +192,8 @@ class InitCanvas {
 
   changeToTextTool(ev) {
 
-    ev._x = ev.x - this.scrollX;
-    ev._y = ev.y - this.scrollY;
+    ev._x = (ev.x - this.scrollX) * this.scalingFactor;
+    ev._y = (ev.y - this.scrollY) * this.scalingFactor;
 
     let enclosedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
 
@@ -179,13 +218,13 @@ class InitCanvas {
   }
 
   onKeyDown(ev) {
-
+    if (this.selectedTool === 'text') {
+      // Early Return as we dont need to listen while textarea is shown
+      return;
+    }
     if ((ev.keyCode >= 48 && ev.keyCode <= 57) || (ev.keyCode >= 65 && ev.keyCode <= 90)) {
       // 48 - 57 number 0 - 9 and 65 - 90 Alphabetys
-      if (this.selectedTool === 'text') {
 
-        return;
-      }
     } else {
       // special keys 
       if (this.selectedElement) {
@@ -210,16 +249,16 @@ class InitCanvas {
     //   ev._y = ev.offsetY;
     // }
 
-    ev._x = ev.x - this.scrollX;
-    ev._y = ev.y - this.scrollY;
+    ev._x = (ev.x - this.scrollX) * this.scalingFactor;
+    ev._y = (ev.y - this.scrollY) * this.scalingFactor;
 
     if (this.selectedTool === 'text') {
       //Revertting tyhius is required.
 
 
       this.tool['onBlur']();
-      this.selectedTool = 'select';
-      this.tool = null;
+      // this.selectedTool = 'select';
+      // this.tool = null;
       return;
     }
 
@@ -227,34 +266,35 @@ class InitCanvas {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       let selectedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
       this.selectedElement = selectedElement;
+      console.log(selectedElement);
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
-          let x = this.selectedElement.x + this.scrollX;
-          let y = this.selectedElement.y + this.scrollY;
+          let x = (this.selectedElement.x + this.scrollX) / this.scalingFactor;
+          let y = (this.selectedElement.y + this.scrollY) / this.scalingFactor;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
+          this.tempContext.strokeRect(x - 5, y - 5, (this.selectedElement.width + 10) / this.scalingFactor, (this.selectedElement.height + 10) / this.scalingFactor);
         } else if (this.selectedElement.type === 'line' || this.selectedElement.type === 'arrow') {
-          let x = this.selectedElement.startX + this.scrollX;
-          let y = this.selectedElement.startY + this.scrollY;
+          let x = (this.selectedElement.startX + this.scrollX) / this.scalingFactor;
+          let y = (this.selectedElement.startY + this.scrollY) / this.scalingFactor;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10)
+          this.tempContext.strokeRect(x - 5, y - 5, (this.selectedElement.width + 10) / this.scalingFactor, (this.selectedElement.height + 10) / this.scalingFactor)
         } else if (this.selectedElement.type === 'circle') {
-          let x = this.selectedElement.x + this.scrollX;
-          let y = this.selectedElement.y + this.scrollY;
+          let x = (this.selectedElement.x + this.scrollX) / this.scalingFactor;
+          let y = (this.selectedElement.y + this.scrollY) / this.scalingFactor;
           this.tempContext.setLineDash([6]);
           this.tempContext.beginPath();
-          this.tempContext.arc(x, y, this.selectedElement.radius + 10, 0, 2 * Math.PI);
+          this.tempContext.arc(x, y, (this.selectedElement.radius + 10) / this.scalingFactor, 0, 2 * Math.PI);
           this.tempContext.stroke();
         } else if (this.selectedElement.type === 'diamond') {
-          let x = this.selectedElement.startX + this.scrollX;
-          let y = this.selectedElement.startY + this.scrollY;
+          let x = (this.selectedElement.startX + this.scrollX) / this.scalingFactor;
+          let y = (this.selectedElement.startY + this.scrollY) / this.scalingFactor;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width + 10, this.selectedElement.height + 10);
+          this.tempContext.strokeRect(x - 5, y - 5, (this.selectedElement.width + 10) / this.scalingFactor, (this.selectedElement.height + 10) / this.scalingFactor);
         } else if (this.selectedElement.type === 'text') {
-          let x = this.selectedElement.x + this.scrollX;
-          let y = this.selectedElement.y + this.scrollY;
+          let x = (this.selectedElement.x + this.scrollX) / this.scalingFactor;
+          let y = (this.selectedElement.y + this.scrollY) / this.scalingFactor;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width, this.selectedElement.height);
+          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width / this.scalingFactor, this.selectedElement.height / this.scalingFactor);
         }
       }
     }
@@ -270,13 +310,13 @@ class InitCanvas {
     this.shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
         // possible cause either fill or stroke
-        this.tempContext.strokeRect(shape.x + this.scrollX, shape.y + this.scrollY, shape.width, shape.height);
+        this.tempContext.strokeRect((shape.x + this.scrollX) / this.scalingFactor, (shape.y + this.scrollY) / this.scalingFactor, shape.width / this.scalingFactor, shape.height / this.scalingFactor);
       } else if (shape.type === 'arrow') {
         let headlen = 10;
-        let x = shape.x + this.scrollX;
-        let y = shape.y + this.scrollY;
-        let endX = shape.endX + this.scrollX;
-        let endY = shape.endY + this.scrollY;
+        let x = (shape.x + this.scrollX) / this.scalingFactor;
+        let y = (shape.y + this.scrollY) / this.scalingFactor;
+        let endX = (shape.endX + this.scrollX) / this.scalingFactor;
+        let endY = (shape.endY + this.scrollY) / this.scalingFactor;
         let dx = endX - x;
         let dy = endY - y;
         let angle = Math.atan2(dy, dx);
@@ -290,24 +330,24 @@ class InitCanvas {
         this.tempContext.closePath();
       } else if (shape.type === 'line') {
         this.tempContext.beginPath();
-        this.tempContext.moveTo(shape.x + this.scrollX, shape.y + this.scrollY);
-        this.tempContext.lineTo(shape.endX + this.scrollX, shape.endY + this.scrollY);
+        this.tempContext.moveTo((shape.x + this.scrollX) / this.scalingFactor, (shape.y + this.scrollY) / this.scalingFactor);
+        this.tempContext.lineTo((shape.endX + this.scrollX) / this.scalingFactor, (shape.endY + this.scrollY) / this.scalingFactor);
         this.tempContext.stroke();
         this.tempContext.closePath();
       } else if (shape.type === 'text') {
         let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
         console.log('Draqwinf test');
-        drawText(shape.textContent, this.tempContext, shape.x + this.scrollX, shape.y + this.scrollY, shape.width, 24, color);
+        drawText(shape.textContent, this.tempContext, (shape.x + this.scrollX) / this.scalingFactor, (shape.y + this.scrollY) / this.scalingFactor, shape.width / this.scalingFactor, this.baseLineHeight, color, this.baseFontSize);
       } else if (shape.type === 'circle') {
-        let x = shape.x + this.scrollX;
-        let y = shape.y + this.scrollY;
+        let x = (shape.x + this.scrollX) / this.scalingFactor;
+        let y = (shape.y + this.scrollY) / this.scalingFactor;
         this.tempContext.beginPath();
-        this.tempContext.arc(x, y, shape.radius, 0, 2 * Math.PI);
+        this.tempContext.arc(x, y, (shape.radius) / this.scalingFactor, 0, 2 * Math.PI);
         this.tempContext.stroke();
       } else if (shape.type === 'diamond') {
-        let xCenter = shape.x + this.scrollX;
-        let yCenter = shape.y + this.scrollY;
-        let size = shape.x - shape.endX;
+        let xCenter = (shape.x + this.scrollX) / this.scalingFactor;
+        let yCenter = (shape.y + this.scrollY) / this.scalingFactor;
+        let size = (shape.x - shape.endX) / this.scalingFactor;
         drawDiamond(xCenter, yCenter, size, this.tempContext);
       }
     });
@@ -369,11 +409,11 @@ class InitCanvas {
       // Handlinng the case for move
       this.selectedTool = 'move';
       // since we are moving across the canvas. we need to take into the account of scrollx and scrolly values
-      ev._x = ev.x - this.scrollX;
-      ev._y = ev.y - this.scrollY;
+      ev._x = (ev.x - this.scrollX) * this.scalingFactor;
+      ev._y = (ev.y - this.scrollY) * this.scalingFactor;
       if (!this.draggingElement) {
         // First case of move tool -> User just selected the element.events should be mousedown
-        let elementSelected = getElementsAtPosition(this.mouseXPosition - this.scrollX, this.mouseYPosition - this.scrollY, this.shapes);
+        let elementSelected = getElementsAtPosition((this.mouseXPosition - this.scrollX) * this.scalingFactor, (this.mouseYPosition - this.scrollY) * this.scalingFactor, this.shapes);
         if (elementSelected) {
           this.selectedElement = elementSelected;
 
@@ -418,12 +458,14 @@ class InitCanvas {
 
       let modifiedImage = {
         ...drawenImage,
-        x: drawenImage.x - this.scrollX,
-        y: drawenImage.y - this.scrollY,
-        endX: drawenImage.endX - this.scrollX,
-        endY: drawenImage.endY - this.scrollY,
-        startX: drawenImage.startX - this.scrollX,
-        startY: drawenImage.startY - this.scrollY
+        x: (drawenImage.x - this.scrollX) * this.scalingFactor,
+        y: (drawenImage.y - this.scrollY) * this.scalingFactor,
+        endX: (drawenImage.endX - this.scrollX) * this.scalingFactor,
+        endY: (drawenImage.endY - this.scrollY) * this.scalingFactor,
+        startX: (drawenImage.startX - this.scrollX) * this.scalingFactor,
+        startY: (drawenImage.startY - this.scrollY) * this.scalingFactor,
+        width: drawenImage.width ? drawenImage.width * this.scalingFactor : null,
+        height: drawenImage.height ? drawenImage.height * this.scalingFactor : null
       }
       let filteredShapes = this.shapes.filter(shape => shape.id !== drawenImage.id);
       this.shapes = [...filteredShapes, modifiedImage];

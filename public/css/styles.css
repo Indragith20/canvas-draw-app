@@ -11,12 +11,14 @@ body {
   color: #d7d7d7;
   font-family: "Belle", "Comic Sans MS", cursive;
   font-size: 25px;
-  line-height: 27px;
+  line-height: var(--line-height);
   overscroll-behavior: contain;
 }
 
 :root {
   --icon-color: #000000;
+  --font-size: 24px;
+  --line-height: 1.5rem;
   --icon-container-color: #ffffff;
   --selected-tool-color: #dd98d6;
   --background-color: #ffffff;
@@ -220,7 +222,7 @@ input:checked + .slider:before {
   outline: none;
   font-family: "Arial";
   font-style: normal;
-  font-size: 24px;
+  font-size: var(--font-size);
   overflow: scroll;
   color: inherit;
   resize: none;
@@ -228,7 +230,7 @@ input:checked + .slider:before {
   height: 100%;
   margin: 0;
   padding: 0;
-  line-height: 1.5rem;
+  line-height: var(--line-height);
   background-color: var(--text-area-background);
 
   display: block;

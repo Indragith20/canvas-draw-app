@@ -40,7 +40,7 @@ class DrawText {
       let width = Math.ceil(Number(textareaStyle.width.slice(0, -2)));
       let height = Math.ceil(Number(textareaStyle.height.slice(0, -2)));
       console.log(width);
-      let numberOfLines = drawText(text, this.tempContext, tetxtareaClientStyle.x, tetxtareaClientStyle.y, Math.ceil(width), undefined, color);
+      //let numberOfLines = drawText(text, this.tempContext, tetxtareaClientStyle.x, tetxtareaClientStyle.y, Math.ceil(width), undefined, color, this.baseFontSize);
 
 
       //let textMetrics = this.tempContext.measureText(text);

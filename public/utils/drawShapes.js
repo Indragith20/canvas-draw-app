@@ -10,8 +10,8 @@ function drawDiamond(xCenter, yCenter, size, context) {
   context.stroke();
 }
 
-function drawText(text, context, x, y, maxWidth, lineHeight = 32, color) {
-  context.font = 'normal 24px/32px Arial';
+function drawText(text, context, x, y, maxWidth, lineHeight = 32, color, fontSize = 24) {
+  context.font = `normal ${fontSize}px/${lineHeight}px Arial`;
   context.fillStyle = color;
   context.textBaseline = "top";
   let words = text.split('');
@@ -25,17 +25,19 @@ function drawText(text, context, x, y, maxWidth, lineHeight = 32, color) {
       y += lineHeight;
       numberOfLines++;
     } else {
+      // let testLine = line + words[n] + '';
+      // let metrics = context.measureText(testLine);
+      // let testWidth = metrics.width;
+      // if (testWidth > maxWidth && n > 0) {
+      //   context.fillText(line, x, y);
+      //   line = words[n] + '';
+      //   y += lineHeight;
+      //   numberOfLines++;
+      // } else {
+      //   line = testLine;
+      // }
       let testLine = line + words[n] + '';
-      let metrics = context.measureText(testLine);
-      let testWidth = metrics.width;
-      if (testWidth > maxWidth && n > 0) {
-        context.fillText(line, x, y);
-        line = words[n] + '';
-        y += lineHeight;
-        numberOfLines++;
-      } else {
-        line = testLine;
-      }
+      line = testLine;
     }
 
   }
