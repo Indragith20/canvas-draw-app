@@ -465,7 +465,8 @@ class InitCanvas {
         startX: (drawenImage.startX - this.scrollX) * this.scalingFactor,
         startY: (drawenImage.startY - this.scrollY) * this.scalingFactor,
         width: drawenImage.width ? drawenImage.width * this.scalingFactor : null,
-        height: drawenImage.height ? drawenImage.height * this.scalingFactor : null
+        height: drawenImage.height ? drawenImage.height * this.scalingFactor : null,
+        scalingFactor: this.scalingFactor
       }
       let filteredShapes = this.shapes.filter(shape => shape.id !== drawenImage.id);
       this.shapes = [...filteredShapes, modifiedImage];

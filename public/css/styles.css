@@ -9,9 +9,9 @@
 body {
   /* background: url(../images/bg.gif) repeat-x #f8f8f8; */
   color: #d7d7d7;
-  font-family: "Belle", "Comic Sans MS", cursive;
-  font-size: 25px;
-  line-height: var(--line-height);
+  font-family: "Comic Sans MS", "Arial", cursive;
+  font-size: 24px;
+  line-height: 32px;
   overscroll-behavior: contain;
 }
 
@@ -220,7 +220,7 @@ input:checked + .slider:before {
 .textarea {
   border: none;
   outline: none;
-  font-family: "Arial";
+  font-family: "Comic Sans MS";
   font-style: normal;
   font-size: var(--font-size);
   overflow: scroll;
