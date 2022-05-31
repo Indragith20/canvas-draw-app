@@ -10,6 +10,8 @@ import Diamond from './Diamond.js';
 import { drawDiamond, drawText } from '../utils/drawShapes.js';
 
 
+
+
 // https://codepen.io/chengarda/pen/wRxoyB?editors=1010 - For Zoom in and out
 //getElementBounds in bounds.ts excalidraw ??
 /**
@@ -437,18 +439,32 @@ class InitCanvas {
       // Handlinng the case for move
       this.selectedTool = 'move';
       // since we are moving across the canvas. we need to take into the account of scrollx and scrolly values
-      ev._x = (ev.x - this.scrollX);
-      ev._y = (ev.y - this.scrollY);
+      ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
+      ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
       if (!this.draggingElement) {
         // First case of move tool -> User just selected the element.events should be mousedown
-        let elementSelected = getElementsAtPosition((this.mouseXPosition - this.scrollX), (this.mouseYPosition - this.scrollY), this.shapes);
+        let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - this.scrollX), this.changeToOneScalingFactor(this.mouseYPosition - this.scrollY), this.shapes);
         if (elementSelected) {
           this.selectedElement = elementSelected;
 
           this.draggingElement = elementSelected;
           // TODO: Remove element from main canvas . Need to check whether we need to remove since we will be resetDraggingValuesing the entire canvas ??
           this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-          this.tool = new MoveTool(this.tempCanvas, this.tempContext, this.imgUpdate, this.selectedElement, this.selectedTheme);
+          //modifyig the selectedElement
+          let selectedElement = {
+            ...this.selectedElement,
+            x: this.changeFromOneScalingFactor(this.selectedElement.x),
+            y: this.changeFromOneScalingFactor(this.selectedElement.y),
+            endX: this.changeFromOneScalingFactor(this.selectedElement.endX),
+            endY: this.changeFromOneScalingFactor(this.selectedElement.endY),
+            startX: this.changeFromOneScalingFactor(this.selectedElement.startX),
+            startY: this.changeFromOneScalingFactor(this.selectedElement.startY),
+            radius: this.changeFromOneScalingFactor(this.selectedElement.radius),
+            width: this.selectedElement.width ? this.changeFromOneScalingFactor(this.selectedElement.width) : null,
+            height: this.selectedElement.height ? this.changeFromOneScalingFactor(this.selectedElement.height) : null,
+            scalingFactor: this.scalingFactor
+          }
+          this.tool = new MoveTool(this.tempCanvas, this.tempContext, this.imgUpdate, selectedElement, this.selectedTheme);
           // element is present. we need to call movetool
           this.tool['mousedown'](ev);
 
