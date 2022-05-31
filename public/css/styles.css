@@ -232,7 +232,7 @@ input:checked + .slider:before {
   padding: 0;
   line-height: var(--line-height);
   background-color: var(--text-area-background);
-
+  /* border: 1px solid red; */
   display: block;
   width: 100%;
   resize: none;

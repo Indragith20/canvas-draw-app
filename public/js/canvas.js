@@ -148,7 +148,7 @@ class InitCanvas {
     e.stopPropagation();
     this.scalingFactor -= 0.1;
     this.scalingFactor = Number(this.scalingFactor.toFixed(1));
-    this.baseFontSize = this.baseFontSize + 5;
+    this.baseFontSize = this.baseFontSize - 3;
     this.baseLineHeight = (150 * this.baseFontSize) / 100;
     document.getElementById('debug').removeChild(document.getElementById('debug').firstChild)
     document.getElementById('debug').appendChild(document.createTextNode(this.scalingFactor))
@@ -167,7 +167,7 @@ class InitCanvas {
     /**** */
 
     this.scalingFactor = Number(this.scalingFactor.toFixed(1));
-    this.baseFontSize = this.baseFontSize - 5;
+    this.baseFontSize = this.baseFontSize + 3;
     this.baseLineHeight = (150 * this.baseFontSize) / 100;
     document.getElementById('debug').removeChild(document.getElementById('debug').firstChild)
     document.getElementById('debug').appendChild(document.createTextNode(this.scalingFactor))
@@ -221,8 +221,8 @@ class InitCanvas {
 
   changeToTextTool(ev) {
 
-    ev._x = (ev.x - this.scrollX);
-    ev._y = (ev.y - this.scrollY);
+    ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
+    ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
 
     let enclosedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
 
@@ -241,7 +241,7 @@ class InitCanvas {
     if (func) {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       // func will be dbclick in drawtext
-      func(ev, enclosedElement, { scrollX: this.scrollX, scrollY: this.scrollY });
+      func(ev, enclosedElement, { scrollX: this.scrollX, scrollY: this.scrollY, scalingFactor: this.scalingFactor });
     }
 
   }
@@ -278,8 +278,8 @@ class InitCanvas {
     //   ev._y = ev.offsetY;
     // }
 
-    ev._x = (ev.x - this.scrollX);
-    ev._y = (ev.y - this.scrollY);
+    ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
+    ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
 
     if (this.selectedTool === 'text') {
       //Revertting tyhius is required.
@@ -298,32 +298,32 @@ class InitCanvas {
       console.log(selectedElement);
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
-          let x = (this.selectedElement.x + this.scrollX);
-          let y = (this.selectedElement.y + this.scrollY);
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, (this.selectedElement.width + 10), (this.selectedElement.height + 10));
+          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === 'line' || this.selectedElement.type === 'arrow') {
-          let x = (this.selectedElement.startX + this.scrollX);
-          let y = (this.selectedElement.startY + this.scrollY);
+          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.scrollY;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, (this.selectedElement.width + 10), (this.selectedElement.height + 10))
+          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === 'circle') {
-          let x = (this.selectedElement.x + this.scrollX);
-          let y = (this.selectedElement.y + this.scrollY);
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.beginPath();
-          this.tempContext.arc(x, y, (this.selectedElement.radius + 10), 0, 2 * Math.PI);
+          this.tempContext.arc(x, y, this.changeFromOneScalingFactor(this.selectedElement.radius) + 10, 0, 2 * Math.PI);
           this.tempContext.stroke();
         } else if (this.selectedElement.type === 'diamond') {
-          let x = (this.selectedElement.startX + this.scrollX);
-          let y = (this.selectedElement.startY + this.scrollY);
+          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.scrollY;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, (this.selectedElement.width + 10), (this.selectedElement.height + 10));
+          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === 'text') {
-          let x = (this.selectedElement.x + this.scrollX);
-          let y = (this.selectedElement.y + this.scrollY);
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width, this.selectedElement.height);
+          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width), this.changeFromOneScalingFactor(this.selectedElement.height));
         }
       }
     }
@@ -365,7 +365,7 @@ class InitCanvas {
       } else if (shape.type === 'text') {
         let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
         console.log('Draqwinf test');
-        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x + this.scrollX), this.changeFromOneScalingFactor(shape.y + this.scrollY), this.changeFromOneScalingFactor(shape.width), this.baseLineHeight, color, this.baseFontSize);
+        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x) + this.scrollX, this.changeFromOneScalingFactor(shape.y) + this.scrollY, this.changeFromOneScalingFactor(shape.width), this.baseLineHeight, color, this.baseFontSize);
       } else if (shape.type === 'circle') {
         let x = this.changeFromOneScalingFactor(shape.x) + this.scrollX;
         let y = this.changeFromOneScalingFactor(shape.y) + this.scrollY;
