@@ -75,6 +75,7 @@ class InitCanvas {
     this.zoomOut = this.zoomOut.bind(this);
     this.changeToOneScalingFactor = this.changeToOneScalingFactor.bind(this);
     this.changeFromOneScalingFactor = this.changeFromOneScalingFactor.bind(this);
+    this.updateZoomRange = this.updateZoomRange.bind(this);
 
     this.mainCanvas = canvas;
     this.mainContext = this.mainCanvas.getContext('2d');
@@ -143,38 +144,41 @@ class InitCanvas {
 
     //debug purpise
     //document.getElementById('debug').removeChild(document.getElementById('debug').firstChild)
-    document.getElementById('debug').appendChild(document.createTextNode(this.scalingFactor))
+    document.getElementById('zoomRange').appendChild(document.createTextNode(Math.floor(this.scalingFactor * 100)))
   }
 
   zoomIn(e) {
     e.stopPropagation();
+    if (this.scalingFactor <= 0.1) {
+      return;
+    }
     this.scalingFactor -= 0.1;
     this.scalingFactor = Number(this.scalingFactor.toFixed(1));
     this.baseFontSize = this.baseFontSize - 3;
     this.baseLineHeight = (150 * this.baseFontSize) / 100;
-    document.getElementById('debug').removeChild(document.getElementById('debug').firstChild)
-    document.getElementById('debug').appendChild(document.createTextNode(this.scalingFactor))
+    this.updateZoomRange();
     this.updateFontProperties();
     this.redraw();
   }
 
   zoomOut(e) {
     e.stopPropagation();
+    if (this.scalingFactor >= 2) {
+      return;
+    }
     this.scalingFactor += 0.1;
-
-    //Add the scrollx and scrolly
-    // this.scrollX = this.scrollX + 10;
-    // this.scrollY = this.scrollY + 10;
-
-    /**** */
 
     this.scalingFactor = Number(this.scalingFactor.toFixed(1));
     this.baseFontSize = this.baseFontSize + 3;
     this.baseLineHeight = (150 * this.baseFontSize) / 100;
-    document.getElementById('debug').removeChild(document.getElementById('debug').firstChild)
-    document.getElementById('debug').appendChild(document.createTextNode(this.scalingFactor))
+    this.updateZoomRange();
     this.updateFontProperties();
     this.redraw();
+  }
+
+  updateZoomRange() {
+    document.getElementById('zoomRange').removeChild(document.getElementById('zoomRange').firstChild);
+    document.getElementById('zoomRange').appendChild(document.createTextNode(Math.floor(this.scalingFactor * 100)));
   }
 
 
@@ -207,8 +211,8 @@ class InitCanvas {
     })
 
 
-    document.getElementById('plus').addEventListener('click', this.zoomIn, false);
-    document.getElementById('minus').addEventListener('click', this.zoomOut, false)
+    document.getElementById('plus').addEventListener('click', this.zoomOut, false);
+    document.getElementById('minus').addEventListener('click', this.zoomIn, false)
   }
 
   onWheelMove(e) {

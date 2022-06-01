@@ -4,6 +4,7 @@
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 body {
@@ -95,12 +96,12 @@ select {
   margin-right: auto;
   color: var(--icon-color);
   padding: 10px;
+  display: flex;
+  gap: 5px;
 }
 
 .selectTool .tool-icon {
-  display: inline-block;
   padding: 10px;
-  border-radius: 5px;
 }
 
 .selectTool .tool-icon .icon-class {
@@ -120,6 +121,7 @@ select {
 .selectTool .selected {
   background-color: var(--selected-tool-color);
   color: white;
+  border-radius: 5px;;
 }
 
 .configTool {
@@ -237,4 +239,29 @@ input:checked + .slider:before {
   width: 100%;
   resize: none;
   min-height: 40px;
+}
+
+.zoomContainer {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  border: 1px solid lightgrey;
+  display: flex;
+  flex: 0 1 0;
+  color: var(--font-color);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+.zoom-sign {
+  cursor: pointer;
+}
+
+.zoom-range {
+  border-left: 1px solid lightgray;
+  border-right: 1px solid lightgray;
+  padding-left: 5px;
+  padding-right: 5px;
+  min-width: 50px;
+  text-align: center;
 }
