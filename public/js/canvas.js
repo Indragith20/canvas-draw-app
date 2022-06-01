@@ -450,7 +450,9 @@ class InitCanvas {
         let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - this.scrollX), this.changeToOneScalingFactor(this.mouseYPosition - this.scrollY), this.shapes);
         if (elementSelected) {
           this.selectedElement = elementSelected;
-
+          this.shapes = this.shapes.filter(shape => shape.id !== elementSelected.id);
+          //redrawig without element selected
+          this.redraw();
           this.draggingElement = elementSelected;
           // TODO: Remove element from main canvas . Need to check whether we need to remove since we will be resetDraggingValuesing the entire canvas ??
           this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
