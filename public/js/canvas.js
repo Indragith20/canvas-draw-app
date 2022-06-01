@@ -10,6 +10,8 @@ import Diamond from './Diamond.js';
 import { drawDiamond, drawText } from '../utils/drawShapes.js';
 
 
+
+
 // https://codepen.io/chengarda/pen/wRxoyB?editors=1010 - For Zoom in and out
 //getElementBounds in bounds.ts excalidraw ??
 /**
@@ -71,6 +73,9 @@ class InitCanvas {
     this.onWheelMove = this.onWheelMove.bind(this);
     this.zoomIn = this.zoomIn.bind(this);
     this.zoomOut = this.zoomOut.bind(this);
+    this.changeToOneScalingFactor = this.changeToOneScalingFactor.bind(this);
+    this.changeFromOneScalingFactor = this.changeFromOneScalingFactor.bind(this);
+    this.updateZoomRange = this.updateZoomRange.bind(this);
 
     this.mainCanvas = canvas;
     this.mainContext = this.mainCanvas.getContext('2d');
@@ -135,27 +140,57 @@ class InitCanvas {
     this.baseFontSize = 24;
     this.baseLineHeight = (150 * this.baseFontSize) / 100;
     this.updateFontProperties();
+
+
+    //debug purpise
+    //document.getElementById('debug').removeChild(document.getElementById('debug').firstChild)
+    document.getElementById('zoomRange').appendChild(document.createTextNode(Math.floor(this.scalingFactor * 100)))
   }
 
   zoomIn(e) {
     e.stopPropagation();
+    if (this.scalingFactor <= 0.1) {
+      return;
+    }
     this.scalingFactor -= 0.1;
     this.scalingFactor = Number(this.scalingFactor.toFixed(1));
-    this.baseFontSize = this.baseFontSize + 5;
+    this.baseFontSize = this.baseFontSize - 3;
     this.baseLineHeight = (150 * this.baseFontSize) / 100;
+    this.updateZoomRange();
     this.updateFontProperties();
     this.redraw();
   }
 
   zoomOut(e) {
     e.stopPropagation();
+    if (this.scalingFactor >= 2) {
+      return;
+    }
     this.scalingFactor += 0.1;
+
     this.scalingFactor = Number(this.scalingFactor.toFixed(1));
-    this.baseFontSize = this.baseFontSize - 5;
+    this.baseFontSize = this.baseFontSize + 3;
     this.baseLineHeight = (150 * this.baseFontSize) / 100;
+    this.updateZoomRange();
     this.updateFontProperties();
     this.redraw();
   }
+
+  updateZoomRange() {
+    document.getElementById('zoomRange').removeChild(document.getElementById('zoomRange').firstChild);
+    document.getElementById('zoomRange').appendChild(document.createTextNode(Math.floor(this.scalingFactor * 100)));
+  }
+
+
+  changeToOneScalingFactor(coords) {
+    return coords / this.scalingFactor;
+  }
+
+  changeFromOneScalingFactor(coords) {
+    return coords * this.scalingFactor;
+  }
+
+
 
   updateFontProperties() {
     document.documentElement.style.setProperty('--font-size', `${this.baseFontSize}px`);
@@ -176,8 +211,8 @@ class InitCanvas {
     })
 
 
-    document.getElementById('plus').addEventListener('click', this.zoomIn, false);
-    document.getElementById('minus').addEventListener('click', this.zoomOut, false)
+    document.getElementById('plus').addEventListener('click', this.zoomOut, false);
+    document.getElementById('minus').addEventListener('click', this.zoomIn, false)
   }
 
   onWheelMove(e) {
@@ -185,15 +220,15 @@ class InitCanvas {
       // Drawing text on canvas before scroll move
       this.tool['onBlur']();
     }
-    this.scrollX -= e.deltaX;
-    this.scrollY -= e.deltaY;
+    this.scrollX = this.scrollX - e.deltaX;
+    this.scrollY = this.scrollY - e.deltaY;
     this.redraw();
   }
 
   changeToTextTool(ev) {
 
-    ev._x = (ev.x - this.scrollX) * this.scalingFactor;
-    ev._y = (ev.y - this.scrollY) * this.scalingFactor;
+    ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
+    ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
 
     let enclosedElement = getElementsAtPosition(ev._x, ev._y, this.shapes);
 
@@ -212,7 +247,7 @@ class InitCanvas {
     if (func) {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       // func will be dbclick in drawtext
-      func(ev, enclosedElement, { scrollX: this.scrollX, scrollY: this.scrollY });
+      func(ev, enclosedElement, { scrollX: this.scrollX, scrollY: this.scrollY, scalingFactor: this.scalingFactor });
     }
 
   }
@@ -249,8 +284,8 @@ class InitCanvas {
     //   ev._y = ev.offsetY;
     // }
 
-    ev._x = (ev.x - this.scrollX) * this.scalingFactor;
-    ev._y = (ev.y - this.scrollY) * this.scalingFactor;
+    ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
+    ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
 
     if (this.selectedTool === 'text') {
       //Revertting tyhius is required.
@@ -269,32 +304,32 @@ class InitCanvas {
       console.log(selectedElement);
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
-          let x = (this.selectedElement.x + this.scrollX) / this.scalingFactor;
-          let y = (this.selectedElement.y + this.scrollY) / this.scalingFactor;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, (this.selectedElement.width + 10) / this.scalingFactor, (this.selectedElement.height + 10) / this.scalingFactor);
+          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === 'line' || this.selectedElement.type === 'arrow') {
-          let x = (this.selectedElement.startX + this.scrollX) / this.scalingFactor;
-          let y = (this.selectedElement.startY + this.scrollY) / this.scalingFactor;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.scrollY;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, (this.selectedElement.width + 10) / this.scalingFactor, (this.selectedElement.height + 10) / this.scalingFactor)
+          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === 'circle') {
-          let x = (this.selectedElement.x + this.scrollX) / this.scalingFactor;
-          let y = (this.selectedElement.y + this.scrollY) / this.scalingFactor;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.beginPath();
-          this.tempContext.arc(x, y, (this.selectedElement.radius + 10) / this.scalingFactor, 0, 2 * Math.PI);
+          this.tempContext.arc(x, y, this.changeFromOneScalingFactor(this.selectedElement.radius) + 10, 0, 2 * Math.PI);
           this.tempContext.stroke();
         } else if (this.selectedElement.type === 'diamond') {
-          let x = (this.selectedElement.startX + this.scrollX) / this.scalingFactor;
-          let y = (this.selectedElement.startY + this.scrollY) / this.scalingFactor;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.scrollY;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, (this.selectedElement.width + 10) / this.scalingFactor, (this.selectedElement.height + 10) / this.scalingFactor);
+          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === 'text') {
-          let x = (this.selectedElement.x + this.scrollX) / this.scalingFactor;
-          let y = (this.selectedElement.y + this.scrollY) / this.scalingFactor;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
           this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, this.selectedElement.width / this.scalingFactor, this.selectedElement.height / this.scalingFactor);
+          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width), this.changeFromOneScalingFactor(this.selectedElement.height));
         }
       }
     }
@@ -309,14 +344,13 @@ class InitCanvas {
     // TODO: Move to utility for each shape.
     this.shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
-        // possible cause either fill or stroke
-        this.tempContext.strokeRect((shape.x + this.scrollX) / this.scalingFactor, (shape.y + this.scrollY) / this.scalingFactor, shape.width / this.scalingFactor, shape.height / this.scalingFactor);
+        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + this.scrollX, this.changeFromOneScalingFactor(shape.y) + this.scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height));
       } else if (shape.type === 'arrow') {
         let headlen = 10;
-        let x = (shape.x + this.scrollX) / this.scalingFactor;
-        let y = (shape.y + this.scrollY) / this.scalingFactor;
-        let endX = (shape.endX + this.scrollX) / this.scalingFactor;
-        let endY = (shape.endY + this.scrollY) / this.scalingFactor;
+        let x = this.changeFromOneScalingFactor(shape.x) + this.scrollX;
+        let y = this.changeFromOneScalingFactor(shape.y) + this.scrollY;
+        let endX = this.changeFromOneScalingFactor(shape.endX) + this.scrollX;
+        let endY = this.changeFromOneScalingFactor(shape.endY) + this.scrollY;
         let dx = endX - x;
         let dy = endY - y;
         let angle = Math.atan2(dy, dx);
@@ -330,24 +364,24 @@ class InitCanvas {
         this.tempContext.closePath();
       } else if (shape.type === 'line') {
         this.tempContext.beginPath();
-        this.tempContext.moveTo((shape.x + this.scrollX) / this.scalingFactor, (shape.y + this.scrollY) / this.scalingFactor);
-        this.tempContext.lineTo((shape.endX + this.scrollX) / this.scalingFactor, (shape.endY + this.scrollY) / this.scalingFactor);
+        this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + this.scrollX, this.changeFromOneScalingFactor(shape.y) + this.scrollY);
+        this.tempContext.lineTo(this.changeFromOneScalingFactor(shape.endX) + this.scrollX, this.changeFromOneScalingFactor(shape.endY) + this.scrollY);
         this.tempContext.stroke();
         this.tempContext.closePath();
       } else if (shape.type === 'text') {
         let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
         console.log('Draqwinf test');
-        drawText(shape.textContent, this.tempContext, (shape.x + this.scrollX) / this.scalingFactor, (shape.y + this.scrollY) / this.scalingFactor, shape.width / this.scalingFactor, this.baseLineHeight, color, this.baseFontSize);
+        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x) + this.scrollX, this.changeFromOneScalingFactor(shape.y) + this.scrollY, this.changeFromOneScalingFactor(shape.width), this.baseLineHeight, color, this.baseFontSize);
       } else if (shape.type === 'circle') {
-        let x = (shape.x + this.scrollX) / this.scalingFactor;
-        let y = (shape.y + this.scrollY) / this.scalingFactor;
+        let x = this.changeFromOneScalingFactor(shape.x) + this.scrollX;
+        let y = this.changeFromOneScalingFactor(shape.y) + this.scrollY;
         this.tempContext.beginPath();
-        this.tempContext.arc(x, y, (shape.radius) / this.scalingFactor, 0, 2 * Math.PI);
+        this.tempContext.arc(x, y, this.changeFromOneScalingFactor(shape.radius), 0, 2 * Math.PI);
         this.tempContext.stroke();
       } else if (shape.type === 'diamond') {
-        let xCenter = (shape.x + this.scrollX) / this.scalingFactor;
-        let yCenter = (shape.y + this.scrollY) / this.scalingFactor;
-        let size = (shape.x - shape.endX) / this.scalingFactor;
+        let xCenter = this.changeFromOneScalingFactor(shape.x) + this.scrollX;
+        let yCenter = this.changeFromOneScalingFactor(shape.y) + this.scrollY;
+        let size = this.changeFromOneScalingFactor(shape.x - shape.endX);
         drawDiamond(xCenter, yCenter, size, this.tempContext);
       }
     });
@@ -409,18 +443,32 @@ class InitCanvas {
       // Handlinng the case for move
       this.selectedTool = 'move';
       // since we are moving across the canvas. we need to take into the account of scrollx and scrolly values
-      ev._x = (ev.x - this.scrollX) * this.scalingFactor;
-      ev._y = (ev.y - this.scrollY) * this.scalingFactor;
+      ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
+      ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
       if (!this.draggingElement) {
         // First case of move tool -> User just selected the element.events should be mousedown
-        let elementSelected = getElementsAtPosition((this.mouseXPosition - this.scrollX) * this.scalingFactor, (this.mouseYPosition - this.scrollY) * this.scalingFactor, this.shapes);
+        let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - this.scrollX), this.changeToOneScalingFactor(this.mouseYPosition - this.scrollY), this.shapes);
         if (elementSelected) {
           this.selectedElement = elementSelected;
 
           this.draggingElement = elementSelected;
           // TODO: Remove element from main canvas . Need to check whether we need to remove since we will be resetDraggingValuesing the entire canvas ??
           this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-          this.tool = new MoveTool(this.tempCanvas, this.tempContext, this.imgUpdate, this.selectedElement, this.selectedTheme);
+          //modifyig the selectedElement
+          let selectedElement = {
+            ...this.selectedElement,
+            x: this.changeFromOneScalingFactor(this.selectedElement.x),
+            y: this.changeFromOneScalingFactor(this.selectedElement.y),
+            endX: this.changeFromOneScalingFactor(this.selectedElement.endX),
+            endY: this.changeFromOneScalingFactor(this.selectedElement.endY),
+            startX: this.changeFromOneScalingFactor(this.selectedElement.startX),
+            startY: this.changeFromOneScalingFactor(this.selectedElement.startY),
+            radius: this.changeFromOneScalingFactor(this.selectedElement.radius),
+            width: this.selectedElement.width ? this.changeFromOneScalingFactor(this.selectedElement.width) : null,
+            height: this.selectedElement.height ? this.changeFromOneScalingFactor(this.selectedElement.height) : null,
+            scalingFactor: this.scalingFactor
+          }
+          this.tool = new MoveTool(this.tempCanvas, this.tempContext, this.imgUpdate, selectedElement, this.selectedTheme);
           // element is present. we need to call movetool
           this.tool['mousedown'](ev);
 
@@ -458,14 +506,15 @@ class InitCanvas {
 
       let modifiedImage = {
         ...drawenImage,
-        x: (drawenImage.x - this.scrollX) * this.scalingFactor,
-        y: (drawenImage.y - this.scrollY) * this.scalingFactor,
-        endX: (drawenImage.endX - this.scrollX) * this.scalingFactor,
-        endY: (drawenImage.endY - this.scrollY) * this.scalingFactor,
-        startX: (drawenImage.startX - this.scrollX) * this.scalingFactor,
-        startY: (drawenImage.startY - this.scrollY) * this.scalingFactor,
-        width: drawenImage.width ? drawenImage.width * this.scalingFactor : null,
-        height: drawenImage.height ? drawenImage.height * this.scalingFactor : null,
+        x: this.changeToOneScalingFactor(drawenImage.x - this.scrollX),
+        y: this.changeToOneScalingFactor(drawenImage.y - this.scrollY),
+        endX: this.changeToOneScalingFactor(drawenImage.endX - this.scrollX),
+        endY: this.changeToOneScalingFactor(drawenImage.endY - this.scrollY),
+        startX: this.changeToOneScalingFactor(drawenImage.startX - this.scrollX),
+        startY: this.changeToOneScalingFactor(drawenImage.startY - this.scrollY),
+        radius: this.changeToOneScalingFactor(drawenImage.radius),
+        width: drawenImage.width ? this.changeToOneScalingFactor(drawenImage.width) : null,
+        height: drawenImage.height ? this.changeToOneScalingFactor(drawenImage.height) : null,
         scalingFactor: this.scalingFactor
       }
       let filteredShapes = this.shapes.filter(shape => shape.id !== drawenImage.id);

@@ -75,7 +75,7 @@ class DrawText {
     }
   }
 
-  ondblclick(ev, enclosedElement, { scrollX, scrollY }) {
+  ondblclick(ev, enclosedElement, { scrollX, scrollY, scalingFactor }) {
     // TODO: Currently implemented for rectangle enclosed element. Check possibility for all other shapes
     this.startX = ev.x;
     this.startY = ev.y;
@@ -88,19 +88,19 @@ class DrawText {
     if (enclosedElement) {
       if (enclosedElement.type === 'rectangle') {
         // to have equi space around the horizontal edge
-        let diffX = Math.abs(Math.abs(enclosedElement.x) - Math.abs(ev._x));
-        let enclosedX = Math.abs(Math.abs(enclosedElement.endX) - diffX);
-        let diffY = Math.abs(Math.abs(enclosedElement.y) - Math.abs(ev._y));
-        let enclosedY = Math.abs(Math.abs(enclosedElement.endY) - diffY);
+        // let diffX = Math.abs(Math.abs(enclosedElement.x * scalingFactor) - Math.abs(ev._x));
+        // let enclosedX = Math.abs(Math.abs(enclosedElement.endX * scalingFactor) - diffX);
+        // let diffY = Math.abs(Math.abs(enclosedElement.y * scalingFactor) - Math.abs(ev._y));
+        // let enclosedY = Math.abs(Math.abs(enclosedElement.endY * scalingFactor) - diffY);
 
-        this.width = `${Math.abs(enclosedX - ev._x)}`;
-        this.height = `${Math.abs(enclosedY - ev._y)}`;
+        // this.width = `${Math.abs(enclosedX - ev._x)}`;
+        // this.height = `${Math.abs(enclosedY - ev._y)}`;
 
-        this.textBoxContainer.style.width = this.width + 'px';
-        this.textBoxContainer.style.height = this.height + 'px';
+        // this.textBoxContainer.style.width = this.width + 'px';
+        // this.textBoxContainer.style.height = this.height + 'px';
       } else if (enclosedElement.type === 'text') {
-        this.textBoxContainer.style.top = enclosedElement.y + scrollY;
-        this.textBoxContainer.style.left = enclosedElement.x + scrollX;
+        this.textBoxContainer.style.top = enclosedElement.y * scalingFactor + scrollY;
+        this.textBoxContainer.style.left = enclosedElement.x * scalingFactor + scrollX;
         this.textBox.innerHTML = enclosedElement.innerHtml;
         this.width = enclosedElement.width;
         this.height = enclosedElement.height;
@@ -113,17 +113,17 @@ class DrawText {
       } else {
         // TODO: to have equi space around the horizontal edge
 
-        this.width = `${Math.abs(this.tempCanvas.width - ev.x) - 10}`;
-        this.height = `${Math.abs(this.tempCanvas.height - ev.y) - 10}`;
-        this.textBoxContainer.style.width = this.width + 'px';
-        this.textBoxContainer.style.height = this.height + 'px';
+        // this.width = `${Math.abs(this.tempCanvas.width - ev.x) - 10}`;
+        // this.height = `${Math.abs(this.tempCanvas.height - ev.y) - 10}`;
+        // this.textBoxContainer.style.width = this.width + 'px';
+        // this.textBoxContainer.style.height = this.height + 'px';
       }
       // TODO: Implement for all shapes
     } else {
       // TODO: to have equi space around the horizontal edge
 
-      this.width = `${Math.abs(this.tempCanvas.width - ev.x) - 10}`;
-      this.height = `${Math.abs(this.tempCanvas.height - ev.y) - 10}`;
+      // this.width = `${Math.abs(this.tempCanvas.width - ev.x) - 10}`;
+      // this.height = `${Math.abs(this.tempCanvas.height - ev.y) - 10}`;
       // this.textBoxContainer.style.width = this.width + 'px';
       // this.textBoxContainer.style.height = this.height + 'px';
     }
