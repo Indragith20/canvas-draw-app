@@ -14,6 +14,7 @@ import TextTool from './TextTool/TextTool';
 import { drawDiamond, drawText } from './utils/drawShapes';
 import { getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
+import Idb from './utils/idb';
 
 export function MainComponentStyles() {
   return [{ rel: 'stylesheet', href: styles }];
@@ -69,6 +70,7 @@ class MainComponent extends React.Component {
     this.zoomIn = this.zoomIn.bind(this);
     this.zoomOut = this.zoomOut.bind(this);
 
+    this.idb = new Idb();
 
     this.mainCanvas = React.createRef();
     this.tempCanvas = React.createRef();
@@ -90,13 +92,19 @@ class MainComponent extends React.Component {
     this.scrollX = 0;
     this.scrollY = 0;
 
-    // scaling factor
-
-    //this.updateFontProperties();
   }
 
 
   componentDidMount() {
+
+    this.idb.getDataFromIdb('app-state-persist').then((data) => {
+      this.setState({ shapes: data }, () => {
+        this.id = data.length + 1;
+        this.redraw();
+      })
+    }).catch(err => {
+      console.log(err);
+    })
     this.setState({ canvasWidth: window.innerWidth, canvasHeight: window.innerHeight })
     this.mainContext = this.mainCanvas.current.getContext('2d');
     this.tempContext = this.tempCanvas.current.getContext('2d');
@@ -129,9 +137,6 @@ class MainComponent extends React.Component {
     document.addEventListener('wheel', this.onWheelMove, false);
 
     window.addEventListener('resize', this.onResize);
-
-    // document.getElementById('plus').addEventListener('click', this.zoomOut, false);
-    // document.getElementById('minus').addEventListener('click', this.zoomIn, false);
   }
 
   removeEventListeners() {
@@ -153,7 +158,7 @@ class MainComponent extends React.Component {
     }
     this.setState((prevstate) => {
       let baseFontSize = prevstate.baseFontSize - 3;
-      let baseLineHeight = (150 * baseFontSize) / 100
+      let baseLineHeight = (150 * baseFontSize) / 100;
       return {
         ...prevstate,
         scalingFactor: prevstate.scalingFactor - 0.1,
@@ -161,6 +166,7 @@ class MainComponent extends React.Component {
         baseLineHeight
       }
     }, () => {
+      this.idb.updateDb(this.state.scalingFactor, 'scalingFactor');
       this.redraw();
     });
   }
@@ -260,6 +266,7 @@ class MainComponent extends React.Component {
           let shapes = this.state.shapes.filter(shape => shape.id !== elementSelected.id);
           //redrawig without element selected
           this.setState({ shapes: shapes, selectedTool: 'move' }, () => {
+            this.idb.updateDb(this.state.shapes, 'app-state-persist');
             this.redraw();
             this.draggingElement = elementSelected;
             this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
@@ -372,6 +379,7 @@ class MainComponent extends React.Component {
       }
       let filteredShapes = this.state.shapes.filter(shape => shape.id !== drawenImage.id);
       this.setState({ shapes: [...filteredShapes, modifiedImage] }, () => {
+        this.idb.updateDb(this.state.shapes, 'app-state-persist');
         this.drawImage();
       })
     } else {
