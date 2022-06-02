@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Links,
   LiveReload,
@@ -5,18 +6,21 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "remix";
+} from 'remix';
+
 
 export function meta() {
-  return { title: "New Remix App" };
+  return { title: 'New Remix App' };
 }
 
 export default function App() {
+  
+
   return (
-    <html lang="en">
+    <html lang='en'>
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta charSet='utf-8' />
+        <meta name='viewport' content='width=device-width,initial-scale=1' />
         <title>Whiteboard Application</title>
         <Meta />
         <Links />
