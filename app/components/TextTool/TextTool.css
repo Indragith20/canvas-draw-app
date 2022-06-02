@@ -1,0 +1,34 @@
+.textTool {
+  position: fixed;
+  top: 100px;
+  left: 0px;
+  display: block;
+  background-color: var(--text-area-background);
+  color: var(--font-color);
+  padding: 0;
+  margin: 0;
+  /* border: 1px solid red; */
+}
+
+.textarea {
+  border: none;
+  outline: none;
+  font-family: "Comic Sans MS";
+  font-style: normal;
+  font-size: var(--font-size);
+  overflow: scroll;
+  color: inherit;
+  resize: none;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  line-height: var(--line-height);
+  background-color: var(--text-area-background);
+  /* border: 1px solid red; */
+  display: block;
+  width: 100%;
+  resize: none;
+  min-height: 40px;
+}
+

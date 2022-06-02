@@ -1,4 +1,9 @@
 import React from 'react';
+import styles from './zoomContainer.css';
+
+export function ZoomContainerLinks() {
+  return [{ rel: "stylesheet", href: styles }]
+}
 
 function ZoomContainer({ zoomRange, zoomIn, zoomOut }) {
   return (

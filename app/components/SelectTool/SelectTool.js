@@ -1,4 +1,10 @@
 import React from 'react';
+import styles from './SelectTool.css';
+
+
+export function SelectToolLinks() {
+  return [{ rel: 'stylesheet', href: styles }];
+}
 
 
 function SelectTool({ selectedTool, updateTool }) {

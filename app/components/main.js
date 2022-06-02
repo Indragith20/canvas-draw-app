@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './main.css';
 import ConfigTool from './ConfigTool/ConfigTool';
 import SelectTool from './SelectTool/SelectTool';
 import Arrow from './Shapes/Arrow';
@@ -13,6 +14,10 @@ import TextTool from './TextTool/TextTool';
 import { drawDiamond, drawText } from './utils/drawShapes';
 import { getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
+
+export function MainComponentStyles() {
+  return [{ rel: 'stylesheet', href: styles }];
+}
 
 
 let tools = {
@@ -32,6 +37,8 @@ let baseConfig = {
   baseFontSize: 24,
   baseLineHeight: (150 * 24) / 100
 }
+
+
 
 class MainComponent extends React.Component {
   constructor(props) {

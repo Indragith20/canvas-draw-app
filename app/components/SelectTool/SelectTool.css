@@ -1,0 +1,39 @@
+.selectTool {
+  position: fixed;
+  top: 10px;
+  left: 0px;
+  right: 0px;
+  background-color: var(--icon-container-color);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--icon-color);
+  padding: 10px;
+  display: flex;
+  gap: 5px;
+  line-height: 0;
+}
+
+.selectTool .tool-icon {
+  padding: 10px;
+}
+
+.selectTool .tool-icon .icon-class {
+  color: var(--icon-color);
+  font-size: 24px;
+  /* margin: 10px; */
+}
+
+.selectTool .tool-icon:not(:last-child) {
+  border-right: 1px solid #e6e6fa;
+}
+
+.selectTool .tool-icon:hover {
+  cursor: pointer;
+}
+
+.selectTool .selected {
+  background-color: var(--selected-tool-color);
+  color: white;
+  border-radius: 5px;;
+}

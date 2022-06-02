@@ -1,4 +1,9 @@
 import React from 'react';
+import styles from './ConfigTool.css';
+
+export function ConfigToolLinks() {
+  return [{ rel: 'stylesheet', href: styles }]
+}
 
 
 function ConfigTool({ toggleTheme }) {
