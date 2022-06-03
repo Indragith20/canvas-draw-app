@@ -100,8 +100,10 @@ class MainComponent extends React.Component {
 
     this.idb.getDataFromIdb('app-state-persist').then((data) => {
       this.setState({ shapes: data }, () => {
-        this.id = data.length + 1;
-        this.redraw();
+        if (data && data.length >= 0) {
+          this.id = data.length + 1;
+          this.redraw();
+        }
       })
     }).catch(err => {
       console.log(err);
