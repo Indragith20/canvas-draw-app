@@ -221,7 +221,7 @@ class MainComponent extends React.Component {
   onEvent(ev) {
     ev._x = ev.x;
     ev._y = ev.y;
-    //this.context.emit('mousemove', { x: ev.x, y: ev.y })
+    this.context.emit('mousemove', { x: ev.x, y: ev.y })
     // let isUserDragging = false;
 
     if (this.state.selectedTool === 'select') {
@@ -634,6 +634,6 @@ class MainComponent extends React.Component {
   }
 }
 
-// MainComponent.contextType = SocketContext;
+MainComponent.contextType = SocketContext;
 
 export default MainComponent;
