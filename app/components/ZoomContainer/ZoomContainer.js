@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './zoomContainer.css';
+import styles from './ZoomContainer.css';
 
 export function ZoomContainerLinks() {
   return [{ rel: "stylesheet", href: styles }]
