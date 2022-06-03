@@ -99,12 +99,12 @@ class MainComponent extends React.Component {
   componentDidMount() {
 
     this.idb.getDataFromIdb('app-state-persist').then((data) => {
-      this.setState({ shapes: data }, () => {
-        if (data && data.length >= 0) {
+      if (data && data.length >= 0) {
+        this.setState({ shapes: data }, () => {
           this.id = data.length + 1;
           this.redraw();
-        }
-      })
+        })
+      }
     }).catch(err => {
       console.log(err);
     })
@@ -221,7 +221,7 @@ class MainComponent extends React.Component {
   onEvent(ev) {
     ev._x = ev.x;
     ev._y = ev.y;
-    this.context.emit('mousemove', { x: ev.x, y: ev.y })
+    //this.context.emit('mousemove', { x: ev.x, y: ev.y })
     // let isUserDragging = false;
 
     if (this.state.selectedTool === 'select') {
@@ -634,6 +634,6 @@ class MainComponent extends React.Component {
   }
 }
 
-MainComponent.contextType = SocketContext;
+// MainComponent.contextType = SocketContext;
 
 export default MainComponent;

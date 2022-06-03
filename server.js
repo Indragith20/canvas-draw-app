@@ -2,7 +2,7 @@ import express from 'express';
 import compression from 'compression';
 import morgan from 'morgan';
 const { createServer } = require('http');
-const { Server } = require('socket.io');
+// const { Server } = require('socket.io');
 
 import { createRequestHandler } from '@remix-run/express';
 
@@ -12,38 +12,38 @@ const app = express();
 
 const httpServer = createServer(app);
 
-const io = new Server(httpServer);
+// const io = new Server(httpServer);
 
-let clients = [];
-
-
-io.on('connection', (socket) => {
-  console.log(socket.id, 'connected');
+// let clients = [];
 
 
-  socket.emit('confirmation', 'connected!');
-
-  socket.on('event', (data) => {
-    console.log(socket.id, data);
-    clients.push(socket.id);
-    socket.emit('event', 'pong');
-  });
+// // io.on('connection', (socket) => {
+// //   console.log(socket.id, 'connected');
 
 
-  socket.on('mousemove', (data) => {
-    console.log(clients);
-    clients.forEach((clientId) => {
-      if (clientId !== socket.id) {
-        io.to(clientId).emit('mousemove', data);
-      }
-    })
-  })
+// //   socket.emit('confirmation', 'connected!');
 
-  socket.on('disconnect', (data) => {
-    //clients = clients.filter(clientId => clientId !== socket.id);
-    console.log(socket.id, "diconnected");
-  })
-});
+// //   socket.on('event', (data) => {
+// //     console.log(socket.id, data);
+// //     clients.push(socket.id);
+// //     socket.emit('event', 'pong');
+// //   });
+
+
+// //   socket.on('mousemove', (data) => {
+// //     console.log(clients);
+// //     clients.forEach((clientId) => {
+// //       if (clientId !== socket.id) {
+// //         io.to(clientId).emit('mousemove', data);
+// //       }
+// //     })
+// //   })
+
+// //   socket.on('disconnect', (data) => {
+// //     //clients = clients.filter(clientId => clientId !== socket.id);
+// //     console.log(socket.id, "diconnected");
+// //   })
+// // });
 
 
 app.use(compression());
