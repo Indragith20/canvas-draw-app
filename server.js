@@ -1,6 +1,9 @@
+import 'dotenv/config'
 import express from 'express';
 import compression from 'compression';
 import morgan from 'morgan';
+
+import { auth as FirebaseServer } from './server/firebase.server';
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 
@@ -14,36 +17,38 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer);
 
+FirebaseServer.server;
+
 let clients = [];
 
 
-io.on('connection', (socket) => {
-  console.log(socket.id, 'connected');
+// io.on('connection', (socket) => {
+//   console.log(socket.id, 'connected');
 
 
-  socket.emit('confirmation', 'connected!');
+//   socket.emit('confirmation', 'connected!');
 
-  socket.on('event', (data) => {
-    console.log(socket.id, data);
-    clients.push(socket.id);
-    socket.emit('event', 'pong');
-  });
+//   socket.on('event', (data) => {
+//     console.log(socket.id, data);
+//     clients.push(socket.id);
+//     socket.emit('event', 'pong');
+//   });
 
 
-  socket.on('mousemove', (data) => {
-    console.log(clients);
-    clients.forEach((clientId) => {
-      if (clientId !== socket.id) {
-        io.to(clientId).emit('mousemove', data);
-      }
-    })
-  })
+//   socket.on('mousemove', (data) => {
+//     console.log(clients);
+//     clients.forEach((clientId) => {
+//       if (clientId !== socket.id) {
+//         io.to(clientId).emit('mousemove', data);
+//       }
+//     })
+//   })
 
-  socket.on('disconnect', (data) => {
-    //clients = clients.filter(clientId => clientId !== socket.id);
-    console.log(socket.id, "diconnected");
-  })
-});
+//   socket.on('disconnect', (data) => {
+//     //clients = clients.filter(clientId => clientId !== socket.id);
+//     console.log(socket.id, "diconnected");
+//   })
+// });
 
 
 app.use(compression());
@@ -72,7 +77,6 @@ app.all(
 );
 
 const port = process.env.PORT || 3000;
-
 httpServer.listen(port, () => {
   console.log(`Express server listening on port ${port}`);
 });

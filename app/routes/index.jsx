@@ -1,65 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { json } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
-import io from 'socket.io-client';
+import React from 'react';
+import { useActionData, Form, useTransition } from '@remix-run/react';
+import { createRoom } from '../../server/db';
+import { redirect } from '@remix-run/node';
 
-import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
-import MainComponent, { MainComponentStyles } from '~/components/main';
-import { SelectToolLinks } from '~/components/SelectTool/SelectTool';
-import { TextToolLinks } from '~/components/TextTool/TextTool';
-import { ZoomContainerLinks } from '~/components/ZoomContainer/ZoomContainer';
-import { handleDataRequest } from '~/entry.server';
-import styles from '../styles/styles.css';
-import { SocketProvider } from '~/contexts/socketContext';
-
-export const links = () => [
-  ...MainComponentStyles(),
-  ...SelectToolLinks(),
-  ...ConfigToolLinks(),
-  ...TextToolLinks(),
-  ...ZoomContainerLinks(),
-  { rel: 'stylesheet', href: styles },
-];
-
-export const loader = async ({ request }) => {
-  return handleDataRequest(
-    request,
-    (user) => {
-      return json({ user });
-    },
-    () => {
-      throw new Response('Unauthorized', { status: 401 });
-    }
-  );
-};
+export async function action({ request }) {
+  const body = await request.formData();
+  let name = body.get('name');
+  const draw = await createRoom(name);
+  // if (errors) {
+  //   const values = Object.fromEntries(formData);
+  //   return json({ errors, values });
+  // }
+  console.log(draw);
+  return redirect(`/draw/${draw.id}`);
+}
 
 export default function Index() {
-  const data = useLoaderData();
-  const [socket, setSocket] = useState();
+  const transition = useTransition();
+  const actionData = useActionData();
 
-  useEffect(() => {
-    const socket = io();
-    setSocket(socket);
-    socket.emit('event', 'conenction success');
-    return () => {
-      socket.close();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!socket) return;
-    socket.on('confirmation', (data) => {
-      console.log(data);
-    });
-    socket.on('mousemove', (data) => {
-      console.log(data);
-    });
-  });
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
-      <SocketProvider socket={socket}>
-        <MainComponent />
-      </SocketProvider>
-    </div>
+    <Form method='post'>
+      <fieldset disabled={transition.state === 'submitting'}>
+        <p>
+          <label>
+            Name:{' '}
+            <input
+              name='name'
+              type='text'
+              defaultValue={actionData ? actionData.values.name : undefined}
+              style={{
+                borderColor: actionData?.errors.name ? 'red' : '',
+              }}
+            />
+          </label>
+        </p>
+
+        {actionData?.errors.name ? (
+          <ValidationMessage
+            isSubmitting={transition.state === 'submitting'}
+            error={actionData?.errors?.name}
+          />
+        ) : null}
+
+        <p>
+          <button type='submit'>
+            {transition.state === 'submitting'
+              ? 'Configuring...'
+              : 'Enter Room'}
+          </button>
+        </p>
+      </fieldset>
+    </Form>
   );
 }
