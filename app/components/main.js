@@ -221,7 +221,7 @@ class MainComponent extends React.Component {
   onEvent(ev) {
     ev._x = ev.x;
     ev._y = ev.y;
-    this.context.emit('mousemove', { x: ev.x, y: ev.y })
+    this.props.mouseMove({ x: this.changeToOneScalingFactor(ev.x - this.scrollX), y: this.changeToOneScalingFactor(ev.y - this.scrollY) })
     // let isUserDragging = false;
 
     if (this.state.selectedTool === 'select') {
@@ -383,6 +383,7 @@ class MainComponent extends React.Component {
       let filteredShapes = this.state.shapes.filter(shape => shape.id !== drawenImage.id);
       this.setState({ shapes: [...filteredShapes, modifiedImage] }, () => {
         this.idb.updateDb(this.state.shapes, 'app-state-persist');
+        this.props.updateShape(modifiedImage);
         this.drawImage();
       })
     } else {
@@ -610,7 +611,7 @@ class MainComponent extends React.Component {
   render() {
     return (
       <div
-        style={{ '--font-size': `${this.state.baseFontSize}px`, '--line-height': `${this.state.baseLineHeight}px` }}
+        style={{ '--font-size': `${this.state.baseFontSize}px`, '--line-height': `${this.state.baseLineHeight}px`, cursor: `${this.state.selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
         className={`${this.state.selectedTheme === 'dark' ? 'dark-mode' : 'light-mode'}`}>
         <div id="wrapper" >
           <div id="blackboardPlaceholder">
@@ -633,7 +634,5 @@ class MainComponent extends React.Component {
     )
   }
 }
-
-MainComponent.contextType = SocketContext;
 
 export default MainComponent;

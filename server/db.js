@@ -1,4 +1,4 @@
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore } from 'firebase-admin/firestore';
 
 const dataPoint = (collectionPath) => {
   return getFirestore().collection(collectionPath)
@@ -20,9 +20,19 @@ async function createRoom(name) {
   return { id: newRoomRef.id };
 }
 
-async function addShape(roomId, shape) {
-  const newShapeRef = db.shapeCollection(roomId).doc(shape.id);
-  return await newShapeRef.set({ ...shape });
+function addShape(roomId, shape) {
+  const newShapeRef = db.shapeCollection(roomId).doc();
+  console.log('New Id', newShapeRef.id)
+  const shapeJSON = JSON.parse(shape);
+  console.log('Addding Shape Called', roomId, shape);
+  return new Promise((resolve, reject) => {
+    newShapeRef.set({ ...shapeJSON, id: newShapeRef.id }).then((doc) => {
+      console.log('Inside THen');
+      resolve({ id: newShapeRef.id });
+    }).catch(err => {
+      reject({ error: err });
+    });
+  });
 }
 
 async function deleteShape(roomId, shape) {
@@ -35,7 +45,6 @@ async function addCollaborator(roomId, collaborator) {
 }
 
 function getShapes(roomId) {
-  console.log("rood isdue", roomId)
   return new Promise((resolve, reject) => {
     db.shapeCollection(roomId).get().then((snapshot) => {
       let data = [];
@@ -46,10 +55,8 @@ function getShapes(roomId) {
           data.push(doc.data());
         })
       }
-      console.log('Shapes data', data);
       resolve(data);
     }).catch(err => {
-      console.log('Shapes ewrror', err);
       reject(err);
     })
   })
@@ -66,10 +73,8 @@ function getUsers(roomId) {
           data.push(doc.data());
         })
       }
-      console.log('Users data', data);
       resolve(data);
     }).catch(err => {
-      console.log('Users Error', err);
       reject(err);
     })
   })
@@ -78,10 +83,8 @@ function getUsers(roomId) {
 function getInitialDrawData(roomId) {
   return new Promise((resolve, reject) => {
     Promise.all([getShapes(roomId), getUsers(roomId)]).then(([shapes, users]) => {
-      console.log(shapes, users);
       resolve({ shapes: shapes && shapes.length > 0 ? shapes : [], users: users && users.length > 0 ? users : [] })
     }).catch((err) => {
-      console.log("Inside err", err)
       reject({ message: err });
     })
   });
