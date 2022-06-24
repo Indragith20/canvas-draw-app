@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { json } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import {
+  useLoaderData,
+  useFetcher,
+  useTransition,
+  useActionData,
+} from '@remix-run/react';
 import io from 'socket.io-client';
 
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
@@ -11,7 +16,8 @@ import { ZoomContainerLinks } from '~/components/ZoomContainer/ZoomContainer';
 import { handleDataRequest } from '~/entry.server';
 import styles from '../../styles/styles.css';
 import { SocketProvider } from '~/contexts/socketContext';
-import { getInitialDrawData } from '../../../server/db';
+import { addShape, getInitialDrawData } from '../../../server/db';
+import Idb from '~/components/utils/idb';
 
 export const links = () => [
   ...MainComponentStyles(),
@@ -28,10 +34,23 @@ export const loader = async ({ request, params }) => {
   return json({ drawData });
 };
 
+export const action = async ({ request, params }) => {
+  const body = await request.formData();
+  let name = body.get('data');
+  const data = await addShape(params.drawId, name);
+  return json({ data });
+};
+
 export default function DrawIndex() {
+  const fetcher = useFetcher();
   const data = useLoaderData();
-  console.log(data);
+  const actionData = useActionData();
+
+  console.log(actionData);
   const [socket, setSocket] = useState();
+  const idb = useMemo(() => {
+    return new Idb();
+  });
 
   useEffect(() => {
     const socket = io();
@@ -51,10 +70,21 @@ export default function DrawIndex() {
       console.log(data);
     });
   });
+
+  function updateShape(shape) {
+    let formData = new FormData();
+    formData.set('data', JSON.stringify({ ...shape }));
+    fetcher.submit(formData, { method: 'post' });
+  }
+
+  function onMouseMove(eventDetails) {
+    socket.emit('mousemove', eventDetails);
+  }
+
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
       <SocketProvider socket={socket}>
-        <MainComponent />
+        <MainComponent mouseMove={onMouseMove} updateShape={updateShape} />
       </SocketProvider>
     </div>
   );

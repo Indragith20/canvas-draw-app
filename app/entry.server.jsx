@@ -24,6 +24,6 @@ export const handleDataRequest = (
   // same args that get passed to the action or loader that was called
   { request, params, context }
 ) => {
-  console.log('Initakl', request);
-  return { message: 'success' };
+  console.log('Initakl', params);
+  return response;
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useActionData, Form, useTransition } from '@remix-run/react';
+import { useActionData, Form, useTransition, Link } from '@remix-run/react';
 import { createRoom } from '../../server/db';
 import { redirect } from '@remix-run/node';
 
@@ -50,6 +50,10 @@ export default function Index() {
               : 'Enter Room'}
           </button>
         </p>
+
+        <Link to='/draw/freedraw' className='text-xl text-blue-600 underline'>
+          Try without Login
+        </Link>
       </fieldset>
     </Form>
   );
