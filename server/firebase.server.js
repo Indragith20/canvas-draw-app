@@ -1,14 +1,14 @@
-import {
-  getApps as getServerApps,
-  initializeApp as initializeServerApp,
-  cert as serverCert,
-} from 'firebase-admin/app';
-import {
-  getApps as getClientApps,
-  initializeApp as initializeClientApp,
-} from 'firebase/app';
-import { getAuth as getServerAuth } from 'firebase-admin/auth';
-import { getAuth as getClientAuth } from 'firebase/auth';
+const {
+  getApps: getServerApps,
+  initializeApp: initializeServerApp,
+  cert: serverCert,
+} = require('firebase-admin/app');
+const {
+  getApps: getClientApps,
+  initializeApp: initializeClientApp,
+} = require('firebase/app');
+const { getAuth: getServerAuth } = require('firebase-admin/auth');
+const { getAuth: getClientAuth } = require('firebase/auth');
 if (getClientApps().length === 0) {
   let config;
   if (!process.env.CLIENT_CONFIG) {
@@ -40,7 +40,7 @@ if (getServerApps().length === 0) {
   initializeServerApp(config);
 }
 
-export const auth = {
-  server: getServerAuth(),
-  client: getClientAuth(),
+module.exports = {
+  server: getServerAuth,
+  client: getClientAuth,
 };

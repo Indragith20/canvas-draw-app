@@ -1,15 +1,20 @@
-import 'dotenv/config'
-import express from 'express';
-import compression from 'compression';
-import morgan from 'morgan';
+require('dotenv/config')
 
-import { auth as FirebaseServer } from './server/firebase.server';
+const express = require("express");
+const compression = require("compression");
+const morgan = require("morgan");
+const { createRequestHandler } = require("@remix-run/express");
+
+const { server } = require('./server/firebase.server');
+
+
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
 
-import { createRequestHandler } from '@remix-run/express';
+const BUILD_DIR = path.join(process.cwd(), "build");
 
-import * as serverBuild from '@remix-run/dev/server-build';
+
 
 const app = express();
 
@@ -17,7 +22,8 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer);
 
-FirebaseServer.server;
+//Initializing the firebase server
+server();
 
 let clients = [];
 
@@ -30,18 +36,18 @@ let clients = [];
 
 //   socket.on('event', (data) => {
 //     console.log(socket.id, data);
-//     clients.push(socket.id);
+//     //clients.push(socket.id);
 //     socket.emit('event', 'pong');
 //   });
 
 
 //   socket.on('mousemove', (data) => {
-//     console.log(clients);
-//     clients.forEach((clientId) => {
-//       if (clientId !== socket.id) {
-//         io.to(clientId).emit('mousemove', data);
-//       }
-//     })
+//     // console.log(clients);
+//     // clients.forEach((clientId) => {
+//     //   if (clientId !== socket.id) {
+//     //     io.to(clientId).emit('mousemove', data);
+//     //   }
+//     // })
 //   })
 
 //   socket.on('disconnect', (data) => {
@@ -69,11 +75,20 @@ app.use(express.static('public/build', { maxAge: '1h' }));
 app.use(morgan('tiny'));
 
 app.all(
-  '*',
-  createRequestHandler({
-    build: serverBuild,
-    mode: process.env.NODE_ENV,
-  })
+  "*",
+  process.env.NODE_ENV === "development"
+    ? (req, res, next) => {
+      purgeRequireCache();
+      console.log(require(BUILD_DIR));
+      return createRequestHandler({
+        build: require(BUILD_DIR),
+        mode: process.env.NODE_ENV,
+      })(req, res, next);
+    }
+    : createRequestHandler({
+      build: require(BUILD_DIR),
+      mode: process.env.NODE_ENV,
+    })
 );
 
 const port = process.env.PORT || 3000;
@@ -82,4 +97,18 @@ httpServer.listen(port, () => {
 });
 
 
-module.exports = httpServer;
+function purgeRequireCache() {
+  // purge require cache on requests for "server side HMR" this won't let
+  // you have in-memory objects between requests in development,
+  // alternatively you can set up nodemon/pm2-dev to restart the server on
+  // file changes, but then you'll have to reconnect to databases/etc on each
+  // change. We prefer the DX of this, so we've included it for you by default
+  for (let key in require.cache) {
+    if (key.startsWith(BUILD_DIR)) {
+      delete require.cache[key];
+    }
+  }
+}
+
+
+//module.exports = httpServer;
