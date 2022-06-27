@@ -7,26 +7,24 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production remix build",
     "dev": "cross-env NODE_ENV=development remix build && run-p dev:*",
-    "dev:node": "cross-env NODE_ENV=development nodemon ./build/index.js --watch ./build/index.js",
+    "dev:node": "cross-env NODE_ENV=development nodemon ./server.js --watch ./server.js",
     "dev:remix": "cross-env NODE_ENV=development remix watch",
     "postinstall": "remix setup node",
     "start": "cross-env NODE_ENV=production node ./build/index.js"
   },
   "dependencies": {
-    "@remix-run/express": "^1.2.3",
-    "@remix-run/node": "^1.5.1",
-    "@remix-run/react": "^1.2.3",
+    "@remix-run/express": "^1.6.1",
+    "@remix-run/node": "^1.6.1",
+    "@remix-run/react": "^1.6.1",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
     "dotenv": "^16.0.1",
-    "express": "^4.17.1",
+    "express": "^4.18.1",
     "firebase": "^9.6.10",
     "firebase-admin": "^10.0.2",
     "morgan": "^1.10.0",
-    "npm-run-all": "^4.1.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "remix": "^1.2.3",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1"
   },
@@ -34,7 +32,8 @@
     "@remix-run/dev": "^1.2.3",
     "@remix-run/eslint-config": "^1.2.3",
     "eslint": "^8.9.0",
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.15",
+    "npm-run-all": "^4.1.5"
   },
   "engines": {
     "node": ">=14"
