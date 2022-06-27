@@ -10,7 +10,7 @@
     "dev:node": "cross-env NODE_ENV=development nodemon ./server.js --watch ./server.js",
     "dev:remix": "cross-env NODE_ENV=development remix watch",
     "postinstall": "remix setup node",
-    "start": "cross-env NODE_ENV=production node ./build/index.js"
+    "start": "cross-env NODE_ENV=production node ./server.js"
   },
   "dependencies": {
     "@remix-run/express": "^1.6.1",
