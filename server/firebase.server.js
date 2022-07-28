@@ -41,6 +41,8 @@ if (getServerApps().length === 0) {
 }
 
 module.exports = {
-  server: getServerAuth,
-  client: getClientAuth,
+  auth: {
+    server: getServerAuth(),
+    client: getClientAuth(),
+  }
 };

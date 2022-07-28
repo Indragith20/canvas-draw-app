@@ -5,7 +5,7 @@ const compression = require("compression");
 const morgan = require("morgan");
 const { createRequestHandler } = require("@remix-run/express");
 
-const { server } = require('./server/firebase.server');
+const { auth } = require('./server/firebase.server');
 
 
 const { createServer } = require('http');
@@ -23,7 +23,7 @@ const httpServer = createServer(app);
 const io = new Server(httpServer);
 
 //Initializing the firebase server
-server();
+auth.server;
 
 let clients = [];
 

@@ -1,5 +1,4 @@
-import { getFirestore } from 'firebase-admin/firestore';
-
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 const dataPoint = (collectionPath) => {
   return getFirestore().collection(collectionPath)
 };
@@ -7,17 +6,28 @@ const dataPoint = (collectionPath) => {
 
 const db = {
   rooms: () => dataPoint('rooms'),
+  users: () => dataPoint('users'),
   room: (roomId) => dataPoint(`rooms/${roomId}`),
+  user: (userId) => dataPoint(`users/${userId}`),
   shapeCollection: (roomId) => dataPoint(`rooms/${roomId}/shapes`),
   collaborators: (roomId) => dataPoint(`rooms/${roomId}/collaborators`)
 }
 
 
-async function createRoom(name) {
-  const newRoomRef = db.rooms().doc();
-  await db.collaborators(newRoomRef.id).doc().set({ name: name, color: 'blue', isActive: true });
-  await newRoomRef.set({ id: newRoomRef.id });
-  return { id: newRoomRef.id };
+async function createRoom(userId, userName, roomName) {
+  return new Promise((resolve, reject) => {
+    const newRoomRef = db.rooms().doc();
+    addRoomToUser(userId, newRoomRef.id, roomName).then(() => {
+      let collaboratorPromise = db.collaborators(newRoomRef.id).doc().set({ name: userName, color: 'blue', isActive: true, id: userId });
+      let roomPromise = newRoomRef.set({ id: newRoomRef.id, roomName });
+      Promise.all([collaboratorPromise, roomPromise]).then(() => {
+        console.log("Resolbve", userId);
+        resolve({ id: newRoomRef.id, userId: userId });
+      }).catch(err => {
+        reject({ message: err });
+      })
+    })
+  })
 }
 
 function addShape(roomId, shape) {
@@ -110,12 +120,53 @@ async function deleteCollaborator(roomId, collaborator) {
   return await collaboratorRef.update({ isActive: false });
 }
 
+async function addUser(name, userId, email) {
+  return new Promise((resolve, reject) => {
+    let newUserRef = db.users().doc(userId);
+    newUserRef.set({ name, id: userId, rooms: [], email }).then(() => {
+      resolve({ userId: newUserRef.id });
+    }).catch(err => {
+      reject(err);
+    })
+  })
+}
+
+function addRoomToUser(userId, roomId, roomName) {
+  console.log(userId, roomId, roomName);
+  return new Promise((resolve, reject) => {
+    let userRef = db.users().doc(userId);
+    userRef.update({ rooms: FieldValue.arrayUnion({ roomId, roomName }) }).then(() => {
+      resolve();
+    }).catch(err => {
+      reject(err);
+    });
+  })
+}
+
+function getUser(userId) {
+  return new Promise((resolve, reject) => {
+    let userRef = db.users().doc(userId);
+    userRef.get().then((doc) => {
+      console.log(doc.data());
+      if (!doc.exists) {
+        resolve({ error: 'No such document!' });
+      } else {
+        resolve({ data: doc.data() });
+      }
+    }).catch(err => {
+      reject(err);
+    })
+
+  })
+}
 
 export {
+  addUser,
   createRoom,
   getInitialDrawData,
   addShape,
   deleteShape,
   addCollaborator,
-  deleteCollaborator
+  deleteCollaborator,
+  getUser
 }

@@ -22,6 +22,12 @@ var __spreadValues = (a, b) => {
 };
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -43,6 +49,67 @@ var __toCommonJS = /* @__PURE__ */ ((cache) => {
   };
 })(typeof WeakMap !== "undefined" ? /* @__PURE__ */ new WeakMap() : 0);
 
+// node_modules/@remix-run/dev/compiler/shims/react.ts
+var React;
+var init_react = __esm({
+  "node_modules/@remix-run/dev/compiler/shims/react.ts"() {
+    React = __toESM(require("react"));
+  }
+});
+
+// server/firebase.server.js
+var require_firebase_server = __commonJS({
+  "server/firebase.server.js"(exports, module2) {
+    init_react();
+    var {
+      getApps: getServerApps,
+      initializeApp: initializeServerApp,
+      cert: serverCert
+    } = require("firebase-admin/app");
+    var {
+      getApps: getClientApps,
+      initializeApp: initializeClientApp
+    } = require("firebase/app");
+    var { getAuth: getServerAuth } = require("firebase-admin/auth");
+    var { getAuth: getClientAuth } = require("firebase/auth");
+    if (getClientApps().length === 0) {
+      let config;
+      if (!process.env.CLIENT_CONFIG) {
+        throw new Error("Missing CLIENT_CONFIG environment variable, ");
+      } else {
+        try {
+          config = JSON.parse(process.env.CLIENT_CONFIG);
+        } catch {
+          throw Error("Invalid CLIENT_CONFIG environment variable");
+        }
+      }
+      initializeClientApp(config);
+    }
+    if (getServerApps().length === 0) {
+      let config;
+      if (!process.env.SERVICE_ACCOUNT) {
+        throw new Error("Missing SERVICE_ACCOUNT environment variable");
+      } else {
+        try {
+          const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT);
+          config = {
+            credential: serverCert(serviceAccount)
+          };
+        } catch {
+          throw Error("Invalid SERVICE_ACCOUNT environment variable");
+        }
+      }
+      initializeServerApp(config);
+    }
+    module2.exports = {
+      auth: {
+        server: getServerAuth(),
+        client: getClientAuth()
+      }
+    };
+  }
+});
+
 // <stdin>
 var stdin_exports = {};
 __export(stdin_exports, {
@@ -50,9 +117,10 @@ __export(stdin_exports, {
   entry: () => entry,
   routes: () => routes
 });
+init_react();
 
-// node_modules/@remix-run/dev/compiler/shims/react.ts
-var React = __toESM(require("react"));
+// server-entry-module:@remix-run/dev/server-build
+init_react();
 
 // app/entry.server.jsx
 var entry_server_exports = {};
@@ -60,6 +128,7 @@ __export(entry_server_exports, {
   default: () => handleRequest,
   handleDataRequest: () => handleDataRequest
 });
+init_react();
 var import_server = require("react-dom/server");
 var import_react = require("@remix-run/react");
 function handleRequest(request, responseStatusCode, responseHeaders, remixContext) {
@@ -73,7 +142,7 @@ function handleRequest(request, responseStatusCode, responseHeaders, remixContex
     headers: responseHeaders
   });
 }
-var handleDataRequest = (response, { request, params, context: context2 }) => {
+var handleDataRequest = (response, { request, params, context }) => {
   console.log("Initakl", params);
   return response;
 };
@@ -84,6 +153,7 @@ __export(root_exports, {
   default: () => App,
   meta: () => meta
 });
+init_react();
 var import_react2 = __toESM(require("react"));
 var import_react3 = require("@remix-run/react");
 function meta() {
@@ -106,9 +176,11 @@ __export(freeDraw_exports, {
   default: () => FreeDrawIndex,
   links: () => links
 });
+init_react();
 var import_react10 = __toESM(require("react"));
 
 // app/components/ConfigTool/ConfigTool.js
+init_react();
 var import_react4 = __toESM(require("react"));
 
 // app/components/ConfigTool/ConfigTool.css
@@ -138,12 +210,14 @@ function ConfigTool({ toggleTheme }) {
 var ConfigTool_default2 = ConfigTool;
 
 // app/components/main.js
+init_react();
 var import_react9 = __toESM(require("react"));
 
 // app/components/main.css
 var main_default = "/build/_assets/main-YLJ6JLO4.css";
 
 // app/components/SelectTool/SelectTool.js
+init_react();
 var import_react5 = __toESM(require("react"));
 
 // app/components/SelectTool/SelectTool.css
@@ -270,6 +344,7 @@ function SelectTool({ selectedTool, updateTool }) {
 var SelectTool_default2 = SelectTool;
 
 // app/components/Shapes/Arrow.js
+init_react();
 var Arrow = class {
   constructor(tempCanvas, tempContext, callback, id) {
     this.id = id;
@@ -332,6 +407,7 @@ var Arrow = class {
 var Arrow_default = Arrow;
 
 // app/components/Shapes/Chalk.js
+init_react();
 var Chalk = class {
   constructor(tempCanvas, tempContext, callback) {
     this.tempCanvas = tempCanvas;
@@ -363,7 +439,11 @@ var Chalk = class {
 };
 var Chalk_default = Chalk;
 
+// app/components/Shapes/Circle.js
+init_react();
+
 // app/components/utils/getElementsAtPosition.js
+init_react();
 function getElementsAtPosition(x, y, shapes) {
   let returnElement = null;
   let diffX = null;
@@ -524,26 +604,30 @@ var Circle = class {
 };
 var Circle_default = Circle;
 
+// app/components/Shapes/Diamond.js
+init_react();
+
 // app/components/utils/drawShapes.js
-function drawDiamond(xCenter, yCenter, size, context2) {
+init_react();
+function drawDiamond(xCenter, yCenter, size, context) {
   let numberOfSides = 4;
-  context2.beginPath();
-  context2.moveTo(xCenter + size * Math.cos(0), yCenter + size * Math.sin(0));
+  context.beginPath();
+  context.moveTo(xCenter + size * Math.cos(0), yCenter + size * Math.sin(0));
   for (var i = 1; i <= numberOfSides; i += 1) {
-    context2.lineTo(xCenter + size * Math.cos(i * 2 * Math.PI / numberOfSides), yCenter + size * Math.sin(i * 2 * Math.PI / numberOfSides));
+    context.lineTo(xCenter + size * Math.cos(i * 2 * Math.PI / numberOfSides), yCenter + size * Math.sin(i * 2 * Math.PI / numberOfSides));
   }
-  context2.stroke();
+  context.stroke();
 }
-function drawText(text, context2, x, y, maxWidth, lineHeight = 32, color, fontSize = 24) {
-  context2.font = `normal ${fontSize}px/${lineHeight}px Comic Sans MS`;
-  context2.fillStyle = color;
-  context2.textBaseline = "top";
+function drawText(text, context, x, y, maxWidth, lineHeight = 32, color, fontSize = 24) {
+  context.font = `normal ${fontSize}px/${lineHeight}px Comic Sans MS`;
+  context.fillStyle = color;
+  context.textBaseline = "top";
   let words = text.split("");
   let line = "";
   let numberOfLines = 1;
   for (let n = 0; n < words.length; n++) {
     if (words[n] === "\n") {
-      context2.fillText(line, x, y);
+      context.fillText(line, x, y);
       line = "";
       y += lineHeight;
       numberOfLines++;
@@ -552,7 +636,7 @@ function drawText(text, context2, x, y, maxWidth, lineHeight = 32, color, fontSi
       line = testLine;
     }
   }
-  context2.fillText(line, x, y);
+  context.fillText(line, x, y);
   return numberOfLines;
 }
 
@@ -610,6 +694,7 @@ var Diamond = class {
 var Diamond_default = Diamond;
 
 // app/components/Shapes/DrawText.js
+init_react();
 var DrawText = class {
   constructor(tempCanvas, tempContext, callback, id, selectedTheme) {
     this.started = false;
@@ -702,6 +787,7 @@ var DrawText = class {
 var DrawText_default = DrawText;
 
 // app/components/Shapes/Line.js
+init_react();
 var Line = class {
   constructor(tempCanvas, tempContext, callback, id) {
     this.id = id;
@@ -754,6 +840,7 @@ var Line = class {
 var Line_default = Line;
 
 // app/components/Shapes/MoveTool.js
+init_react();
 var MoveTool = class {
   constructor(tempCanvas, tempContext, callback, element, theme) {
     this.id = element.id;
@@ -974,6 +1061,7 @@ var MoveTool = class {
 var MoveTool_default = MoveTool;
 
 // app/components/Shapes/Rectangle.js
+init_react();
 var Rect = class {
   constructor(tempCanvas, tempContext, callback, id) {
     this.id = id;
@@ -1030,6 +1118,7 @@ var Rect = class {
 var Rectangle_default = Rect;
 
 // app/components/TextTool/TextTool.js
+init_react();
 var import_react6 = __toESM(require("react"));
 
 // app/components/TextTool/TextTool.css
@@ -1054,6 +1143,7 @@ function TextTool() {
 var TextTool_default2 = TextTool;
 
 // app/components/ZoomContainer/ZoomContainer.js
+init_react();
 var import_react7 = __toESM(require("react"));
 
 // app/components/ZoomContainer/ZoomContainer.css
@@ -1104,6 +1194,7 @@ function ZoomContainer({ zoomRange, zoomIn, zoomOut }) {
 var ZoomContainer_default2 = ZoomContainer;
 
 // app/components/utils/idb.js
+init_react();
 var Idb = class {
   constructor() {
   }
@@ -1166,6 +1257,7 @@ var Idb = class {
 var idb_default = Idb;
 
 // app/contexts/socketContext.js
+init_react();
 var import_react8 = __toESM(require("react"));
 var SocketContext = (0, import_react8.createContext)(void 0);
 function SocketProvider({ socket, children }) {
@@ -1198,6 +1290,8 @@ var MainComponent = class extends import_react9.default.Component {
   constructor(props) {
     super(props);
     this.state = __spreadValues({
+      scrollX: 0,
+      scrollY: 0,
       canvasWidth: 0,
       canvasHeight: 0,
       selectedTheme: "light",
@@ -1230,8 +1324,6 @@ var MainComponent = class extends import_react9.default.Component {
     this.mouseYPosition = null;
     this.isUserDragging = false;
     this.draggingElement = null;
-    this.scrollX = 0;
-    this.scrollY = 0;
   }
   componentDidMount() {
     this.idb.getDataFromIdb("app-state-persist").then((data) => {
@@ -1338,7 +1430,7 @@ var MainComponent = class extends import_react9.default.Component {
   onEvent(ev) {
     ev._x = ev.x;
     ev._y = ev.y;
-    this.props.mouseMove({ x: this.changeToOneScalingFactor(ev.x - this.scrollX), y: this.changeToOneScalingFactor(ev.y - this.scrollY) });
+    this.props.mouseMove({ x: this.changeToOneScalingFactor(ev.x - this.state.scrollX), y: this.changeToOneScalingFactor(ev.y - this.state.scrollY) });
     if (this.state.selectedTool === "select") {
       if (ev.type === "mousedown") {
         this.mouseXPosition = ev._x;
@@ -1363,9 +1455,9 @@ var MainComponent = class extends import_react9.default.Component {
     }
     if (this.isUserDragging) {
       if (!this.draggingElement) {
-        ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
-        ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
-        let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - this.scrollX), this.changeToOneScalingFactor(this.mouseYPosition - this.scrollY), this.state.shapes);
+        ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
+        ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
+        let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - this.state.scrollX), this.changeToOneScalingFactor(this.mouseYPosition - this.state.scrollY), this.state.shapes);
         if (elementSelected) {
           this.selectedElement = elementSelected;
           let shapes = this.state.shapes.filter((shape) => shape.id !== elementSelected.id);
@@ -1440,12 +1532,12 @@ var MainComponent = class extends import_react9.default.Component {
   imgUpdate(drawenImage) {
     if (drawenImage && drawenImage.type) {
       let modifiedImage = __spreadProps(__spreadValues({}, drawenImage), {
-        x: this.changeToOneScalingFactor(drawenImage.x - this.scrollX),
-        y: this.changeToOneScalingFactor(drawenImage.y - this.scrollY),
-        endX: this.changeToOneScalingFactor(drawenImage.endX - this.scrollX),
-        endY: this.changeToOneScalingFactor(drawenImage.endY - this.scrollY),
-        startX: this.changeToOneScalingFactor(drawenImage.startX - this.scrollX),
-        startY: this.changeToOneScalingFactor(drawenImage.startY - this.scrollY),
+        x: this.changeToOneScalingFactor(drawenImage.x - this.state.scrollX),
+        y: this.changeToOneScalingFactor(drawenImage.y - this.state.scrollY),
+        endX: this.changeToOneScalingFactor(drawenImage.endX - this.state.scrollX),
+        endY: this.changeToOneScalingFactor(drawenImage.endY - this.state.scrollY),
+        startX: this.changeToOneScalingFactor(drawenImage.startX - this.state.scrollX),
+        startY: this.changeToOneScalingFactor(drawenImage.startY - this.state.scrollY),
         radius: this.changeToOneScalingFactor(drawenImage.radius),
         width: drawenImage.width ? this.changeToOneScalingFactor(drawenImage.width) : null,
         height: drawenImage.height ? this.changeToOneScalingFactor(drawenImage.height) : null,
@@ -1472,13 +1564,13 @@ var MainComponent = class extends import_react9.default.Component {
     ;
     this.state.shapes.forEach((shape) => {
       if (shape.type === "rectangle") {
-        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + this.scrollX, this.changeFromOneScalingFactor(shape.y) + this.scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height));
+        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + this.state.scrollX, this.changeFromOneScalingFactor(shape.y) + this.state.scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height));
       } else if (shape.type === "arrow") {
         let headlen = 10;
-        let x = this.changeFromOneScalingFactor(shape.x) + this.scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + this.scrollY;
-        let endX = this.changeFromOneScalingFactor(shape.endX) + this.scrollX;
-        let endY = this.changeFromOneScalingFactor(shape.endY) + this.scrollY;
+        let x = this.changeFromOneScalingFactor(shape.x) + this.state.scrollX;
+        let y = this.changeFromOneScalingFactor(shape.y) + this.state.scrollY;
+        let endX = this.changeFromOneScalingFactor(shape.endX) + this.state.scrollX;
+        let endY = this.changeFromOneScalingFactor(shape.endY) + this.state.scrollY;
         let dx = endX - x;
         let dy = endY - y;
         let angle = Math.atan2(dy, dx);
@@ -1492,22 +1584,22 @@ var MainComponent = class extends import_react9.default.Component {
         this.tempContext.closePath();
       } else if (shape.type === "line") {
         this.tempContext.beginPath();
-        this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + this.scrollX, this.changeFromOneScalingFactor(shape.y) + this.scrollY);
-        this.tempContext.lineTo(this.changeFromOneScalingFactor(shape.endX) + this.scrollX, this.changeFromOneScalingFactor(shape.endY) + this.scrollY);
+        this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + this.state.scrollX, this.changeFromOneScalingFactor(shape.y) + this.state.scrollY);
+        this.tempContext.lineTo(this.changeFromOneScalingFactor(shape.endX) + this.state.scrollX, this.changeFromOneScalingFactor(shape.endY) + this.state.scrollY);
         this.tempContext.stroke();
         this.tempContext.closePath();
       } else if (shape.type === "text") {
         let color = this.state.selectedTheme === "dark" ? "#FFFFFF" : "#000000";
-        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x) + this.scrollX, this.changeFromOneScalingFactor(shape.y) + this.scrollY, this.changeFromOneScalingFactor(shape.width), this.state.baseLineHeight, color, this.state.baseFontSize);
+        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x) + this.state.scrollX, this.changeFromOneScalingFactor(shape.y) + this.state.scrollY, this.changeFromOneScalingFactor(shape.width), this.state.baseLineHeight, color, this.state.baseFontSize);
       } else if (shape.type === "circle") {
-        let x = this.changeFromOneScalingFactor(shape.x) + this.scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + this.scrollY;
+        let x = this.changeFromOneScalingFactor(shape.x) + this.state.scrollX;
+        let y = this.changeFromOneScalingFactor(shape.y) + this.state.scrollY;
         this.tempContext.beginPath();
         this.tempContext.arc(x, y, this.changeFromOneScalingFactor(shape.radius), 0, 2 * Math.PI);
         this.tempContext.stroke();
       } else if (shape.type === "diamond") {
-        let xCenter = this.changeFromOneScalingFactor(shape.x) + this.scrollX;
-        let yCenter = this.changeFromOneScalingFactor(shape.y) + this.scrollY;
+        let xCenter = this.changeFromOneScalingFactor(shape.x) + this.state.scrollX;
+        let yCenter = this.changeFromOneScalingFactor(shape.y) + this.state.scrollY;
         let size = this.changeFromOneScalingFactor(shape.x - shape.endX);
         drawDiamond(xCenter, yCenter, size, this.tempContext);
       }
@@ -1518,8 +1610,8 @@ var MainComponent = class extends import_react9.default.Component {
     this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
   }
   changeToTextTool(ev) {
-    ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
-    ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
+    ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
+    ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
     let enclosedElement = getElementsAtPosition(ev._x, ev._y, this.state.shapes);
     this.resetDraggingValues();
     this.setState({ selectedTool: "text" }, () => {
@@ -1539,7 +1631,7 @@ var MainComponent = class extends import_react9.default.Component {
       let func = this.tool[ev.type];
       if (func) {
         this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-        func(ev, enclosedElement, { scrollX: this.scrollX, scrollY: this.scrollY, scalingFactor: this.state.scalingFactor });
+        func(ev, enclosedElement, { scrollX: this.state.scrollX, scrollY: this.state.scrollY, scalingFactor: this.state.scalingFactor });
       }
     });
   }
@@ -1560,8 +1652,8 @@ var MainComponent = class extends import_react9.default.Component {
     }
   }
   onDocumentClick(ev) {
-    ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
-    ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
+    ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
+    ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
     if (this.state.selectedTool === "text") {
       this.tool["onBlur"]();
       return;
@@ -1573,30 +1665,30 @@ var MainComponent = class extends import_react9.default.Component {
       console.log(selectedElement);
       if (this.selectedElement) {
         if (this.selectedElement.type === "rectangle") {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.state.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.state.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === "line" || this.selectedElement.type === "arrow") {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.state.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.state.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === "circle") {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.state.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.state.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.beginPath();
           this.tempContext.arc(x, y, this.changeFromOneScalingFactor(this.selectedElement.radius) + 10, 0, 2 * Math.PI);
           this.tempContext.stroke();
         } else if (this.selectedElement.type === "diamond") {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.state.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.state.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === "text") {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.state.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.state.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width), this.changeFromOneScalingFactor(this.selectedElement.height));
         }
@@ -1607,9 +1699,14 @@ var MainComponent = class extends import_react9.default.Component {
     if (this.state.selectedTool === "text") {
       this.tool["onBlur"]();
     }
-    this.scrollX = this.scrollX - e.deltaX;
-    this.scrollY = this.scrollY - e.deltaY;
-    this.redraw();
+    this.setState((prevstate) => {
+      return {
+        scrollX: prevstate.scrollX - e.deltaX,
+        scrollY: prevstate.scrollY - e.deltaY
+      };
+    }, () => {
+      this.redraw();
+    });
   }
   resetDraggingValues() {
     this.isUserDragging = false;
@@ -1706,27 +1803,40 @@ __export(drawId_exports, {
   links: () => links2,
   loader: () => loader
 });
+init_react();
 var import_react11 = __toESM(require("react"));
 var import_node = require("@remix-run/node");
 var import_react12 = require("@remix-run/react");
 var import_socket = __toESM(require("socket.io-client"));
 
 // server/db.js
+init_react();
 var import_firestore = require("firebase-admin/firestore");
 var dataPoint = (collectionPath) => {
   return (0, import_firestore.getFirestore)().collection(collectionPath);
 };
 var db = {
   rooms: () => dataPoint("rooms"),
+  users: () => dataPoint("users"),
   room: (roomId) => dataPoint(`rooms/${roomId}`),
+  user: (userId) => dataPoint(`users/${userId}`),
   shapeCollection: (roomId) => dataPoint(`rooms/${roomId}/shapes`),
   collaborators: (roomId) => dataPoint(`rooms/${roomId}/collaborators`)
 };
-async function createRoom(name) {
-  const newRoomRef = db.rooms().doc();
-  await db.collaborators(newRoomRef.id).doc().set({ name, color: "blue", isActive: true });
-  await newRoomRef.set({ id: newRoomRef.id });
-  return { id: newRoomRef.id };
+async function createRoom(userId, userName, roomName) {
+  return new Promise((resolve, reject) => {
+    const newRoomRef = db.rooms().doc();
+    addRoomToUser(userId, newRoomRef.id, roomName).then(() => {
+      let collaboratorPromise = db.collaborators(newRoomRef.id).doc().set({ name: userName, color: "blue", isActive: true, id: userId });
+      let roomPromise = newRoomRef.set({ id: newRoomRef.id, roomName });
+      Promise.all([collaboratorPromise, roomPromise]).then(() => {
+        console.log("Resolbve", userId);
+        resolve({ id: newRoomRef.id, userId });
+      }).catch((err) => {
+        reject({ message: err });
+      });
+    });
+  });
 }
 function addShape(roomId, shape) {
   const newShapeRef = db.shapeCollection(roomId).doc();
@@ -1782,6 +1892,42 @@ function getInitialDrawData(roomId) {
       resolve({ shapes: shapes && shapes.length > 0 ? shapes : [], users: users && users.length > 0 ? users : [] });
     }).catch((err) => {
       reject({ message: err });
+    });
+  });
+}
+async function addUser(name, userId, email) {
+  return new Promise((resolve, reject) => {
+    let newUserRef = db.users().doc(userId);
+    newUserRef.set({ name, id: userId, rooms: [], email }).then(() => {
+      resolve({ userId: newUserRef.id });
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+function addRoomToUser(userId, roomId, roomName) {
+  console.log(userId, roomId, roomName);
+  return new Promise((resolve, reject) => {
+    let userRef = db.users().doc(userId);
+    userRef.update({ rooms: import_firestore.FieldValue.arrayUnion({ roomId, roomName }) }).then(() => {
+      resolve();
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+function getUser(userId) {
+  return new Promise((resolve, reject) => {
+    let userRef = db.users().doc(userId);
+    userRef.get().then((doc) => {
+      console.log(doc.data());
+      if (!doc.exists) {
+        resolve({ error: "No such document!" });
+      } else {
+        resolve({ data: doc.data() });
+      }
+    }).catch((err) => {
+      reject(err);
     });
   });
 }
@@ -1851,50 +1997,464 @@ function DrawIndex() {
   })));
 }
 
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/SignIn.jsx
+var SignIn_exports = {};
+__export(SignIn_exports, {
+  action: () => action2,
+  default: () => Login,
+  loader: () => loader2
+});
+init_react();
+var import_node4 = require("@remix-run/node");
+var import_react13 = require("@remix-run/react");
+var import_react14 = require("react");
+
+// server/auth.js
+init_react();
+var import_node3 = require("@remix-run/node");
+var import_auth = require("firebase/auth");
+
+// app/sessions.js
+init_react();
+var import_node2 = require("@remix-run/node");
+var { getSession: getSession2, commitSession, destroySession } = (0, import_node2.createCookieSessionStorage)({
+  cookie: {
+    name: "__session",
+    secrets: ["fancy-secret-key"],
+    maxAge: 60 * 60 * 24 * 7,
+    sameSite: "lax",
+    path: "/",
+    httpOnly: true
+  }
+});
+
+// server/auth.js
+var import_firebase = __toESM(require_firebase_server());
+var checkSessionCookie2 = async (session) => {
+  try {
+    const decodedIdToken = await import_firebase.auth.server.verifySessionCookie(session.get("session") || "");
+    return decodedIdToken;
+  } catch {
+    return { uid: void 0 };
+  }
+};
+var requireAuth = async (request) => {
+  const session = await getSession2(request.headers.get("cookie"));
+  const { uid } = await checkSessionCookie2(session);
+  if (!uid) {
+    throw (0, import_node3.redirect)("/signin", {
+      headers: { "Set-Cookie": await destroySession(session) }
+    });
+  }
+  return import_firebase.auth.server.getUser(uid);
+};
+var signIn = async (email, password) => {
+  const { user } = await (0, import_auth.signInWithEmailAndPassword)(import_firebase.auth.client, email, password);
+  const idToken = await user.getIdToken();
+  const expiresIn = 1e3 * 60 * 60 * 24 * 7;
+  const sessionCookie = await import_firebase.auth.server.createSessionCookie(idToken, {
+    expiresIn
+  });
+  return { sessionCookie, user };
+};
+var signUp = async (name, email, password) => {
+  let { uid } = await import_firebase.auth.server.createUser({
+    email,
+    password,
+    displayName: name
+  });
+  console.log("added user success", uid);
+  await addUser(name, uid, email);
+  return await signIn(email, password);
+};
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/SignIn.jsx
+var loader2 = async ({ request }) => {
+  const session = await getSession2(request.headers.get("cookie"));
+  const { uid } = await checkSessionCookie2(session);
+  const headers = {
+    "Set-Cookie": await commitSession(session)
+  };
+  if (uid) {
+    return (0, import_node4.redirect)("/rooms", { headers });
+  }
+  return (0, import_node4.json)({}, { headers });
+};
+var action2 = async ({ request }) => {
+  const form = await request.formData();
+  const idToken = form.get("idToken");
+  try {
+    const email = form.get("email");
+    const password = form.get("password");
+    const formError = (0, import_node4.json)({ error: "Please fill all fields!" }, { status: 400 });
+    if (typeof email !== "string")
+      return formError;
+    if (typeof password !== "string")
+      return formError;
+    let { sessionCookie } = await signIn(email, password);
+    const session = await getSession2(request.headers.get("cookie"));
+    session.set("session", sessionCookie);
+    return (0, import_node4.redirect)("/rooms", {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return (0, import_node4.json)({ error: String(error) }, { status: 401 });
+  }
+};
+function Login() {
+  const action7 = (0, import_react13.useActionData)();
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "Login"), (action7 == null ? void 0 : action7.error) && /* @__PURE__ */ React.createElement("p", null, action7 == null ? void 0 : action7.error), /* @__PURE__ */ React.createElement("form", {
+    method: "post"
+  }, /* @__PURE__ */ React.createElement("input", {
+    style: { display: "block" },
+    name: "email",
+    placeholder: "you@example.com",
+    type: "email"
+  }), /* @__PURE__ */ React.createElement("input", {
+    style: { display: "block" },
+    name: "password",
+    placeholder: "password",
+    type: "password"
+  }), /* @__PURE__ */ React.createElement("button", {
+    style: { display: "block" },
+    type: "submit"
+  }, "Login")), /* @__PURE__ */ React.createElement("p", null, "Do you want to ", /* @__PURE__ */ React.createElement(import_react13.Link, {
+    to: "/SignUp"
+  }, "join"), "?"), /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement(import_react13.Link, {
+    to: "/draw/freedraw",
+    className: "text-xl text-blue-600 underline"
+  }, "Try without Login")));
+}
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/SignUp.jsx
+var SignUp_exports = {};
+__export(SignUp_exports, {
+  action: () => action3,
+  default: () => Login2,
+  loader: () => loader3
+});
+init_react();
+var import_node5 = require("@remix-run/node");
+var import_react15 = require("@remix-run/react");
+var loader3 = async ({ request }) => {
+  const session = await getSession2(request.headers.get("cookie"));
+  const { uid } = await checkSessionCookie2(session);
+  const headers = {
+    "Set-Cookie": await commitSession(session)
+  };
+  if (uid) {
+    return (0, import_node5.redirect)("/rooms", { headers });
+  }
+  return (0, import_node5.json)(null, { headers });
+};
+var action3 = async ({ request }) => {
+  const form = await request.formData();
+  const name = form.get("name");
+  const email = form.get("email");
+  const password = form.get("password");
+  const formError = (0, import_node5.json)({ error: "Please fill all fields!" }, { status: 400 });
+  if (typeof name !== "string")
+    return formError;
+  if (typeof email !== "string")
+    return formError;
+  if (typeof password !== "string")
+    return formError;
+  try {
+    const { sessionCookie } = await signUp(name, email, password);
+    const session = await getSession2(request.headers.get("cookie"));
+    session.set("session", sessionCookie);
+    return (0, import_node5.redirect)("/rooms", {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return (0, import_node5.json)({ error: String(error) }, { status: 401 });
+  }
+};
+function Login2() {
+  const action7 = (0, import_react15.useActionData)();
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "Join"), (action7 == null ? void 0 : action7.error) && /* @__PURE__ */ React.createElement("p", null, action7.error), /* @__PURE__ */ React.createElement(import_react15.Form, {
+    method: "post"
+  }, /* @__PURE__ */ React.createElement("input", {
+    style: { display: "block" },
+    name: "name",
+    placeholder: "Peter",
+    type: "text"
+  }), /* @__PURE__ */ React.createElement("input", {
+    style: { display: "block" },
+    name: "email",
+    placeholder: "you@example.com",
+    type: "email"
+  }), /* @__PURE__ */ React.createElement("input", {
+    style: { display: "block" },
+    name: "password",
+    placeholder: "password",
+    type: "password"
+  }), /* @__PURE__ */ React.createElement("button", {
+    style: { display: "block" },
+    type: "submit"
+  }, "Join")), /* @__PURE__ */ React.createElement("p", null, "Do you want to ", /* @__PURE__ */ React.createElement(import_react15.Link, {
+    to: "/login"
+  }, "login"), "?"));
+}
+
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/index.jsx
 var routes_exports = {};
 __export(routes_exports, {
-  action: () => action2,
-  default: () => Index
+  action: () => action4,
+  default: () => Index,
+  loader: () => loader4
 });
-var import_react13 = __toESM(require("react"));
-var import_react14 = require("@remix-run/react");
-var import_node2 = require("@remix-run/node");
-async function action2({ request }) {
+init_react();
+var import_react16 = __toESM(require("react"));
+var import_react17 = require("@remix-run/react");
+var import_node6 = require("@remix-run/node");
+async function loader4({ request }) {
+  const session = await getSession2(request.headers.get("Cookie"));
+  console.log(session.has("__session"));
+  if (session.has("__session")) {
+    console.log("Isnndie UserId");
+    return (0, import_node6.redirect)("/rooms");
+  }
+  return null;
+}
+async function action4({ request }) {
   const body = await request.formData();
   let name = body.get("name");
   const draw = await createRoom(name);
+  const session = await getSession2(request.headers.get("Cookie"));
+  session.set("userId", draw.userId);
   console.log(draw);
-  return (0, import_node2.redirect)(`/draw/${draw.id}`);
+  return (0, import_node6.redirect)(`/draw/${draw.id}`, {
+    headers: {
+      "Set-Cookie": await commitSession(session)
+    }
+  });
 }
 function Index() {
   var _a;
-  const transition = (0, import_react14.useTransition)();
-  const actionData = (0, import_react14.useActionData)();
-  return /* @__PURE__ */ import_react13.default.createElement(import_react14.Form, {
+  const transition = (0, import_react17.useTransition)();
+  const actionData = (0, import_react17.useActionData)();
+  return /* @__PURE__ */ import_react16.default.createElement(import_react17.Form, {
     method: "post"
-  }, /* @__PURE__ */ import_react13.default.createElement("fieldset", {
+  }, /* @__PURE__ */ import_react16.default.createElement("fieldset", {
     disabled: transition.state === "submitting"
-  }, /* @__PURE__ */ import_react13.default.createElement("p", null, /* @__PURE__ */ import_react13.default.createElement("label", null, "Name:", " ", /* @__PURE__ */ import_react13.default.createElement("input", {
+  }, /* @__PURE__ */ import_react16.default.createElement("p", null, /* @__PURE__ */ import_react16.default.createElement("label", null, "Name:", " ", /* @__PURE__ */ import_react16.default.createElement("input", {
     name: "name",
     type: "text",
     defaultValue: actionData ? actionData.values.name : void 0,
     style: {
       borderColor: (actionData == null ? void 0 : actionData.errors.name) ? "red" : ""
     }
-  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react13.default.createElement(ValidationMessage, {
+  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react16.default.createElement(ValidationMessage, {
     isSubmitting: transition.state === "submitting",
     error: (_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.name
-  }) : null, /* @__PURE__ */ import_react13.default.createElement("p", null, /* @__PURE__ */ import_react13.default.createElement("button", {
+  }) : null, /* @__PURE__ */ import_react16.default.createElement("p", null, /* @__PURE__ */ import_react16.default.createElement("button", {
     type: "submit"
-  }, transition.state === "submitting" ? "Configuring..." : "Enter Room")), /* @__PURE__ */ import_react13.default.createElement(import_react14.Link, {
+  }, transition.state === "submitting" ? "Configuring..." : "Enter Room")), /* @__PURE__ */ import_react16.default.createElement(import_react17.Link, {
     to: "/draw/freedraw",
     className: "text-xl text-blue-600 underline"
   }, "Try without Login")));
 }
 
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms.jsx
+var rooms_exports = {};
+__export(rooms_exports, {
+  default: () => rooms_default,
+  loader: () => loader5
+});
+init_react();
+var import_node7 = require("@remix-run/node");
+var import_react18 = require("@remix-run/react");
+var import_react19 = __toESM(require("react"));
+async function loader5({ request }) {
+  console.log("rooms loader");
+  const { displayName, uid } = await requireAuth(request);
+  console.log("uid", uid);
+  const userData = await getUser(uid);
+  console.log("Error", userData.error);
+  if (userData.error) {
+    return (0, import_node7.redirect)("/");
+  } else {
+    return (0, import_node7.json)(__spreadValues({}, userData.data));
+  }
+}
+function Rooms() {
+  const data = (0, import_react18.useLoaderData)();
+  console.log("Isndie Rooms", data);
+  return /* @__PURE__ */ import_react19.default.createElement(import_react19.default.Fragment, null, /* @__PURE__ */ import_react19.default.createElement("p", null, /* @__PURE__ */ import_react19.default.createElement(import_react18.Link, {
+    to: "/rooms/createRoom"
+  }, "Create Room")), /* @__PURE__ */ import_react19.default.createElement("p", null, /* @__PURE__ */ import_react19.default.createElement(import_react18.Link, {
+    to: "/rooms/enterRoom"
+  }, "Enter Room")), /* @__PURE__ */ import_react19.default.createElement("p", null, "Rooms List"), /* @__PURE__ */ import_react19.default.createElement(import_react18.Outlet, {
+    context: data
+  }));
+}
+var rooms_default = Rooms;
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/createRoom.jsx
+var createRoom_exports = {};
+__export(createRoom_exports, {
+  action: () => action5,
+  default: () => CreateRoom
+});
+init_react();
+var import_react20 = __toESM(require("react"));
+var import_react21 = require("@remix-run/react");
+var import_node8 = require("@remix-run/node");
+async function action5({ request }) {
+  const body = await request.formData();
+  let name = body.get("roomName");
+  let userId = body.get("userId");
+  let userName = body.get("userName");
+  const draw = await createRoom(userId, userName, name);
+  const session = await getSession2(request.headers.get("Cookie"));
+  console.log(draw);
+  return (0, import_node8.redirect)(`/draw/${draw.id}`, {
+    headers: {
+      "Set-Cookie": await commitSession(session)
+    }
+  });
+}
+function CreateRoom() {
+  var _a;
+  const actionData = (0, import_react21.useActionData)();
+  const userData = (0, import_react21.useOutletContext)();
+  const [name, setName] = (0, import_react20.useState)("");
+  const fetcher = (0, import_react21.useFetcher)();
+  console.log("user", userData);
+  function onClickSubmit() {
+    let formData = new FormData();
+    formData.set("userName", userData.name);
+    formData.set("userId", userData.id);
+    formData.set("roomName", name);
+    fetcher.submit(formData, { method: "post" });
+  }
+  return /* @__PURE__ */ import_react20.default.createElement("div", null, /* @__PURE__ */ import_react20.default.createElement("fieldset", {
+    disabled: fetcher.state === "submitting"
+  }, /* @__PURE__ */ import_react20.default.createElement("p", null, /* @__PURE__ */ import_react20.default.createElement("label", null, "Name:", " ", /* @__PURE__ */ import_react20.default.createElement("input", {
+    name: "name",
+    type: "text",
+    value: name,
+    defaultValue: actionData ? actionData.values.name : void 0,
+    style: {
+      borderColor: (actionData == null ? void 0 : actionData.errors.name) ? "red" : ""
+    },
+    onChange: (e) => setName(e.target.value)
+  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react20.default.createElement(ValidationMessage, {
+    isSubmitting: fetcher.state === "submitting",
+    error: (_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.name
+  }) : null, /* @__PURE__ */ import_react20.default.createElement("p", null, /* @__PURE__ */ import_react20.default.createElement("button", {
+    onClick: onClickSubmit
+  }, fetcher.state === "submitting" ? "Configuring..." : "Create Room"))));
+}
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/enterRoom.jsx
+var enterRoom_exports = {};
+__export(enterRoom_exports, {
+  action: () => action6,
+  default: () => EnterRoom,
+  loader: () => loader6
+});
+init_react();
+var import_react22 = __toESM(require("react"));
+var import_react23 = require("@remix-run/react");
+var import_node9 = require("@remix-run/node");
+async function loader6({ request }) {
+  const session = await getSession(request.headers.get("cookie"));
+  const { uid } = await checkSessionCookie(session);
+}
+async function action6({ request }) {
+  const body = await request.formData();
+  let name = body.get("name");
+  const draw = await createRoom(name);
+  console.log(draw);
+  return (0, import_node9.redirect)(`/draw/${draw.id}`);
+}
+function EnterRoom() {
+  var _a;
+  const transition = (0, import_react23.useTransition)();
+  const actionData = (0, import_react23.useActionData)();
+  return /* @__PURE__ */ import_react22.default.createElement(import_react23.Form, {
+    method: "post"
+  }, /* @__PURE__ */ import_react22.default.createElement("fieldset", {
+    disabled: transition.state === "submitting"
+  }, /* @__PURE__ */ import_react22.default.createElement("p", null, /* @__PURE__ */ import_react22.default.createElement("label", null, "Room Name:", " ", /* @__PURE__ */ import_react22.default.createElement("input", {
+    name: "name",
+    type: "text",
+    defaultValue: actionData ? actionData.values.name : void 0,
+    style: {
+      borderColor: (actionData == null ? void 0 : actionData.errors.name) ? "red" : ""
+    }
+  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react22.default.createElement(ValidationMessage, {
+    isSubmitting: transition.state === "submitting",
+    error: (_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.name
+  }) : null, /* @__PURE__ */ import_react22.default.createElement("p", null, /* @__PURE__ */ import_react22.default.createElement("button", {
+    type: "submit"
+  }, transition.state === "submitting" ? "Configuring..." : "Enter Room")), /* @__PURE__ */ import_react22.default.createElement(import_react23.Link, {
+    to: "/draw/freedraw",
+    className: "text-xl text-blue-600 underline"
+  }, "Try without Login")));
+}
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/index.jsx
+var rooms_exports2 = {};
+__export(rooms_exports2, {
+  default: () => RoomsList,
+  links: () => links3
+});
+init_react();
+var import_react26 = require("@remix-run/react");
+var import_react27 = __toESM(require("react"));
+
+// app/components/SingleRoom/SingleRoom.js
+init_react();
+var import_react24 = require("@remix-run/react");
+var import_react25 = __toESM(require("react"));
+
+// app/components/SingleRoom/SingleRoom.css
+var SingleRoom_default = "/build/_assets/SingleRoom-A2RRSRGE.css";
+
+// app/components/SingleRoom/SingleRoom.js
+function RoomLinks() {
+  return [{ rel: "stylesheet", href: SingleRoom_default }];
+}
+function SingleRoom({ roomId, roomName }) {
+  return /* @__PURE__ */ import_react25.default.createElement(import_react24.Link, {
+    to: `/draw/${roomId}`,
+    className: "room"
+  }, roomName);
+}
+
+// app/routes/rooms/index.css
+var rooms_default2 = "/build/_assets/index-5RT72MKU.css";
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/index.jsx
+var links3 = () => [
+  ...RoomLinks(),
+  { rel: "stylesheet", href: rooms_default2 }
+];
+function RoomsList() {
+  let userData = (0, import_react26.useOutletContext)();
+  return /* @__PURE__ */ import_react27.default.createElement("div", null, /* @__PURE__ */ import_react27.default.createElement("span", null, "List of Rooms"), /* @__PURE__ */ import_react27.default.createElement("div", {
+    className: "roomContainer"
+  }, userData.rooms.map((room) => {
+    return /* @__PURE__ */ import_react27.default.createElement(SingleRoom, {
+      key: room.roomId,
+      roomId: room.roomId,
+      roomName: room.roomName
+    });
+  })));
+}
+
 // server-assets-manifest:@remix-run/dev/assets-manifest
-var assets_manifest_default = { "version": "337c55cc", "entry": { "module": "/build/entry.client-FRQPTBET.js", "imports": ["/build/_shared/chunk-PRHOWYG5.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-AAGBJ56Y.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-NV3VFURE.js", "imports": ["/build/_shared/chunk-OJO3AYYF.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-H7APQMMZ.js", "imports": ["/build/_shared/chunk-OJO3AYYF.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-DL6BQ7SL.js", "imports": void 0, "hasAction": true, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-337C55CC.js" };
+init_react();
+var assets_manifest_default = { "version": "46a1c986", "entry": { "module": "/build/entry.client-SDKSEGGD.js", "imports": ["/build/_shared/chunk-MKUK623B.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-HVJ7FR7F.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignIn": { "id": "routes/SignIn", "parentId": "root", "path": "SignIn", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignIn-DHIDCC3G.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignUp": { "id": "routes/SignUp", "parentId": "root", "path": "SignUp", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignUp-RYMIXDFM.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-5EF3C24R.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-OZBGCPOJ.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-LCVVEMQX.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms": { "id": "routes/rooms", "parentId": "root", "path": "rooms", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms-NIBRUIU6.js", "imports": void 0, "hasAction": false, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/createRoom": { "id": "routes/rooms/createRoom", "parentId": "routes/rooms", "path": "createRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/createRoom-L5Z3MMGI.js", "imports": void 0, "hasAction": true, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/enterRoom": { "id": "routes/rooms/enterRoom", "parentId": "routes/rooms", "path": "enterRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/enterRoom-BK67MJ2F.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/index": { "id": "routes/rooms/index", "parentId": "routes/rooms", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/rooms/index-52PE7ZYE.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-46A1C986.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var entry = { module: entry_server_exports };
@@ -1923,6 +2483,22 @@ var routes = {
     caseSensitive: void 0,
     module: drawId_exports
   },
+  "routes/SignIn": {
+    id: "routes/SignIn",
+    parentId: "root",
+    path: "SignIn",
+    index: void 0,
+    caseSensitive: void 0,
+    module: SignIn_exports
+  },
+  "routes/SignUp": {
+    id: "routes/SignUp",
+    parentId: "root",
+    path: "SignUp",
+    index: void 0,
+    caseSensitive: void 0,
+    module: SignUp_exports
+  },
   "routes/index": {
     id: "routes/index",
     parentId: "root",
@@ -1930,6 +2506,38 @@ var routes = {
     index: true,
     caseSensitive: void 0,
     module: routes_exports
+  },
+  "routes/rooms": {
+    id: "routes/rooms",
+    parentId: "root",
+    path: "rooms",
+    index: void 0,
+    caseSensitive: void 0,
+    module: rooms_exports
+  },
+  "routes/rooms/createRoom": {
+    id: "routes/rooms/createRoom",
+    parentId: "routes/rooms",
+    path: "createRoom",
+    index: void 0,
+    caseSensitive: void 0,
+    module: createRoom_exports
+  },
+  "routes/rooms/enterRoom": {
+    id: "routes/rooms/enterRoom",
+    parentId: "routes/rooms",
+    path: "enterRoom",
+    index: void 0,
+    caseSensitive: void 0,
+    module: enterRoom_exports
+  },
+  "routes/rooms/index": {
+    id: "routes/rooms/index",
+    parentId: "routes/rooms",
+    path: void 0,
+    index: true,
+    caseSensitive: void 0,
+    module: rooms_exports2
   }
 };
 module.exports = __toCommonJS(stdin_exports);
