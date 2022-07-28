@@ -170,181 +170,6 @@ function App() {
   }), /* @__PURE__ */ import_react2.default.createElement("title", null, "Whiteboard Application"), /* @__PURE__ */ import_react2.default.createElement(import_react3.Meta, null), /* @__PURE__ */ import_react2.default.createElement(import_react3.Links, null)), /* @__PURE__ */ import_react2.default.createElement("body", null, /* @__PURE__ */ import_react2.default.createElement(import_react3.Outlet, null), /* @__PURE__ */ import_react2.default.createElement(import_react3.ScrollRestoration, null), /* @__PURE__ */ import_react2.default.createElement(import_react3.Scripts, null), /* @__PURE__ */ import_react2.default.createElement(import_react3.LiveReload, null)));
 }
 
-// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/createRoom.jsx
-var createRoom_exports = {};
-init_react();
-
-// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/enterRoom.jsx
-var enterRoom_exports = {};
-__export(enterRoom_exports, {
-  action: () => action,
-  default: () => EnterRoom,
-  loader: () => loader
-});
-init_react();
-var import_react4 = __toESM(require("react"));
-var import_react5 = require("@remix-run/react");
-
-// server/db.js
-init_react();
-var import_firestore = require("firebase-admin/firestore");
-var dataPoint = (collectionPath) => {
-  return (0, import_firestore.getFirestore)().collection(collectionPath);
-};
-var db = {
-  rooms: () => dataPoint("rooms"),
-  users: () => dataPoint("users"),
-  room: (roomId) => dataPoint(`rooms/${roomId}`),
-  user: (userId) => dataPoint(`users/${userId}`),
-  shapeCollection: (roomId) => dataPoint(`rooms/${roomId}/shapes`),
-  collaborators: (roomId) => dataPoint(`rooms/${roomId}/collaborators`)
-};
-async function createRoom(userId, roomName, userName) {
-  return new Promise((resolve, reject) => {
-    const newRoomRef = db.rooms().doc();
-    addRoomToUser(userId, newRoomRef.id, roomName).then(() => {
-      let collaboratorPromise = db.collaborators(newRoomRef.id).doc().set({ name: userName, color: "blue", isActive: true, id: userId });
-      let roomPromise = newRoomRef.set({ id: newRoomRef.id, roomName });
-      Promise.all([collaboratorPromise, roomPromise]).then(() => {
-        console.log("Resolbve", userId);
-        resolve({ id: newRoomRef.id, userId });
-      }).catch((err) => {
-        reject({ message: err });
-      });
-    });
-  });
-}
-function addShape(roomId, shape) {
-  const newShapeRef = db.shapeCollection(roomId).doc();
-  console.log("New Id", newShapeRef.id);
-  const shapeJSON = JSON.parse(shape);
-  console.log("Addding Shape Called", roomId, shape);
-  return new Promise((resolve, reject) => {
-    newShapeRef.set(__spreadProps(__spreadValues({}, shapeJSON), { id: newShapeRef.id })).then((doc) => {
-      console.log("Inside THen");
-      resolve({ id: newShapeRef.id });
-    }).catch((err) => {
-      reject({ error: err });
-    });
-  });
-}
-function getShapes(roomId) {
-  return new Promise((resolve, reject) => {
-    db.shapeCollection(roomId).get().then((snapshot) => {
-      let data = [];
-      if (snapshot.empty) {
-        data = [];
-      } else {
-        snapshot.forEach((doc) => {
-          data.push(doc.data());
-        });
-      }
-      resolve(data);
-    }).catch((err) => {
-      reject(err);
-    });
-  });
-}
-function getUsers(roomId) {
-  return new Promise((resolve, reject) => {
-    db.collaborators(roomId).get().then((snapshot) => {
-      let data = [];
-      if (snapshot.empty) {
-        data = [];
-      } else {
-        snapshot.forEach((doc) => {
-          data.push(doc.data());
-        });
-      }
-      resolve(data);
-    }).catch((err) => {
-      reject(err);
-    });
-  });
-}
-function getInitialDrawData(roomId) {
-  return new Promise((resolve, reject) => {
-    Promise.all([getShapes(roomId), getUsers(roomId)]).then(([shapes, users]) => {
-      resolve({ shapes: shapes && shapes.length > 0 ? shapes : [], users: users && users.length > 0 ? users : [] });
-    }).catch((err) => {
-      reject({ message: err });
-    });
-  });
-}
-async function addUser(name, userId, email) {
-  return new Promise((resolve, reject) => {
-    let newUserRef = db.users().doc(userId);
-    newUserRef.set({ name, id: userId, rooms: [], email }).then(() => {
-      resolve({ userId: newUserRef.id });
-    }).catch((err) => {
-      reject(err);
-    });
-  });
-}
-function addRoomToUser(userId, roomId, roomName) {
-  return new Promise((resolve, reject) => {
-    let userRef = db.users().doc(userId);
-    userRef.update({ rooms: import_firestore.FieldValue.arrayUnion({ roomId, roomName }) }).then(() => {
-      resolve();
-    }).catch((err) => {
-      reject(err);
-    });
-  });
-}
-function getUser(userId) {
-  return new Promise((resolve, reject) => {
-    let userRef = db.users().doc(userId);
-    userRef.get().then((doc) => {
-      if (!doc.exists) {
-        resolve({ error: "No such document!" });
-      } else {
-        resolve({ data: doc.data() });
-      }
-    }).catch((err) => {
-      reject(err);
-    });
-  });
-}
-
-// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/enterRoom.jsx
-var import_node = require("@remix-run/node");
-async function loader({ request }) {
-  const session = await getSession(request.headers.get("cookie"));
-  const { uid } = await checkSessionCookie(session);
-}
-async function action({ request }) {
-  const body = await request.formData();
-  let name = body.get("name");
-  const draw = await createRoom(name);
-  console.log(draw);
-  return (0, import_node.redirect)(`/draw/${draw.id}`);
-}
-function EnterRoom() {
-  var _a;
-  const transition = (0, import_react5.useTransition)();
-  const actionData = (0, import_react5.useActionData)();
-  return /* @__PURE__ */ import_react4.default.createElement(import_react5.Form, {
-    method: "post"
-  }, /* @__PURE__ */ import_react4.default.createElement("fieldset", {
-    disabled: transition.state === "submitting"
-  }, /* @__PURE__ */ import_react4.default.createElement("p", null, /* @__PURE__ */ import_react4.default.createElement("label", null, "Room Name:", " ", /* @__PURE__ */ import_react4.default.createElement("input", {
-    name: "name",
-    type: "text",
-    defaultValue: actionData ? actionData.values.name : void 0,
-    style: {
-      borderColor: (actionData == null ? void 0 : actionData.errors.name) ? "red" : ""
-    }
-  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react4.default.createElement(ValidationMessage, {
-    isSubmitting: transition.state === "submitting",
-    error: (_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.name
-  }) : null, /* @__PURE__ */ import_react4.default.createElement("p", null, /* @__PURE__ */ import_react4.default.createElement("button", {
-    type: "submit"
-  }, transition.state === "submitting" ? "Configuring..." : "Enter Room")), /* @__PURE__ */ import_react4.default.createElement(import_react5.Link, {
-    to: "/draw/freedraw",
-    className: "text-xl text-blue-600 underline"
-  }, "Try without Login")));
-}
-
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/draw/freeDraw.jsx
 var freeDraw_exports = {};
 __export(freeDraw_exports, {
@@ -352,11 +177,11 @@ __export(freeDraw_exports, {
   links: () => links
 });
 init_react();
-var import_react12 = __toESM(require("react"));
+var import_react10 = __toESM(require("react"));
 
 // app/components/ConfigTool/ConfigTool.js
 init_react();
-var import_react6 = __toESM(require("react"));
+var import_react4 = __toESM(require("react"));
 
 // app/components/ConfigTool/ConfigTool.css
 var ConfigTool_default = "/build/_assets/ConfigTool-5OWJ5SE4.css";
@@ -366,18 +191,18 @@ function ConfigToolLinks() {
   return [{ rel: "stylesheet", href: ConfigTool_default }];
 }
 function ConfigTool({ toggleTheme }) {
-  return /* @__PURE__ */ import_react6.default.createElement("div", {
+  return /* @__PURE__ */ import_react4.default.createElement("div", {
     className: "configTool"
-  }, /* @__PURE__ */ import_react6.default.createElement("div", {
+  }, /* @__PURE__ */ import_react4.default.createElement("div", {
     className: "wrapper"
-  }, /* @__PURE__ */ import_react6.default.createElement("span", {
+  }, /* @__PURE__ */ import_react4.default.createElement("span", {
     className: "configLabel"
-  }, "Dark Mode"), /* @__PURE__ */ import_react6.default.createElement("label", {
+  }, "Dark Mode"), /* @__PURE__ */ import_react4.default.createElement("label", {
     className: "switch"
-  }, /* @__PURE__ */ import_react6.default.createElement("input", {
+  }, /* @__PURE__ */ import_react4.default.createElement("input", {
     type: "checkbox",
     onClick: toggleTheme
-  }), /* @__PURE__ */ import_react6.default.createElement("span", {
+  }), /* @__PURE__ */ import_react4.default.createElement("span", {
     className: "slider round",
     id: "toggleDarkMode"
   }))));
@@ -386,14 +211,14 @@ var ConfigTool_default2 = ConfigTool;
 
 // app/components/main.js
 init_react();
-var import_react11 = __toESM(require("react"));
+var import_react9 = __toESM(require("react"));
 
 // app/components/main.css
 var main_default = "/build/_assets/main-YLJ6JLO4.css";
 
 // app/components/SelectTool/SelectTool.js
 init_react();
-var import_react7 = __toESM(require("react"));
+var import_react5 = __toESM(require("react"));
 
 // app/components/SelectTool/SelectTool.css
 var SelectTool_default = "/build/_assets/SelectTool-ZIZDDKIP.css";
@@ -403,114 +228,114 @@ function SelectToolLinks() {
   return [{ rel: "stylesheet", href: SelectTool_default }];
 }
 function SelectTool({ selectedTool, updateTool }) {
-  return /* @__PURE__ */ import_react7.default.createElement("div", {
+  return /* @__PURE__ */ import_react5.default.createElement("div", {
     className: "selectTool"
-  }, /* @__PURE__ */ import_react7.default.createElement("span", {
+  }, /* @__PURE__ */ import_react5.default.createElement("span", {
     className: `tool-icon ${selectedTool === "select" ? "selected" : ""}`,
     id: "select",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react7.default.createElement("path", {
+  }, /* @__PURE__ */ import_react5.default.createElement("path", {
     fill: "currentcolor",
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M11.9476 0.228823C12.2527 -0.0762743 12.7473 -0.0762743 13.0524 0.228823L16.1774 3.35382C16.4825 3.65892 16.4825 4.15358 16.1774 4.45868C15.8723 4.76377 15.3777 4.76377 15.0726 4.45868L13.2812 2.66735V8.59375C13.2812 9.02522 12.9315 9.375 12.5 9.375C12.0685 9.375 11.7188 9.02522 11.7188 8.59375V2.66735L9.92743 4.45868C9.62233 4.76377 9.12767 4.76377 8.82257 4.45868C8.51748 4.15358 8.51748 3.65892 8.82257 3.35382L11.9476 0.228823ZM12.5 15.625C12.9315 15.625 13.2812 15.9748 13.2812 16.4062V22.3326L15.0726 20.5413C15.3777 20.2362 15.8723 20.2362 16.1774 20.5413C16.4825 20.8464 16.4825 21.3411 16.1774 21.6462L13.0524 24.7712C12.7473 25.0763 12.2527 25.0763 11.9476 24.7712L8.82257 21.6462C8.51748 21.3411 8.51748 20.8464 8.82257 20.5413C9.12767 20.2362 9.62233 20.2362 9.92743 20.5413L11.7187 22.3326V16.4062C11.7187 15.9748 12.0685 15.625 12.5 15.625Z"
-  }), /* @__PURE__ */ import_react7.default.createElement("path", {
+  }), /* @__PURE__ */ import_react5.default.createElement("path", {
     fill: "currentcolor",
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M0.228823 13.0524C-0.0762743 12.7473 -0.0762743 12.2527 0.228823 11.9476L3.35382 8.82257C3.65892 8.51748 4.15358 8.51748 4.45868 8.82257C4.76377 9.12767 4.76377 9.62233 4.45868 9.92743L2.66735 11.7188L8.59375 11.7188C9.02522 11.7188 9.375 12.0685 9.375 12.5C9.375 12.9315 9.02522 13.2813 8.59375 13.2813L2.66735 13.2812L4.45868 15.0726C4.76377 15.3777 4.76377 15.8723 4.45868 16.1774C4.15358 16.4825 3.65892 16.4825 3.35382 16.1774L0.228823 13.0524ZM15.625 12.5C15.625 12.0685 15.9748 11.7188 16.4062 11.7188H22.3326L20.5413 9.92743C20.2362 9.62233 20.2362 9.12767 20.5413 8.82257C20.8464 8.51748 21.3411 8.51748 21.6462 8.82257L24.7712 11.9476C25.0763 12.2527 25.0763 12.7473 24.7712 13.0524L21.6462 16.1774C21.3411 16.4825 20.8464 16.4825 20.5413 16.1774C20.2362 15.8723 20.2362 15.3777 20.5413 15.0726L22.3326 13.2813H16.4062C15.9748 13.2813 15.625 12.9315 15.625 12.5Z"
-  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
     className: `tool-icon ${selectedTool === "rect" ? "selected" : ""}`,
     id: "rect",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react7.default.createElement("path", {
+  }, /* @__PURE__ */ import_react5.default.createElement("path", {
     fill: "currentcolor",
     d: "M21.875 1.5625C22.7379 1.5625 23.4375 2.26206 23.4375 3.125V21.875C23.4375 22.7379 22.7379 23.4375 21.875 23.4375H3.125C2.26206 23.4375 1.5625 22.7379 1.5625 21.875V3.125C1.5625 2.26206 2.26206 1.5625 3.125 1.5625H21.875ZM3.125 0C1.39911 0 0 1.39911 0 3.125V21.875C0 23.6009 1.39911 25 3.125 25H21.875C23.6009 25 25 23.6009 25 21.875V3.125C25 1.39911 23.6009 0 21.875 0H3.125Z"
-  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
     className: `tool-icon ${selectedTool === "circle" ? "selected" : ""}`,
     id: "circle",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react7.default.createElement("path", {
+  }, /* @__PURE__ */ import_react5.default.createElement("path", {
     fill: "currentcolor",
     d: "M12.5 23.4375C6.45939 23.4375 1.5625 18.5406 1.5625 12.5C1.5625 6.45939 6.45939 1.5625 12.5 1.5625C18.5406 1.5625 23.4375 6.45939 23.4375 12.5C23.4375 18.5406 18.5406 23.4375 12.5 23.4375ZM12.5 25C19.4036 25 25 19.4036 25 12.5C25 5.59644 19.4036 0 12.5 0C5.59644 0 0 5.59644 0 12.5C0 19.4036 5.59644 25 12.5 25Z"
-  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
     className: `tool-icon ${selectedTool === "arrow" ? "selected" : ""}`,
     id: "arrow",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react7.default.createElement("path", {
+  }, /* @__PURE__ */ import_react5.default.createElement("path", {
     fill: "currentcolor",
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M1.5625 12.5C1.5625 12.0685 1.91228 11.7187 2.34375 11.7187H20.7701L15.8538 6.80243C15.5487 6.49733 15.5487 6.00267 15.8538 5.69757C16.1589 5.39247 16.6536 5.39247 16.9587 5.69757L23.2087 11.9476C23.5138 12.2527 23.5138 12.7473 23.2087 13.0524L16.9587 19.3024C16.6536 19.6075 16.1589 19.6075 15.8538 19.3024C15.5487 18.9973 15.5487 18.5027 15.8538 18.1976L20.7701 13.2812H2.34375C1.91228 13.2812 1.5625 12.9315 1.5625 12.5Z"
-  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
     className: `tool-icon ${selectedTool === "line" ? "selected" : ""}`,
     id: "line",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
     height: "25",
     width: "25",
     viewBox: "0 0 25 25"
-  }, /* @__PURE__ */ import_react7.default.createElement("line", {
+  }, /* @__PURE__ */ import_react5.default.createElement("line", {
     x1: "0",
     y1: "10",
     x2: "25",
     y2: "25",
     stroke: "var(--icon-color)"
-  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
     className: `tool-icon ${selectedTool === "diamond" ? "selected" : ""}`,
     id: "diamond",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react7.default.createElement("path", {
+  }, /* @__PURE__ */ import_react5.default.createElement("path", {
     fill: "currentcolor",
     d: "M10.8603 0.679185C11.7659 -0.226396 13.2341 -0.226394 14.1397 0.679186L24.3208 10.8603C25.2264 11.7659 25.2264 13.2341 24.3208 14.1397L14.1397 24.3208C13.2341 25.2264 11.7659 25.2264 10.8603 24.3208L0.679185 14.1397C-0.226396 13.2341 -0.226394 11.7659 0.679186 10.8603L10.8603 0.679185ZM13.0466 1.77232C12.7447 1.47046 12.2553 1.47046 11.9534 1.77232L1.77232 11.9534C1.47046 12.2553 1.47046 12.7447 1.77232 13.0466L11.9534 23.2277C12.2553 23.5295 12.7447 23.5295 13.0466 23.2277L23.2277 13.0466C23.5295 12.7447 23.5295 12.2553 23.2277 11.9534L13.0466 1.77232Z"
-  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
     className: `tool-icon ${selectedTool === "chalk" ? "selected" : ""}`,
     id: "chalk",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react7.default.createElement("g", {
+  }, /* @__PURE__ */ import_react5.default.createElement("g", {
     clipPath: "url(#clip0_1287_3498)"
-  }, /* @__PURE__ */ import_react7.default.createElement("path", {
+  }, /* @__PURE__ */ import_react5.default.createElement("path", {
     fill: "currentcolor",
     d: "M18.9788 0.228823C19.2839 -0.0762743 19.7786 -0.0762743 20.0837 0.228823L24.7712 4.91632C25.0763 5.22142 25.0763 5.71608 24.7712 6.02118L9.1462 21.6462C9.07139 21.721 8.98216 21.7798 8.88392 21.8191L1.07142 24.9441C0.781252 25.0602 0.449832 24.9922 0.228846 24.7712C0.0078592 24.5502 -0.0601674 24.2188 0.0559004 23.9286L3.1809 16.1161C3.22019 16.0179 3.27903 15.9286 3.35385 15.8538L18.9788 0.228823ZM17.5111 3.90625L21.0938 7.4889L23.1139 5.46875L19.5313 1.8861L17.5111 3.90625ZM19.9889 8.59375L16.4063 5.0111L6.25002 15.1674V15.625H7.03127C7.46275 15.625 7.81252 15.9748 7.81252 16.4062V17.1875H8.59377C9.02525 17.1875 9.37502 17.5373 9.37502 17.9688V18.75H9.83267L19.9889 8.59375ZM4.73698 16.6804L4.57209 16.8453L2.18366 22.8164L8.15473 20.4279L8.31962 20.263C8.02338 20.152 7.81252 19.8663 7.81252 19.5312V18.75H7.03127C6.5998 18.75 6.25002 18.4002 6.25002 17.9688V17.1875H5.46877C5.13377 17.1875 4.84801 16.9766 4.73698 16.6804Z"
-  })), /* @__PURE__ */ import_react7.default.createElement("defs", null, /* @__PURE__ */ import_react7.default.createElement("clipPath", {
+  })), /* @__PURE__ */ import_react5.default.createElement("defs", null, /* @__PURE__ */ import_react5.default.createElement("clipPath", {
     id: "clip0_1287_3498"
-  }, /* @__PURE__ */ import_react7.default.createElement("rect", {
+  }, /* @__PURE__ */ import_react5.default.createElement("rect", {
     width: "25",
     height: "25",
     fill: "white"
@@ -1294,7 +1119,7 @@ var Rectangle_default = Rect;
 
 // app/components/TextTool/TextTool.js
 init_react();
-var import_react8 = __toESM(require("react"));
+var import_react6 = __toESM(require("react"));
 
 // app/components/TextTool/TextTool.css
 var TextTool_default = "/build/_assets/TextTool-UMOFHWRZ.css";
@@ -1304,11 +1129,11 @@ function TextToolLinks() {
   return [{ rel: "stylesheet", href: TextTool_default }];
 }
 function TextTool() {
-  return /* @__PURE__ */ import_react8.default.createElement("div", {
+  return /* @__PURE__ */ import_react6.default.createElement("div", {
     style: { color: "black" },
     className: "textTool",
     id: "textBoxContainerId"
-  }, /* @__PURE__ */ import_react8.default.createElement("div", {
+  }, /* @__PURE__ */ import_react6.default.createElement("div", {
     className: "textarea",
     id: "textAreaId",
     role: "textbox",
@@ -1319,7 +1144,7 @@ var TextTool_default2 = TextTool;
 
 // app/components/ZoomContainer/ZoomContainer.js
 init_react();
-var import_react9 = __toESM(require("react"));
+var import_react7 = __toESM(require("react"));
 
 // app/components/ZoomContainer/ZoomContainer.css
 var ZoomContainer_default = "/build/_assets/ZoomContainer-Y6YPOOBE.css";
@@ -1329,37 +1154,37 @@ function ZoomContainerLinks() {
   return [{ rel: "stylesheet", href: ZoomContainer_default }];
 }
 function ZoomContainer({ zoomRange, zoomIn, zoomOut }) {
-  return /* @__PURE__ */ import_react9.default.createElement("div", {
+  return /* @__PURE__ */ import_react7.default.createElement("div", {
     className: "zoomContainer"
-  }, /* @__PURE__ */ import_react9.default.createElement("span", {
+  }, /* @__PURE__ */ import_react7.default.createElement("span", {
     id: "minus",
     className: "zoom-sign",
     onClick: zoomIn
-  }, /* @__PURE__ */ import_react9.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react9.default.createElement("path", {
+  }, /* @__PURE__ */ import_react7.default.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3.125 12.5C3.125 12.0685 3.47478 11.7188 3.90625 11.7188H21.0938C21.5252 11.7188 21.875 12.0685 21.875 12.5C21.875 12.9315 21.5252 13.2812 21.0938 13.2812H3.90625C3.47478 13.2812 3.125 12.9315 3.125 12.5Z",
     fill: "currentcolor"
-  }))), /* @__PURE__ */ import_react9.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
     id: "zoomRange",
     className: "zoom-range"
-  }, Math.floor(zoomRange * 100)), /* @__PURE__ */ import_react9.default.createElement("span", {
+  }, Math.floor(zoomRange * 100)), /* @__PURE__ */ import_react7.default.createElement("span", {
     id: "plus",
     className: "zoom-sign",
     onClick: zoomOut
-  }, /* @__PURE__ */ import_react9.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react9.default.createElement("path", {
+  }, /* @__PURE__ */ import_react7.default.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12.5 3.125C12.9315 3.125 13.2812 3.47478 13.2812 3.90625V11.7188H21.0938C21.5252 11.7188 21.875 12.0685 21.875 12.5C21.875 12.9315 21.5252 13.2812 21.0938 13.2812H13.2812V21.0938C13.2812 21.5252 12.9315 21.875 12.5 21.875C12.0685 21.875 11.7187 21.5252 11.7187 21.0938V13.2812H3.90625C3.47478 13.2812 3.125 12.9315 3.125 12.5C3.125 12.0685 3.47478 11.7188 3.90625 11.7188H11.7188V3.90625C11.7188 3.47478 12.0685 3.125 12.5 3.125Z",
@@ -1433,10 +1258,10 @@ var idb_default = Idb;
 
 // app/contexts/socketContext.js
 init_react();
-var import_react10 = __toESM(require("react"));
-var SocketContext = (0, import_react10.createContext)(void 0);
+var import_react8 = __toESM(require("react"));
+var SocketContext = (0, import_react8.createContext)(void 0);
 function SocketProvider({ socket, children }) {
-  return /* @__PURE__ */ import_react10.default.createElement(SocketContext.Provider, {
+  return /* @__PURE__ */ import_react8.default.createElement(SocketContext.Provider, {
     value: socket
   }, children);
 }
@@ -1461,7 +1286,7 @@ var baseConfig = {
   baseFontSize: 24,
   baseLineHeight: 150 * 24 / 100
 };
-var MainComponent = class extends import_react11.default.Component {
+var MainComponent = class extends import_react9.default.Component {
   constructor(props) {
     super(props);
     this.state = __spreadValues({
@@ -1491,8 +1316,8 @@ var MainComponent = class extends import_react11.default.Component {
     this.zoomIn = this.zoomIn.bind(this);
     this.zoomOut = this.zoomOut.bind(this);
     this.idb = new idb_default();
-    this.mainCanvas = import_react11.default.createRef();
-    this.tempCanvas = import_react11.default.createRef();
+    this.mainCanvas = import_react9.default.createRef();
+    this.tempCanvas = import_react9.default.createRef();
     this.selectedElement = null;
     this.id = 0;
     this.mouseXPosition = null;
@@ -1904,41 +1729,41 @@ var MainComponent = class extends import_react11.default.Component {
     });
   }
   render() {
-    return /* @__PURE__ */ import_react11.default.createElement("div", {
+    return /* @__PURE__ */ import_react9.default.createElement("div", {
       style: { "--font-size": `${this.state.baseFontSize}px`, "--line-height": `${this.state.baseLineHeight}px`, cursor: `${this.state.selectedTool === "select" ? `url('../assets/cursor.svg')` : "crosshair"}` },
       className: `${this.state.selectedTheme === "dark" ? "dark-mode" : "light-mode"}`
-    }, /* @__PURE__ */ import_react11.default.createElement("div", {
+    }, /* @__PURE__ */ import_react9.default.createElement("div", {
       id: "wrapper"
-    }, /* @__PURE__ */ import_react11.default.createElement("div", {
+    }, /* @__PURE__ */ import_react9.default.createElement("div", {
       id: "blackboardPlaceholder"
-    }, /* @__PURE__ */ import_react11.default.createElement("canvas", {
+    }, /* @__PURE__ */ import_react9.default.createElement("canvas", {
       id: "drawingCanvas",
       ref: this.mainCanvas,
       width: this.state.canvasWidth,
       height: this.state.canvasHeight
-    }, /* @__PURE__ */ import_react11.default.createElement("p", {
+    }, /* @__PURE__ */ import_react9.default.createElement("p", {
       className: "noscript"
-    }, "We're sorry, this web application is currently not supported with your browser. Please use an alternate browser or download a supported ", /* @__PURE__ */ import_react11.default.createElement("br", null), "browser.Supported browsers: ", /* @__PURE__ */ import_react11.default.createElement("a", {
+    }, "We're sorry, this web application is currently not supported with your browser. Please use an alternate browser or download a supported ", /* @__PURE__ */ import_react9.default.createElement("br", null), "browser.Supported browsers: ", /* @__PURE__ */ import_react9.default.createElement("a", {
       href: "http://www.google.com/chrome"
-    }, "Google Chrome"), ", ", /* @__PURE__ */ import_react11.default.createElement("a", {
+    }, "Google Chrome"), ", ", /* @__PURE__ */ import_react9.default.createElement("a", {
       href: "http://www.opera.com"
-    }, "Opera"), ", ", /* @__PURE__ */ import_react11.default.createElement("a", {
+    }, "Opera"), ", ", /* @__PURE__ */ import_react9.default.createElement("a", {
       href: "http://www.mozilla.com"
-    }, "Firefox"), ", ", /* @__PURE__ */ import_react11.default.createElement("a", {
+    }, "Firefox"), ", ", /* @__PURE__ */ import_react9.default.createElement("a", {
       href: "http://www.apple.com/safari"
-    }, "Safari"), ", ", /* @__PURE__ */ import_react11.default.createElement("br", null), "and ", /* @__PURE__ */ import_react11.default.createElement("a", {
+    }, "Safari"), ", ", /* @__PURE__ */ import_react9.default.createElement("br", null), "and ", /* @__PURE__ */ import_react9.default.createElement("a", {
       href: "http://www.konqueror.org"
-    }, "Konqueror"), ". Also make sure your JavaScript is enabled.")), /* @__PURE__ */ import_react11.default.createElement("canvas", {
+    }, "Konqueror"), ". Also make sure your JavaScript is enabled.")), /* @__PURE__ */ import_react9.default.createElement("canvas", {
       id: "tempCanvas",
       ref: this.tempCanvas,
       width: this.state.canvasWidth,
       height: this.state.canvasHeight
-    }))), /* @__PURE__ */ import_react11.default.createElement(SelectTool_default2, {
+    }))), /* @__PURE__ */ import_react9.default.createElement(SelectTool_default2, {
       selectedTool: this.state.selectedTool,
       updateTool: this.onClickTool
-    }), /* @__PURE__ */ import_react11.default.createElement(ConfigTool_default2, {
+    }), /* @__PURE__ */ import_react9.default.createElement(ConfigTool_default2, {
       toggleTheme: this.updateTheme
-    }), /* @__PURE__ */ import_react11.default.createElement(TextTool_default2, null), /* @__PURE__ */ import_react11.default.createElement(ZoomContainer_default2, {
+    }), /* @__PURE__ */ import_react9.default.createElement(TextTool_default2, null), /* @__PURE__ */ import_react9.default.createElement(ZoomContainer_default2, {
       zoomRange: this.state.scalingFactor,
       zoomOut: this.zoomOut,
       zoomIn: this.zoomIn
@@ -1960,9 +1785,9 @@ var links = () => [
   { rel: "stylesheet", href: styles_default }
 ];
 function FreeDrawIndex() {
-  return /* @__PURE__ */ import_react12.default.createElement("div", {
+  return /* @__PURE__ */ import_react10.default.createElement("div", {
     style: { fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }
-  }, /* @__PURE__ */ import_react12.default.createElement(main_default2, {
+  }, /* @__PURE__ */ import_react10.default.createElement(main_default2, {
     mouseMove: () => {
     },
     updateShape: () => {
@@ -1973,16 +1798,141 @@ function FreeDrawIndex() {
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/draw/$drawId.jsx
 var drawId_exports = {};
 __export(drawId_exports, {
-  action: () => action2,
+  action: () => action,
   default: () => DrawIndex,
   links: () => links2,
-  loader: () => loader2
+  loader: () => loader
 });
 init_react();
-var import_react13 = __toESM(require("react"));
-var import_node2 = require("@remix-run/node");
-var import_react14 = require("@remix-run/react");
+var import_react11 = __toESM(require("react"));
+var import_node = require("@remix-run/node");
+var import_react12 = require("@remix-run/react");
 var import_socket = __toESM(require("socket.io-client"));
+
+// server/db.js
+init_react();
+var import_firestore = require("firebase-admin/firestore");
+var dataPoint = (collectionPath) => {
+  return (0, import_firestore.getFirestore)().collection(collectionPath);
+};
+var db = {
+  rooms: () => dataPoint("rooms"),
+  users: () => dataPoint("users"),
+  room: (roomId) => dataPoint(`rooms/${roomId}`),
+  user: (userId) => dataPoint(`users/${userId}`),
+  shapeCollection: (roomId) => dataPoint(`rooms/${roomId}/shapes`),
+  collaborators: (roomId) => dataPoint(`rooms/${roomId}/collaborators`)
+};
+async function createRoom(userId, userName, roomName) {
+  return new Promise((resolve, reject) => {
+    const newRoomRef = db.rooms().doc();
+    addRoomToUser(userId, newRoomRef.id, roomName).then(() => {
+      let collaboratorPromise = db.collaborators(newRoomRef.id).doc().set({ name: userName, color: "blue", isActive: true, id: userId });
+      let roomPromise = newRoomRef.set({ id: newRoomRef.id, roomName });
+      Promise.all([collaboratorPromise, roomPromise]).then(() => {
+        console.log("Resolbve", userId);
+        resolve({ id: newRoomRef.id, userId });
+      }).catch((err) => {
+        reject({ message: err });
+      });
+    });
+  });
+}
+function addShape(roomId, shape) {
+  const newShapeRef = db.shapeCollection(roomId).doc();
+  console.log("New Id", newShapeRef.id);
+  const shapeJSON = JSON.parse(shape);
+  console.log("Addding Shape Called", roomId, shape);
+  return new Promise((resolve, reject) => {
+    newShapeRef.set(__spreadProps(__spreadValues({}, shapeJSON), { id: newShapeRef.id })).then((doc) => {
+      console.log("Inside THen");
+      resolve({ id: newShapeRef.id });
+    }).catch((err) => {
+      reject({ error: err });
+    });
+  });
+}
+function getShapes(roomId) {
+  return new Promise((resolve, reject) => {
+    db.shapeCollection(roomId).get().then((snapshot) => {
+      let data = [];
+      if (snapshot.empty) {
+        data = [];
+      } else {
+        snapshot.forEach((doc) => {
+          data.push(doc.data());
+        });
+      }
+      resolve(data);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+function getUsers(roomId) {
+  return new Promise((resolve, reject) => {
+    db.collaborators(roomId).get().then((snapshot) => {
+      let data = [];
+      if (snapshot.empty) {
+        data = [];
+      } else {
+        snapshot.forEach((doc) => {
+          data.push(doc.data());
+        });
+      }
+      resolve(data);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+function getInitialDrawData(roomId) {
+  return new Promise((resolve, reject) => {
+    Promise.all([getShapes(roomId), getUsers(roomId)]).then(([shapes, users]) => {
+      resolve({ shapes: shapes && shapes.length > 0 ? shapes : [], users: users && users.length > 0 ? users : [] });
+    }).catch((err) => {
+      reject({ message: err });
+    });
+  });
+}
+async function addUser(name, userId, email) {
+  return new Promise((resolve, reject) => {
+    let newUserRef = db.users().doc(userId);
+    newUserRef.set({ name, id: userId, rooms: [], email }).then(() => {
+      resolve({ userId: newUserRef.id });
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+function addRoomToUser(userId, roomId, roomName) {
+  console.log(userId, roomId, roomName);
+  return new Promise((resolve, reject) => {
+    let userRef = db.users().doc(userId);
+    userRef.update({ rooms: import_firestore.FieldValue.arrayUnion({ roomId, roomName }) }).then(() => {
+      resolve();
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+function getUser(userId) {
+  return new Promise((resolve, reject) => {
+    let userRef = db.users().doc(userId);
+    userRef.get().then((doc) => {
+      console.log(doc.data());
+      if (!doc.exists) {
+        resolve({ error: "No such document!" });
+      } else {
+        resolve({ data: doc.data() });
+      }
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/draw/$drawId.jsx
 var links2 = () => [
   ...MainComponentStyles(),
   ...SelectToolLinks(),
@@ -1991,27 +1941,27 @@ var links2 = () => [
   ...ZoomContainerLinks(),
   { rel: "stylesheet", href: styles_default }
 ];
-var loader2 = async ({ request, params }) => {
+var loader = async ({ request, params }) => {
   console.log(params);
   let drawData = await getInitialDrawData(params.drawId);
-  return (0, import_node2.json)({ drawData });
+  return (0, import_node.json)({ drawData });
 };
-var action2 = async ({ request, params }) => {
+var action = async ({ request, params }) => {
   const body = await request.formData();
   let name = body.get("data");
   const data = await addShape(params.drawId, name);
-  return (0, import_node2.json)({ data });
+  return (0, import_node.json)({ data });
 };
 function DrawIndex() {
-  const fetcher = (0, import_react14.useFetcher)();
-  const data = (0, import_react14.useLoaderData)();
-  const actionData = (0, import_react14.useActionData)();
+  const fetcher = (0, import_react12.useFetcher)();
+  const data = (0, import_react12.useLoaderData)();
+  const actionData = (0, import_react12.useActionData)();
   console.log(actionData);
-  const [socket, setSocket] = (0, import_react13.useState)();
-  const idb = (0, import_react13.useMemo)(() => {
+  const [socket, setSocket] = (0, import_react11.useState)();
+  const idb = (0, import_react11.useMemo)(() => {
     return new idb_default();
   });
-  (0, import_react13.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     const socket2 = (0, import_socket.default)();
     setSocket(socket2);
     socket2.emit("event", "conenction success");
@@ -2019,7 +1969,7 @@ function DrawIndex() {
       socket2.close();
     };
   }, []);
-  (0, import_react13.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     if (!socket)
       return;
     socket.on("confirmation", (data2) => {
@@ -2037,36 +1987,37 @@ function DrawIndex() {
   function onMouseMove(eventDetails) {
     socket.emit("mousemove", eventDetails);
   }
-  return /* @__PURE__ */ import_react13.default.createElement("div", {
+  return /* @__PURE__ */ import_react11.default.createElement("div", {
     style: { fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }
-  }, /* @__PURE__ */ import_react13.default.createElement(SocketProvider, {
+  }, /* @__PURE__ */ import_react11.default.createElement(SocketProvider, {
     socket
-  }, /* @__PURE__ */ import_react13.default.createElement(main_default2, {
+  }, /* @__PURE__ */ import_react11.default.createElement(main_default2, {
     mouseMove: onMouseMove,
     updateShape
   })));
 }
 
-// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/index.jsx
-var rooms_exports = {};
-__export(rooms_exports, {
-  default: () => rooms_default,
-  loader: () => loader3
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/SignIn.jsx
+var SignIn_exports = {};
+__export(SignIn_exports, {
+  action: () => action2,
+  default: () => Login,
+  loader: () => loader2
 });
 init_react();
-var import_node5 = require("@remix-run/node");
-var import_react15 = require("@remix-run/react");
-var import_react16 = __toESM(require("react"));
+var import_node4 = require("@remix-run/node");
+var import_react13 = require("@remix-run/react");
+var import_react14 = require("react");
 
 // server/auth.js
 init_react();
-var import_node4 = require("@remix-run/node");
+var import_node3 = require("@remix-run/node");
 var import_auth = require("firebase/auth");
 
 // app/sessions.js
 init_react();
-var import_node3 = require("@remix-run/node");
-var { getSession: getSession2, commitSession, destroySession } = (0, import_node3.createCookieSessionStorage)({
+var import_node2 = require("@remix-run/node");
+var { getSession: getSession2, commitSession, destroySession } = (0, import_node2.createCookieSessionStorage)({
   cookie: {
     name: "__session",
     secrets: ["fancy-secret-key"],
@@ -2091,7 +2042,7 @@ var requireAuth = async (request) => {
   const session = await getSession2(request.headers.get("cookie"));
   const { uid } = await checkSessionCookie2(session);
   if (!uid) {
-    throw (0, import_node4.redirect)("/signin", {
+    throw (0, import_node3.redirect)("/signin", {
       headers: { "Set-Cookie": await destroySession(session) }
     });
   }
@@ -2117,59 +2068,25 @@ var signUp = async (name, email, password) => {
   return await signIn(email, password);
 };
 
-// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/index.jsx
-async function loader3({ request }) {
-  console.log("rooms loader");
-  const { displayName, uid } = await requireAuth(request);
-  console.log("uid", uid);
-  const userData = await getUser(uid);
-  console.log("Error", userData.error);
-  if (userData.error) {
-    return (0, import_node5.redirect)("/");
-  } else {
-    return (0, import_node5.json)({ user: userData.data });
-  }
-}
-function Rooms() {
-  const data = (0, import_react15.useLoaderData)();
-  console.log(data);
-  return /* @__PURE__ */ import_react16.default.createElement(import_react16.default.Fragment, null, /* @__PURE__ */ import_react16.default.createElement("p", null, /* @__PURE__ */ import_react16.default.createElement(import_react15.Link, {
-    to: "/createRoom"
-  }, "Create Room")), /* @__PURE__ */ import_react16.default.createElement("p", null, /* @__PURE__ */ import_react16.default.createElement(import_react15.Link, {
-    to: "/enterRoom"
-  }, "Enter Room")), /* @__PURE__ */ import_react16.default.createElement("p", null, "Rooms List"), /* @__PURE__ */ import_react16.default.createElement(import_react15.Outlet, null));
-}
-var rooms_default = Rooms;
-
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/SignIn.jsx
-var SignIn_exports = {};
-__export(SignIn_exports, {
-  action: () => action3,
-  default: () => Login,
-  loader: () => loader4
-});
-init_react();
-var import_node6 = require("@remix-run/node");
-var import_react17 = require("@remix-run/react");
-var import_react18 = require("react");
-var loader4 = async ({ request }) => {
+var loader2 = async ({ request }) => {
   const session = await getSession2(request.headers.get("cookie"));
   const { uid } = await checkSessionCookie2(session);
   const headers = {
     "Set-Cookie": await commitSession(session)
   };
   if (uid) {
-    return (0, import_node6.redirect)("/rooms", { headers });
+    return (0, import_node4.redirect)("/rooms", { headers });
   }
-  return (0, import_node6.json)({}, { headers });
+  return (0, import_node4.json)({}, { headers });
 };
-var action3 = async ({ request }) => {
+var action2 = async ({ request }) => {
   const form = await request.formData();
   const idToken = form.get("idToken");
   try {
     const email = form.get("email");
     const password = form.get("password");
-    const formError = (0, import_node6.json)({ error: "Please fill all fields!" }, { status: 400 });
+    const formError = (0, import_node4.json)({ error: "Please fill all fields!" }, { status: 400 });
     if (typeof email !== "string")
       return formError;
     if (typeof password !== "string")
@@ -2177,19 +2094,19 @@ var action3 = async ({ request }) => {
     let { sessionCookie } = await signIn(email, password);
     const session = await getSession2(request.headers.get("cookie"));
     session.set("session", sessionCookie);
-    return (0, import_node6.redirect)("/rooms", {
+    return (0, import_node4.redirect)("/rooms", {
       headers: {
         "Set-Cookie": await commitSession(session)
       }
     });
   } catch (error) {
     console.error(error);
-    return (0, import_node6.json)({ error: String(error) }, { status: 401 });
+    return (0, import_node4.json)({ error: String(error) }, { status: 401 });
   }
 };
 function Login() {
-  const action6 = (0, import_react17.useActionData)();
-  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "Login"), (action6 == null ? void 0 : action6.error) && /* @__PURE__ */ React.createElement("p", null, action6 == null ? void 0 : action6.error), /* @__PURE__ */ React.createElement("form", {
+  const action7 = (0, import_react13.useActionData)();
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "Login"), (action7 == null ? void 0 : action7.error) && /* @__PURE__ */ React.createElement("p", null, action7 == null ? void 0 : action7.error), /* @__PURE__ */ React.createElement("form", {
     method: "post"
   }, /* @__PURE__ */ React.createElement("input", {
     style: { display: "block" },
@@ -2204,9 +2121,9 @@ function Login() {
   }), /* @__PURE__ */ React.createElement("button", {
     style: { display: "block" },
     type: "submit"
-  }, "Login")), /* @__PURE__ */ React.createElement("p", null, "Do you want to ", /* @__PURE__ */ React.createElement(import_react17.Link, {
+  }, "Login")), /* @__PURE__ */ React.createElement("p", null, "Do you want to ", /* @__PURE__ */ React.createElement(import_react13.Link, {
     to: "/SignUp"
-  }, "join"), "?"), /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement(import_react17.Link, {
+  }, "join"), "?"), /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement(import_react13.Link, {
     to: "/draw/freedraw",
     className: "text-xl text-blue-600 underline"
   }, "Try without Login")));
@@ -2215,30 +2132,30 @@ function Login() {
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/SignUp.jsx
 var SignUp_exports = {};
 __export(SignUp_exports, {
-  action: () => action4,
+  action: () => action3,
   default: () => Login2,
-  loader: () => loader5
+  loader: () => loader3
 });
 init_react();
-var import_node7 = require("@remix-run/node");
-var import_react19 = require("@remix-run/react");
-var loader5 = async ({ request }) => {
+var import_node5 = require("@remix-run/node");
+var import_react15 = require("@remix-run/react");
+var loader3 = async ({ request }) => {
   const session = await getSession2(request.headers.get("cookie"));
   const { uid } = await checkSessionCookie2(session);
   const headers = {
     "Set-Cookie": await commitSession(session)
   };
   if (uid) {
-    return (0, import_node7.redirect)("/rooms", { headers });
+    return (0, import_node5.redirect)("/rooms", { headers });
   }
-  return (0, import_node7.json)(null, { headers });
+  return (0, import_node5.json)(null, { headers });
 };
-var action4 = async ({ request }) => {
+var action3 = async ({ request }) => {
   const form = await request.formData();
   const name = form.get("name");
   const email = form.get("email");
   const password = form.get("password");
-  const formError = (0, import_node7.json)({ error: "Please fill all fields!" }, { status: 400 });
+  const formError = (0, import_node5.json)({ error: "Please fill all fields!" }, { status: 400 });
   if (typeof name !== "string")
     return formError;
   if (typeof email !== "string")
@@ -2249,19 +2166,19 @@ var action4 = async ({ request }) => {
     const { sessionCookie } = await signUp(name, email, password);
     const session = await getSession2(request.headers.get("cookie"));
     session.set("session", sessionCookie);
-    return (0, import_node7.redirect)("/rooms", {
+    return (0, import_node5.redirect)("/rooms", {
       headers: {
         "Set-Cookie": await commitSession(session)
       }
     });
   } catch (error) {
     console.error(error);
-    return (0, import_node7.json)({ error: String(error) }, { status: 401 });
+    return (0, import_node5.json)({ error: String(error) }, { status: 401 });
   }
 };
 function Login2() {
-  const action6 = (0, import_react19.useActionData)();
-  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "Join"), (action6 == null ? void 0 : action6.error) && /* @__PURE__ */ React.createElement("p", null, action6.error), /* @__PURE__ */ React.createElement(import_react19.Form, {
+  const action7 = (0, import_react15.useActionData)();
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "Join"), (action7 == null ? void 0 : action7.error) && /* @__PURE__ */ React.createElement("p", null, action7.error), /* @__PURE__ */ React.createElement(import_react15.Form, {
     method: "post"
   }, /* @__PURE__ */ React.createElement("input", {
     style: { display: "block" },
@@ -2281,7 +2198,7 @@ function Login2() {
   }), /* @__PURE__ */ React.createElement("button", {
     style: { display: "block" },
     type: "submit"
-  }, "Join")), /* @__PURE__ */ React.createElement("p", null, "Do you want to ", /* @__PURE__ */ React.createElement(import_react19.Link, {
+  }, "Join")), /* @__PURE__ */ React.createElement("p", null, "Do you want to ", /* @__PURE__ */ React.createElement(import_react15.Link, {
     to: "/login"
   }, "login"), "?"));
 }
@@ -2289,31 +2206,31 @@ function Login2() {
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/index.jsx
 var routes_exports = {};
 __export(routes_exports, {
-  action: () => action5,
+  action: () => action4,
   default: () => Index,
-  loader: () => loader6
+  loader: () => loader4
 });
 init_react();
-var import_react20 = __toESM(require("react"));
-var import_react21 = require("@remix-run/react");
-var import_node8 = require("@remix-run/node");
-async function loader6({ request }) {
+var import_react16 = __toESM(require("react"));
+var import_react17 = require("@remix-run/react");
+var import_node6 = require("@remix-run/node");
+async function loader4({ request }) {
   const session = await getSession2(request.headers.get("Cookie"));
   console.log(session.has("__session"));
   if (session.has("__session")) {
     console.log("Isnndie UserId");
-    return (0, import_node8.redirect)("/rooms");
+    return (0, import_node6.redirect)("/rooms");
   }
   return null;
 }
-async function action5({ request }) {
+async function action4({ request }) {
   const body = await request.formData();
   let name = body.get("name");
   const draw = await createRoom(name);
   const session = await getSession2(request.headers.get("Cookie"));
   session.set("userId", draw.userId);
   console.log(draw);
-  return (0, import_node8.redirect)(`/draw/${draw.id}`, {
+  return (0, import_node6.redirect)(`/draw/${draw.id}`, {
     headers: {
       "Set-Cookie": await commitSession(session)
     }
@@ -2321,33 +2238,223 @@ async function action5({ request }) {
 }
 function Index() {
   var _a;
-  const transition = (0, import_react21.useTransition)();
-  const actionData = (0, import_react21.useActionData)();
-  return /* @__PURE__ */ import_react20.default.createElement(import_react21.Form, {
+  const transition = (0, import_react17.useTransition)();
+  const actionData = (0, import_react17.useActionData)();
+  return /* @__PURE__ */ import_react16.default.createElement(import_react17.Form, {
     method: "post"
-  }, /* @__PURE__ */ import_react20.default.createElement("fieldset", {
+  }, /* @__PURE__ */ import_react16.default.createElement("fieldset", {
     disabled: transition.state === "submitting"
-  }, /* @__PURE__ */ import_react20.default.createElement("p", null, /* @__PURE__ */ import_react20.default.createElement("label", null, "Name:", " ", /* @__PURE__ */ import_react20.default.createElement("input", {
+  }, /* @__PURE__ */ import_react16.default.createElement("p", null, /* @__PURE__ */ import_react16.default.createElement("label", null, "Name:", " ", /* @__PURE__ */ import_react16.default.createElement("input", {
     name: "name",
     type: "text",
     defaultValue: actionData ? actionData.values.name : void 0,
     style: {
       borderColor: (actionData == null ? void 0 : actionData.errors.name) ? "red" : ""
     }
-  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react20.default.createElement(ValidationMessage, {
+  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react16.default.createElement(ValidationMessage, {
     isSubmitting: transition.state === "submitting",
     error: (_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.name
-  }) : null, /* @__PURE__ */ import_react20.default.createElement("p", null, /* @__PURE__ */ import_react20.default.createElement("button", {
+  }) : null, /* @__PURE__ */ import_react16.default.createElement("p", null, /* @__PURE__ */ import_react16.default.createElement("button", {
     type: "submit"
-  }, transition.state === "submitting" ? "Configuring..." : "Enter Room")), /* @__PURE__ */ import_react20.default.createElement(import_react21.Link, {
+  }, transition.state === "submitting" ? "Configuring..." : "Enter Room")), /* @__PURE__ */ import_react16.default.createElement(import_react17.Link, {
     to: "/draw/freedraw",
     className: "text-xl text-blue-600 underline"
   }, "Try without Login")));
 }
 
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms.jsx
+var rooms_exports = {};
+__export(rooms_exports, {
+  default: () => rooms_default,
+  loader: () => loader5
+});
+init_react();
+var import_node7 = require("@remix-run/node");
+var import_react18 = require("@remix-run/react");
+var import_react19 = __toESM(require("react"));
+async function loader5({ request }) {
+  console.log("rooms loader");
+  const { displayName, uid } = await requireAuth(request);
+  console.log("uid", uid);
+  const userData = await getUser(uid);
+  console.log("Error", userData.error);
+  if (userData.error) {
+    return (0, import_node7.redirect)("/");
+  } else {
+    return (0, import_node7.json)(__spreadValues({}, userData.data));
+  }
+}
+function Rooms() {
+  const data = (0, import_react18.useLoaderData)();
+  console.log("Isndie Rooms", data);
+  return /* @__PURE__ */ import_react19.default.createElement(import_react19.default.Fragment, null, /* @__PURE__ */ import_react19.default.createElement("p", null, /* @__PURE__ */ import_react19.default.createElement(import_react18.Link, {
+    to: "/rooms/createRoom"
+  }, "Create Room")), /* @__PURE__ */ import_react19.default.createElement("p", null, /* @__PURE__ */ import_react19.default.createElement(import_react18.Link, {
+    to: "/rooms/enterRoom"
+  }, "Enter Room")), /* @__PURE__ */ import_react19.default.createElement("p", null, "Rooms List"), /* @__PURE__ */ import_react19.default.createElement(import_react18.Outlet, {
+    context: data
+  }));
+}
+var rooms_default = Rooms;
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/createRoom.jsx
+var createRoom_exports = {};
+__export(createRoom_exports, {
+  action: () => action5,
+  default: () => CreateRoom
+});
+init_react();
+var import_react20 = __toESM(require("react"));
+var import_react21 = require("@remix-run/react");
+var import_node8 = require("@remix-run/node");
+async function action5({ request }) {
+  const body = await request.formData();
+  let name = body.get("roomName");
+  let userId = body.get("userId");
+  let userName = body.get("userName");
+  const draw = await createRoom(userId, userName, name);
+  const session = await getSession2(request.headers.get("Cookie"));
+  console.log(draw);
+  return (0, import_node8.redirect)(`/draw/${draw.id}`, {
+    headers: {
+      "Set-Cookie": await commitSession(session)
+    }
+  });
+}
+function CreateRoom() {
+  var _a;
+  const actionData = (0, import_react21.useActionData)();
+  const userData = (0, import_react21.useOutletContext)();
+  const [name, setName] = (0, import_react20.useState)("");
+  const fetcher = (0, import_react21.useFetcher)();
+  console.log("user", userData);
+  function onClickSubmit() {
+    let formData = new FormData();
+    formData.set("userName", userData.name);
+    formData.set("userId", userData.id);
+    formData.set("roomName", name);
+    fetcher.submit(formData, { method: "post" });
+  }
+  return /* @__PURE__ */ import_react20.default.createElement("div", null, /* @__PURE__ */ import_react20.default.createElement("fieldset", {
+    disabled: fetcher.state === "submitting"
+  }, /* @__PURE__ */ import_react20.default.createElement("p", null, /* @__PURE__ */ import_react20.default.createElement("label", null, "Name:", " ", /* @__PURE__ */ import_react20.default.createElement("input", {
+    name: "name",
+    type: "text",
+    value: name,
+    defaultValue: actionData ? actionData.values.name : void 0,
+    style: {
+      borderColor: (actionData == null ? void 0 : actionData.errors.name) ? "red" : ""
+    },
+    onChange: (e) => setName(e.target.value)
+  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react20.default.createElement(ValidationMessage, {
+    isSubmitting: fetcher.state === "submitting",
+    error: (_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.name
+  }) : null, /* @__PURE__ */ import_react20.default.createElement("p", null, /* @__PURE__ */ import_react20.default.createElement("button", {
+    onClick: onClickSubmit
+  }, fetcher.state === "submitting" ? "Configuring..." : "Create Room"))));
+}
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/enterRoom.jsx
+var enterRoom_exports = {};
+__export(enterRoom_exports, {
+  action: () => action6,
+  default: () => EnterRoom,
+  loader: () => loader6
+});
+init_react();
+var import_react22 = __toESM(require("react"));
+var import_react23 = require("@remix-run/react");
+var import_node9 = require("@remix-run/node");
+async function loader6({ request }) {
+  const session = await getSession(request.headers.get("cookie"));
+  const { uid } = await checkSessionCookie(session);
+}
+async function action6({ request }) {
+  const body = await request.formData();
+  let name = body.get("name");
+  const draw = await createRoom(name);
+  console.log(draw);
+  return (0, import_node9.redirect)(`/draw/${draw.id}`);
+}
+function EnterRoom() {
+  var _a;
+  const transition = (0, import_react23.useTransition)();
+  const actionData = (0, import_react23.useActionData)();
+  return /* @__PURE__ */ import_react22.default.createElement(import_react23.Form, {
+    method: "post"
+  }, /* @__PURE__ */ import_react22.default.createElement("fieldset", {
+    disabled: transition.state === "submitting"
+  }, /* @__PURE__ */ import_react22.default.createElement("p", null, /* @__PURE__ */ import_react22.default.createElement("label", null, "Room Name:", " ", /* @__PURE__ */ import_react22.default.createElement("input", {
+    name: "name",
+    type: "text",
+    defaultValue: actionData ? actionData.values.name : void 0,
+    style: {
+      borderColor: (actionData == null ? void 0 : actionData.errors.name) ? "red" : ""
+    }
+  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react22.default.createElement(ValidationMessage, {
+    isSubmitting: transition.state === "submitting",
+    error: (_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.name
+  }) : null, /* @__PURE__ */ import_react22.default.createElement("p", null, /* @__PURE__ */ import_react22.default.createElement("button", {
+    type: "submit"
+  }, transition.state === "submitting" ? "Configuring..." : "Enter Room")), /* @__PURE__ */ import_react22.default.createElement(import_react23.Link, {
+    to: "/draw/freedraw",
+    className: "text-xl text-blue-600 underline"
+  }, "Try without Login")));
+}
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/index.jsx
+var rooms_exports2 = {};
+__export(rooms_exports2, {
+  default: () => RoomsList,
+  links: () => links3
+});
+init_react();
+var import_react26 = require("@remix-run/react");
+var import_react27 = __toESM(require("react"));
+
+// app/components/SingleRoom/SingleRoom.js
+init_react();
+var import_react24 = require("@remix-run/react");
+var import_react25 = __toESM(require("react"));
+
+// app/components/SingleRoom/SingleRoom.css
+var SingleRoom_default = "/build/_assets/SingleRoom-A2RRSRGE.css";
+
+// app/components/SingleRoom/SingleRoom.js
+function RoomLinks() {
+  return [{ rel: "stylesheet", href: SingleRoom_default }];
+}
+function SingleRoom({ roomId, roomName }) {
+  return /* @__PURE__ */ import_react25.default.createElement(import_react24.Link, {
+    to: `/draw/${roomId}`,
+    className: "room"
+  }, roomName);
+}
+
+// app/routes/rooms/index.css
+var rooms_default2 = "/build/_assets/index-5RT72MKU.css";
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/index.jsx
+var links3 = () => [
+  ...RoomLinks(),
+  { rel: "stylesheet", href: rooms_default2 }
+];
+function RoomsList() {
+  let userData = (0, import_react26.useOutletContext)();
+  return /* @__PURE__ */ import_react27.default.createElement("div", null, /* @__PURE__ */ import_react27.default.createElement("span", null, "List of Rooms"), /* @__PURE__ */ import_react27.default.createElement("div", {
+    className: "roomContainer"
+  }, userData.rooms.map((room) => {
+    return /* @__PURE__ */ import_react27.default.createElement(SingleRoom, {
+      key: room.roomId,
+      roomId: room.roomId,
+      roomName: room.roomName
+    });
+  })));
+}
+
 // server-assets-manifest:@remix-run/dev/assets-manifest
 init_react();
-var assets_manifest_default = { "version": "3005d0dd", "entry": { "module": "/build/entry.client-FRQPTBET.js", "imports": ["/build/_shared/chunk-PRHOWYG5.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-AAGBJ56Y.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignIn": { "id": "routes/SignIn", "parentId": "root", "path": "SignIn", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignIn-BHGP7XTB.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignUp": { "id": "routes/SignUp", "parentId": "root", "path": "SignUp", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignUp-FK2ZBO4N.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-Y7HGZVY3.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-OZBGCPOJ.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-ZQHUHMP2.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/createRoom": { "id": "routes/rooms/createRoom", "parentId": "root", "path": "rooms/createRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/createRoom-XEVBJHB6.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/enterRoom": { "id": "routes/rooms/enterRoom", "parentId": "root", "path": "rooms/enterRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/enterRoom-JDZMUWXH.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/index": { "id": "routes/rooms/index", "parentId": "root", "path": "rooms", "index": true, "caseSensitive": void 0, "module": "/build/routes/rooms/index-ANOMJWFK.js", "imports": void 0, "hasAction": false, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-3005D0DD.js" };
+var assets_manifest_default = { "version": "46a1c986", "entry": { "module": "/build/entry.client-SDKSEGGD.js", "imports": ["/build/_shared/chunk-MKUK623B.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-HVJ7FR7F.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignIn": { "id": "routes/SignIn", "parentId": "root", "path": "SignIn", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignIn-DHIDCC3G.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignUp": { "id": "routes/SignUp", "parentId": "root", "path": "SignUp", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignUp-RYMIXDFM.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-5EF3C24R.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-OZBGCPOJ.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-LCVVEMQX.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms": { "id": "routes/rooms", "parentId": "root", "path": "rooms", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms-NIBRUIU6.js", "imports": void 0, "hasAction": false, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/createRoom": { "id": "routes/rooms/createRoom", "parentId": "routes/rooms", "path": "createRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/createRoom-L5Z3MMGI.js", "imports": void 0, "hasAction": true, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/enterRoom": { "id": "routes/rooms/enterRoom", "parentId": "routes/rooms", "path": "enterRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/enterRoom-BK67MJ2F.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/index": { "id": "routes/rooms/index", "parentId": "routes/rooms", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/rooms/index-52PE7ZYE.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-46A1C986.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var entry = { module: entry_server_exports };
@@ -2359,22 +2466,6 @@ var routes = {
     index: void 0,
     caseSensitive: void 0,
     module: root_exports
-  },
-  "routes/rooms/createRoom": {
-    id: "routes/rooms/createRoom",
-    parentId: "root",
-    path: "rooms/createRoom",
-    index: void 0,
-    caseSensitive: void 0,
-    module: createRoom_exports
-  },
-  "routes/rooms/enterRoom": {
-    id: "routes/rooms/enterRoom",
-    parentId: "root",
-    path: "rooms/enterRoom",
-    index: void 0,
-    caseSensitive: void 0,
-    module: enterRoom_exports
   },
   "routes/draw/freeDraw": {
     id: "routes/draw/freeDraw",
@@ -2391,14 +2482,6 @@ var routes = {
     index: void 0,
     caseSensitive: void 0,
     module: drawId_exports
-  },
-  "routes/rooms/index": {
-    id: "routes/rooms/index",
-    parentId: "root",
-    path: "rooms",
-    index: true,
-    caseSensitive: void 0,
-    module: rooms_exports
   },
   "routes/SignIn": {
     id: "routes/SignIn",
@@ -2423,6 +2506,38 @@ var routes = {
     index: true,
     caseSensitive: void 0,
     module: routes_exports
+  },
+  "routes/rooms": {
+    id: "routes/rooms",
+    parentId: "root",
+    path: "rooms",
+    index: void 0,
+    caseSensitive: void 0,
+    module: rooms_exports
+  },
+  "routes/rooms/createRoom": {
+    id: "routes/rooms/createRoom",
+    parentId: "routes/rooms",
+    path: "createRoom",
+    index: void 0,
+    caseSensitive: void 0,
+    module: createRoom_exports
+  },
+  "routes/rooms/enterRoom": {
+    id: "routes/rooms/enterRoom",
+    parentId: "routes/rooms",
+    path: "enterRoom",
+    index: void 0,
+    caseSensitive: void 0,
+    module: enterRoom_exports
+  },
+  "routes/rooms/index": {
+    id: "routes/rooms/index",
+    parentId: "routes/rooms",
+    path: void 0,
+    index: true,
+    caseSensitive: void 0,
+    module: rooms_exports2
   }
 };
 module.exports = __toCommonJS(stdin_exports);

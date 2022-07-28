@@ -1,37 +1,29 @@
-import { json, redirect } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
+import { useOutletContext } from '@remix-run/react';
 import React from 'react';
-import { requireAuth } from '../../../server/auth';
-import { getUser } from '../../../server/db';
+import SingleRoom, { RoomLinks } from '../../components/SingleRoom/SingleRoom';
+import styles from './index.css';
 
-export async function loader({ request }) {
-  console.log('rooms loader');
-  const { displayName, uid } = await requireAuth(request);
-  console.log('uid', uid);
-  const userData = await getUser(uid);
-  console.log('Error', userData.error);
-  if (userData.error) {
-    return redirect('/');
-  } else {
-    return json({ user: userData.data });
-  }
-}
+export const links = () => [
+  ...RoomLinks(),
+  { rel: 'stylesheet', href: styles },
+];
 
-function Rooms() {
-  const data = useLoaderData();
-  console.log(data);
+export default function RoomsList() {
+  let userData = useOutletContext();
   return (
-    <>
-      <p>
-        <Link to='/createRoom'>Create Room</Link>
-      </p>
-      <p>
-        <Link to='/enterRoom'>Enter Room</Link>
-      </p>
-      <p>Rooms List</p>
-      <Outlet />
-    </>
+    <div>
+      <span>List of Rooms</span>
+      <div className='roomContainer'>
+        {userData.rooms.map((room) => {
+          return (
+            <SingleRoom
+              key={room.roomId}
+              roomId={room.roomId}
+              roomName={room.roomName}
+            />
+          );
+        })}
+      </div>
+    </div>
   );
 }
-
-export default Rooms;

@@ -14,7 +14,7 @@ const db = {
 }
 
 
-async function createRoom(userId, roomName, userName) {
+async function createRoom(userId, userName, roomName) {
   return new Promise((resolve, reject) => {
     const newRoomRef = db.rooms().doc();
     addRoomToUser(userId, newRoomRef.id, roomName).then(() => {
@@ -132,6 +132,7 @@ async function addUser(name, userId, email) {
 }
 
 function addRoomToUser(userId, roomId, roomName) {
+  console.log(userId, roomId, roomName);
   return new Promise((resolve, reject) => {
     let userRef = db.users().doc(userId);
     userRef.update({ rooms: FieldValue.arrayUnion({ roomId, roomName }) }).then(() => {
