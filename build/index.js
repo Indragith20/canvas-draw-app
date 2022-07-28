@@ -22,6 +22,12 @@ var __spreadValues = (a, b) => {
 };
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -43,6 +49,67 @@ var __toCommonJS = /* @__PURE__ */ ((cache) => {
   };
 })(typeof WeakMap !== "undefined" ? /* @__PURE__ */ new WeakMap() : 0);
 
+// node_modules/@remix-run/dev/compiler/shims/react.ts
+var React;
+var init_react = __esm({
+  "node_modules/@remix-run/dev/compiler/shims/react.ts"() {
+    React = __toESM(require("react"));
+  }
+});
+
+// server/firebase.server.js
+var require_firebase_server = __commonJS({
+  "server/firebase.server.js"(exports, module2) {
+    init_react();
+    var {
+      getApps: getServerApps,
+      initializeApp: initializeServerApp,
+      cert: serverCert
+    } = require("firebase-admin/app");
+    var {
+      getApps: getClientApps,
+      initializeApp: initializeClientApp
+    } = require("firebase/app");
+    var { getAuth: getServerAuth } = require("firebase-admin/auth");
+    var { getAuth: getClientAuth } = require("firebase/auth");
+    if (getClientApps().length === 0) {
+      let config;
+      if (!process.env.CLIENT_CONFIG) {
+        throw new Error("Missing CLIENT_CONFIG environment variable, ");
+      } else {
+        try {
+          config = JSON.parse(process.env.CLIENT_CONFIG);
+        } catch {
+          throw Error("Invalid CLIENT_CONFIG environment variable");
+        }
+      }
+      initializeClientApp(config);
+    }
+    if (getServerApps().length === 0) {
+      let config;
+      if (!process.env.SERVICE_ACCOUNT) {
+        throw new Error("Missing SERVICE_ACCOUNT environment variable");
+      } else {
+        try {
+          const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT);
+          config = {
+            credential: serverCert(serviceAccount)
+          };
+        } catch {
+          throw Error("Invalid SERVICE_ACCOUNT environment variable");
+        }
+      }
+      initializeServerApp(config);
+    }
+    module2.exports = {
+      auth: {
+        server: getServerAuth(),
+        client: getClientAuth()
+      }
+    };
+  }
+});
+
 // <stdin>
 var stdin_exports = {};
 __export(stdin_exports, {
@@ -50,9 +117,10 @@ __export(stdin_exports, {
   entry: () => entry,
   routes: () => routes
 });
+init_react();
 
-// node_modules/@remix-run/dev/compiler/shims/react.ts
-var React = __toESM(require("react"));
+// server-entry-module:@remix-run/dev/server-build
+init_react();
 
 // app/entry.server.jsx
 var entry_server_exports = {};
@@ -60,6 +128,7 @@ __export(entry_server_exports, {
   default: () => handleRequest,
   handleDataRequest: () => handleDataRequest
 });
+init_react();
 var import_server = require("react-dom/server");
 var import_react = require("@remix-run/react");
 function handleRequest(request, responseStatusCode, responseHeaders, remixContext) {
@@ -73,7 +142,7 @@ function handleRequest(request, responseStatusCode, responseHeaders, remixContex
     headers: responseHeaders
   });
 }
-var handleDataRequest = (response, { request, params, context: context2 }) => {
+var handleDataRequest = (response, { request, params, context }) => {
   console.log("Initakl", params);
   return response;
 };
@@ -84,6 +153,7 @@ __export(root_exports, {
   default: () => App,
   meta: () => meta
 });
+init_react();
 var import_react2 = __toESM(require("react"));
 var import_react3 = require("@remix-run/react");
 function meta() {
@@ -100,16 +170,193 @@ function App() {
   }), /* @__PURE__ */ import_react2.default.createElement("title", null, "Whiteboard Application"), /* @__PURE__ */ import_react2.default.createElement(import_react3.Meta, null), /* @__PURE__ */ import_react2.default.createElement(import_react3.Links, null)), /* @__PURE__ */ import_react2.default.createElement("body", null, /* @__PURE__ */ import_react2.default.createElement(import_react3.Outlet, null), /* @__PURE__ */ import_react2.default.createElement(import_react3.ScrollRestoration, null), /* @__PURE__ */ import_react2.default.createElement(import_react3.Scripts, null), /* @__PURE__ */ import_react2.default.createElement(import_react3.LiveReload, null)));
 }
 
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/createRoom.jsx
+var createRoom_exports = {};
+init_react();
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/enterRoom.jsx
+var enterRoom_exports = {};
+__export(enterRoom_exports, {
+  action: () => action,
+  default: () => EnterRoom,
+  loader: () => loader
+});
+init_react();
+var import_react4 = __toESM(require("react"));
+var import_react5 = require("@remix-run/react");
+
+// server/db.js
+init_react();
+var import_firestore = require("firebase-admin/firestore");
+var dataPoint = (collectionPath) => {
+  return (0, import_firestore.getFirestore)().collection(collectionPath);
+};
+var db = {
+  rooms: () => dataPoint("rooms"),
+  users: () => dataPoint("users"),
+  room: (roomId) => dataPoint(`rooms/${roomId}`),
+  user: (userId) => dataPoint(`users/${userId}`),
+  shapeCollection: (roomId) => dataPoint(`rooms/${roomId}/shapes`),
+  collaborators: (roomId) => dataPoint(`rooms/${roomId}/collaborators`)
+};
+async function createRoom(userId, roomName, userName) {
+  return new Promise((resolve, reject) => {
+    const newRoomRef = db.rooms().doc();
+    addRoomToUser(userId, newRoomRef.id, roomName).then(() => {
+      let collaboratorPromise = db.collaborators(newRoomRef.id).doc().set({ name: userName, color: "blue", isActive: true, id: userId });
+      let roomPromise = newRoomRef.set({ id: newRoomRef.id, roomName });
+      Promise.all([collaboratorPromise, roomPromise]).then(() => {
+        console.log("Resolbve", userId);
+        resolve({ id: newRoomRef.id, userId });
+      }).catch((err) => {
+        reject({ message: err });
+      });
+    });
+  });
+}
+function addShape(roomId, shape) {
+  const newShapeRef = db.shapeCollection(roomId).doc();
+  console.log("New Id", newShapeRef.id);
+  const shapeJSON = JSON.parse(shape);
+  console.log("Addding Shape Called", roomId, shape);
+  return new Promise((resolve, reject) => {
+    newShapeRef.set(__spreadProps(__spreadValues({}, shapeJSON), { id: newShapeRef.id })).then((doc) => {
+      console.log("Inside THen");
+      resolve({ id: newShapeRef.id });
+    }).catch((err) => {
+      reject({ error: err });
+    });
+  });
+}
+function getShapes(roomId) {
+  return new Promise((resolve, reject) => {
+    db.shapeCollection(roomId).get().then((snapshot) => {
+      let data = [];
+      if (snapshot.empty) {
+        data = [];
+      } else {
+        snapshot.forEach((doc) => {
+          data.push(doc.data());
+        });
+      }
+      resolve(data);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+function getUsers(roomId) {
+  return new Promise((resolve, reject) => {
+    db.collaborators(roomId).get().then((snapshot) => {
+      let data = [];
+      if (snapshot.empty) {
+        data = [];
+      } else {
+        snapshot.forEach((doc) => {
+          data.push(doc.data());
+        });
+      }
+      resolve(data);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+function getInitialDrawData(roomId) {
+  return new Promise((resolve, reject) => {
+    Promise.all([getShapes(roomId), getUsers(roomId)]).then(([shapes, users]) => {
+      resolve({ shapes: shapes && shapes.length > 0 ? shapes : [], users: users && users.length > 0 ? users : [] });
+    }).catch((err) => {
+      reject({ message: err });
+    });
+  });
+}
+async function addUser(name, userId, email) {
+  return new Promise((resolve, reject) => {
+    let newUserRef = db.users().doc(userId);
+    newUserRef.set({ name, id: userId, rooms: [], email }).then(() => {
+      resolve({ userId: newUserRef.id });
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+function addRoomToUser(userId, roomId, roomName) {
+  return new Promise((resolve, reject) => {
+    let userRef = db.users().doc(userId);
+    userRef.update({ rooms: import_firestore.FieldValue.arrayUnion({ roomId, roomName }) }).then(() => {
+      resolve();
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+function getUser(userId) {
+  return new Promise((resolve, reject) => {
+    let userRef = db.users().doc(userId);
+    userRef.get().then((doc) => {
+      if (!doc.exists) {
+        resolve({ error: "No such document!" });
+      } else {
+        resolve({ data: doc.data() });
+      }
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/enterRoom.jsx
+var import_node = require("@remix-run/node");
+async function loader({ request }) {
+  const session = await getSession(request.headers.get("cookie"));
+  const { uid } = await checkSessionCookie(session);
+}
+async function action({ request }) {
+  const body = await request.formData();
+  let name = body.get("name");
+  const draw = await createRoom(name);
+  console.log(draw);
+  return (0, import_node.redirect)(`/draw/${draw.id}`);
+}
+function EnterRoom() {
+  var _a;
+  const transition = (0, import_react5.useTransition)();
+  const actionData = (0, import_react5.useActionData)();
+  return /* @__PURE__ */ import_react4.default.createElement(import_react5.Form, {
+    method: "post"
+  }, /* @__PURE__ */ import_react4.default.createElement("fieldset", {
+    disabled: transition.state === "submitting"
+  }, /* @__PURE__ */ import_react4.default.createElement("p", null, /* @__PURE__ */ import_react4.default.createElement("label", null, "Room Name:", " ", /* @__PURE__ */ import_react4.default.createElement("input", {
+    name: "name",
+    type: "text",
+    defaultValue: actionData ? actionData.values.name : void 0,
+    style: {
+      borderColor: (actionData == null ? void 0 : actionData.errors.name) ? "red" : ""
+    }
+  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react4.default.createElement(ValidationMessage, {
+    isSubmitting: transition.state === "submitting",
+    error: (_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.name
+  }) : null, /* @__PURE__ */ import_react4.default.createElement("p", null, /* @__PURE__ */ import_react4.default.createElement("button", {
+    type: "submit"
+  }, transition.state === "submitting" ? "Configuring..." : "Enter Room")), /* @__PURE__ */ import_react4.default.createElement(import_react5.Link, {
+    to: "/draw/freedraw",
+    className: "text-xl text-blue-600 underline"
+  }, "Try without Login")));
+}
+
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/draw/freeDraw.jsx
 var freeDraw_exports = {};
 __export(freeDraw_exports, {
   default: () => FreeDrawIndex,
   links: () => links
 });
-var import_react10 = __toESM(require("react"));
+init_react();
+var import_react12 = __toESM(require("react"));
 
 // app/components/ConfigTool/ConfigTool.js
-var import_react4 = __toESM(require("react"));
+init_react();
+var import_react6 = __toESM(require("react"));
 
 // app/components/ConfigTool/ConfigTool.css
 var ConfigTool_default = "/build/_assets/ConfigTool-5OWJ5SE4.css";
@@ -119,18 +366,18 @@ function ConfigToolLinks() {
   return [{ rel: "stylesheet", href: ConfigTool_default }];
 }
 function ConfigTool({ toggleTheme }) {
-  return /* @__PURE__ */ import_react4.default.createElement("div", {
+  return /* @__PURE__ */ import_react6.default.createElement("div", {
     className: "configTool"
-  }, /* @__PURE__ */ import_react4.default.createElement("div", {
+  }, /* @__PURE__ */ import_react6.default.createElement("div", {
     className: "wrapper"
-  }, /* @__PURE__ */ import_react4.default.createElement("span", {
+  }, /* @__PURE__ */ import_react6.default.createElement("span", {
     className: "configLabel"
-  }, "Dark Mode"), /* @__PURE__ */ import_react4.default.createElement("label", {
+  }, "Dark Mode"), /* @__PURE__ */ import_react6.default.createElement("label", {
     className: "switch"
-  }, /* @__PURE__ */ import_react4.default.createElement("input", {
+  }, /* @__PURE__ */ import_react6.default.createElement("input", {
     type: "checkbox",
     onClick: toggleTheme
-  }), /* @__PURE__ */ import_react4.default.createElement("span", {
+  }), /* @__PURE__ */ import_react6.default.createElement("span", {
     className: "slider round",
     id: "toggleDarkMode"
   }))));
@@ -138,13 +385,15 @@ function ConfigTool({ toggleTheme }) {
 var ConfigTool_default2 = ConfigTool;
 
 // app/components/main.js
-var import_react9 = __toESM(require("react"));
+init_react();
+var import_react11 = __toESM(require("react"));
 
 // app/components/main.css
 var main_default = "/build/_assets/main-YLJ6JLO4.css";
 
 // app/components/SelectTool/SelectTool.js
-var import_react5 = __toESM(require("react"));
+init_react();
+var import_react7 = __toESM(require("react"));
 
 // app/components/SelectTool/SelectTool.css
 var SelectTool_default = "/build/_assets/SelectTool-ZIZDDKIP.css";
@@ -154,114 +403,114 @@ function SelectToolLinks() {
   return [{ rel: "stylesheet", href: SelectTool_default }];
 }
 function SelectTool({ selectedTool, updateTool }) {
-  return /* @__PURE__ */ import_react5.default.createElement("div", {
+  return /* @__PURE__ */ import_react7.default.createElement("div", {
     className: "selectTool"
-  }, /* @__PURE__ */ import_react5.default.createElement("span", {
+  }, /* @__PURE__ */ import_react7.default.createElement("span", {
     className: `tool-icon ${selectedTool === "select" ? "selected" : ""}`,
     id: "select",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react5.default.createElement("path", {
+  }, /* @__PURE__ */ import_react7.default.createElement("path", {
     fill: "currentcolor",
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M11.9476 0.228823C12.2527 -0.0762743 12.7473 -0.0762743 13.0524 0.228823L16.1774 3.35382C16.4825 3.65892 16.4825 4.15358 16.1774 4.45868C15.8723 4.76377 15.3777 4.76377 15.0726 4.45868L13.2812 2.66735V8.59375C13.2812 9.02522 12.9315 9.375 12.5 9.375C12.0685 9.375 11.7188 9.02522 11.7188 8.59375V2.66735L9.92743 4.45868C9.62233 4.76377 9.12767 4.76377 8.82257 4.45868C8.51748 4.15358 8.51748 3.65892 8.82257 3.35382L11.9476 0.228823ZM12.5 15.625C12.9315 15.625 13.2812 15.9748 13.2812 16.4062V22.3326L15.0726 20.5413C15.3777 20.2362 15.8723 20.2362 16.1774 20.5413C16.4825 20.8464 16.4825 21.3411 16.1774 21.6462L13.0524 24.7712C12.7473 25.0763 12.2527 25.0763 11.9476 24.7712L8.82257 21.6462C8.51748 21.3411 8.51748 20.8464 8.82257 20.5413C9.12767 20.2362 9.62233 20.2362 9.92743 20.5413L11.7187 22.3326V16.4062C11.7187 15.9748 12.0685 15.625 12.5 15.625Z"
-  }), /* @__PURE__ */ import_react5.default.createElement("path", {
+  }), /* @__PURE__ */ import_react7.default.createElement("path", {
     fill: "currentcolor",
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M0.228823 13.0524C-0.0762743 12.7473 -0.0762743 12.2527 0.228823 11.9476L3.35382 8.82257C3.65892 8.51748 4.15358 8.51748 4.45868 8.82257C4.76377 9.12767 4.76377 9.62233 4.45868 9.92743L2.66735 11.7188L8.59375 11.7188C9.02522 11.7188 9.375 12.0685 9.375 12.5C9.375 12.9315 9.02522 13.2813 8.59375 13.2813L2.66735 13.2812L4.45868 15.0726C4.76377 15.3777 4.76377 15.8723 4.45868 16.1774C4.15358 16.4825 3.65892 16.4825 3.35382 16.1774L0.228823 13.0524ZM15.625 12.5C15.625 12.0685 15.9748 11.7188 16.4062 11.7188H22.3326L20.5413 9.92743C20.2362 9.62233 20.2362 9.12767 20.5413 8.82257C20.8464 8.51748 21.3411 8.51748 21.6462 8.82257L24.7712 11.9476C25.0763 12.2527 25.0763 12.7473 24.7712 13.0524L21.6462 16.1774C21.3411 16.4825 20.8464 16.4825 20.5413 16.1774C20.2362 15.8723 20.2362 15.3777 20.5413 15.0726L22.3326 13.2813H16.4062C15.9748 13.2813 15.625 12.9315 15.625 12.5Z"
-  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
     className: `tool-icon ${selectedTool === "rect" ? "selected" : ""}`,
     id: "rect",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react5.default.createElement("path", {
+  }, /* @__PURE__ */ import_react7.default.createElement("path", {
     fill: "currentcolor",
     d: "M21.875 1.5625C22.7379 1.5625 23.4375 2.26206 23.4375 3.125V21.875C23.4375 22.7379 22.7379 23.4375 21.875 23.4375H3.125C2.26206 23.4375 1.5625 22.7379 1.5625 21.875V3.125C1.5625 2.26206 2.26206 1.5625 3.125 1.5625H21.875ZM3.125 0C1.39911 0 0 1.39911 0 3.125V21.875C0 23.6009 1.39911 25 3.125 25H21.875C23.6009 25 25 23.6009 25 21.875V3.125C25 1.39911 23.6009 0 21.875 0H3.125Z"
-  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
     className: `tool-icon ${selectedTool === "circle" ? "selected" : ""}`,
     id: "circle",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react5.default.createElement("path", {
+  }, /* @__PURE__ */ import_react7.default.createElement("path", {
     fill: "currentcolor",
     d: "M12.5 23.4375C6.45939 23.4375 1.5625 18.5406 1.5625 12.5C1.5625 6.45939 6.45939 1.5625 12.5 1.5625C18.5406 1.5625 23.4375 6.45939 23.4375 12.5C23.4375 18.5406 18.5406 23.4375 12.5 23.4375ZM12.5 25C19.4036 25 25 19.4036 25 12.5C25 5.59644 19.4036 0 12.5 0C5.59644 0 0 5.59644 0 12.5C0 19.4036 5.59644 25 12.5 25Z"
-  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
     className: `tool-icon ${selectedTool === "arrow" ? "selected" : ""}`,
     id: "arrow",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react5.default.createElement("path", {
+  }, /* @__PURE__ */ import_react7.default.createElement("path", {
     fill: "currentcolor",
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M1.5625 12.5C1.5625 12.0685 1.91228 11.7187 2.34375 11.7187H20.7701L15.8538 6.80243C15.5487 6.49733 15.5487 6.00267 15.8538 5.69757C16.1589 5.39247 16.6536 5.39247 16.9587 5.69757L23.2087 11.9476C23.5138 12.2527 23.5138 12.7473 23.2087 13.0524L16.9587 19.3024C16.6536 19.6075 16.1589 19.6075 15.8538 19.3024C15.5487 18.9973 15.5487 18.5027 15.8538 18.1976L20.7701 13.2812H2.34375C1.91228 13.2812 1.5625 12.9315 1.5625 12.5Z"
-  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
     className: `tool-icon ${selectedTool === "line" ? "selected" : ""}`,
     id: "line",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
     height: "25",
     width: "25",
     viewBox: "0 0 25 25"
-  }, /* @__PURE__ */ import_react5.default.createElement("line", {
+  }, /* @__PURE__ */ import_react7.default.createElement("line", {
     x1: "0",
     y1: "10",
     x2: "25",
     y2: "25",
     stroke: "var(--icon-color)"
-  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
     className: `tool-icon ${selectedTool === "diamond" ? "selected" : ""}`,
     id: "diamond",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react5.default.createElement("path", {
+  }, /* @__PURE__ */ import_react7.default.createElement("path", {
     fill: "currentcolor",
     d: "M10.8603 0.679185C11.7659 -0.226396 13.2341 -0.226394 14.1397 0.679186L24.3208 10.8603C25.2264 11.7659 25.2264 13.2341 24.3208 14.1397L14.1397 24.3208C13.2341 25.2264 11.7659 25.2264 10.8603 24.3208L0.679185 14.1397C-0.226396 13.2341 -0.226394 11.7659 0.679186 10.8603L10.8603 0.679185ZM13.0466 1.77232C12.7447 1.47046 12.2553 1.47046 11.9534 1.77232L1.77232 11.9534C1.47046 12.2553 1.47046 12.7447 1.77232 13.0466L11.9534 23.2277C12.2553 23.5295 12.7447 23.5295 13.0466 23.2277L23.2277 13.0466C23.5295 12.7447 23.5295 12.2553 23.2277 11.9534L13.0466 1.77232Z"
-  }))), /* @__PURE__ */ import_react5.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
     className: `tool-icon ${selectedTool === "chalk" ? "selected" : ""}`,
     id: "chalk",
     onClick: updateTool
-  }, /* @__PURE__ */ import_react5.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react5.default.createElement("g", {
+  }, /* @__PURE__ */ import_react7.default.createElement("g", {
     clipPath: "url(#clip0_1287_3498)"
-  }, /* @__PURE__ */ import_react5.default.createElement("path", {
+  }, /* @__PURE__ */ import_react7.default.createElement("path", {
     fill: "currentcolor",
     d: "M18.9788 0.228823C19.2839 -0.0762743 19.7786 -0.0762743 20.0837 0.228823L24.7712 4.91632C25.0763 5.22142 25.0763 5.71608 24.7712 6.02118L9.1462 21.6462C9.07139 21.721 8.98216 21.7798 8.88392 21.8191L1.07142 24.9441C0.781252 25.0602 0.449832 24.9922 0.228846 24.7712C0.0078592 24.5502 -0.0601674 24.2188 0.0559004 23.9286L3.1809 16.1161C3.22019 16.0179 3.27903 15.9286 3.35385 15.8538L18.9788 0.228823ZM17.5111 3.90625L21.0938 7.4889L23.1139 5.46875L19.5313 1.8861L17.5111 3.90625ZM19.9889 8.59375L16.4063 5.0111L6.25002 15.1674V15.625H7.03127C7.46275 15.625 7.81252 15.9748 7.81252 16.4062V17.1875H8.59377C9.02525 17.1875 9.37502 17.5373 9.37502 17.9688V18.75H9.83267L19.9889 8.59375ZM4.73698 16.6804L4.57209 16.8453L2.18366 22.8164L8.15473 20.4279L8.31962 20.263C8.02338 20.152 7.81252 19.8663 7.81252 19.5312V18.75H7.03127C6.5998 18.75 6.25002 18.4002 6.25002 17.9688V17.1875H5.46877C5.13377 17.1875 4.84801 16.9766 4.73698 16.6804Z"
-  })), /* @__PURE__ */ import_react5.default.createElement("defs", null, /* @__PURE__ */ import_react5.default.createElement("clipPath", {
+  })), /* @__PURE__ */ import_react7.default.createElement("defs", null, /* @__PURE__ */ import_react7.default.createElement("clipPath", {
     id: "clip0_1287_3498"
-  }, /* @__PURE__ */ import_react5.default.createElement("rect", {
+  }, /* @__PURE__ */ import_react7.default.createElement("rect", {
     width: "25",
     height: "25",
     fill: "white"
@@ -270,6 +519,7 @@ function SelectTool({ selectedTool, updateTool }) {
 var SelectTool_default2 = SelectTool;
 
 // app/components/Shapes/Arrow.js
+init_react();
 var Arrow = class {
   constructor(tempCanvas, tempContext, callback, id) {
     this.id = id;
@@ -332,6 +582,7 @@ var Arrow = class {
 var Arrow_default = Arrow;
 
 // app/components/Shapes/Chalk.js
+init_react();
 var Chalk = class {
   constructor(tempCanvas, tempContext, callback) {
     this.tempCanvas = tempCanvas;
@@ -363,7 +614,11 @@ var Chalk = class {
 };
 var Chalk_default = Chalk;
 
+// app/components/Shapes/Circle.js
+init_react();
+
 // app/components/utils/getElementsAtPosition.js
+init_react();
 function getElementsAtPosition(x, y, shapes) {
   let returnElement = null;
   let diffX = null;
@@ -524,26 +779,30 @@ var Circle = class {
 };
 var Circle_default = Circle;
 
+// app/components/Shapes/Diamond.js
+init_react();
+
 // app/components/utils/drawShapes.js
-function drawDiamond(xCenter, yCenter, size, context2) {
+init_react();
+function drawDiamond(xCenter, yCenter, size, context) {
   let numberOfSides = 4;
-  context2.beginPath();
-  context2.moveTo(xCenter + size * Math.cos(0), yCenter + size * Math.sin(0));
+  context.beginPath();
+  context.moveTo(xCenter + size * Math.cos(0), yCenter + size * Math.sin(0));
   for (var i = 1; i <= numberOfSides; i += 1) {
-    context2.lineTo(xCenter + size * Math.cos(i * 2 * Math.PI / numberOfSides), yCenter + size * Math.sin(i * 2 * Math.PI / numberOfSides));
+    context.lineTo(xCenter + size * Math.cos(i * 2 * Math.PI / numberOfSides), yCenter + size * Math.sin(i * 2 * Math.PI / numberOfSides));
   }
-  context2.stroke();
+  context.stroke();
 }
-function drawText(text, context2, x, y, maxWidth, lineHeight = 32, color, fontSize = 24) {
-  context2.font = `normal ${fontSize}px/${lineHeight}px Comic Sans MS`;
-  context2.fillStyle = color;
-  context2.textBaseline = "top";
+function drawText(text, context, x, y, maxWidth, lineHeight = 32, color, fontSize = 24) {
+  context.font = `normal ${fontSize}px/${lineHeight}px Comic Sans MS`;
+  context.fillStyle = color;
+  context.textBaseline = "top";
   let words = text.split("");
   let line = "";
   let numberOfLines = 1;
   for (let n = 0; n < words.length; n++) {
     if (words[n] === "\n") {
-      context2.fillText(line, x, y);
+      context.fillText(line, x, y);
       line = "";
       y += lineHeight;
       numberOfLines++;
@@ -552,7 +811,7 @@ function drawText(text, context2, x, y, maxWidth, lineHeight = 32, color, fontSi
       line = testLine;
     }
   }
-  context2.fillText(line, x, y);
+  context.fillText(line, x, y);
   return numberOfLines;
 }
 
@@ -610,6 +869,7 @@ var Diamond = class {
 var Diamond_default = Diamond;
 
 // app/components/Shapes/DrawText.js
+init_react();
 var DrawText = class {
   constructor(tempCanvas, tempContext, callback, id, selectedTheme) {
     this.started = false;
@@ -702,6 +962,7 @@ var DrawText = class {
 var DrawText_default = DrawText;
 
 // app/components/Shapes/Line.js
+init_react();
 var Line = class {
   constructor(tempCanvas, tempContext, callback, id) {
     this.id = id;
@@ -754,6 +1015,7 @@ var Line = class {
 var Line_default = Line;
 
 // app/components/Shapes/MoveTool.js
+init_react();
 var MoveTool = class {
   constructor(tempCanvas, tempContext, callback, element, theme) {
     this.id = element.id;
@@ -974,6 +1236,7 @@ var MoveTool = class {
 var MoveTool_default = MoveTool;
 
 // app/components/Shapes/Rectangle.js
+init_react();
 var Rect = class {
   constructor(tempCanvas, tempContext, callback, id) {
     this.id = id;
@@ -1030,7 +1293,8 @@ var Rect = class {
 var Rectangle_default = Rect;
 
 // app/components/TextTool/TextTool.js
-var import_react6 = __toESM(require("react"));
+init_react();
+var import_react8 = __toESM(require("react"));
 
 // app/components/TextTool/TextTool.css
 var TextTool_default = "/build/_assets/TextTool-UMOFHWRZ.css";
@@ -1040,11 +1304,11 @@ function TextToolLinks() {
   return [{ rel: "stylesheet", href: TextTool_default }];
 }
 function TextTool() {
-  return /* @__PURE__ */ import_react6.default.createElement("div", {
+  return /* @__PURE__ */ import_react8.default.createElement("div", {
     style: { color: "black" },
     className: "textTool",
     id: "textBoxContainerId"
-  }, /* @__PURE__ */ import_react6.default.createElement("div", {
+  }, /* @__PURE__ */ import_react8.default.createElement("div", {
     className: "textarea",
     id: "textAreaId",
     role: "textbox",
@@ -1054,7 +1318,8 @@ function TextTool() {
 var TextTool_default2 = TextTool;
 
 // app/components/ZoomContainer/ZoomContainer.js
-var import_react7 = __toESM(require("react"));
+init_react();
+var import_react9 = __toESM(require("react"));
 
 // app/components/ZoomContainer/ZoomContainer.css
 var ZoomContainer_default = "/build/_assets/ZoomContainer-Y6YPOOBE.css";
@@ -1064,37 +1329,37 @@ function ZoomContainerLinks() {
   return [{ rel: "stylesheet", href: ZoomContainer_default }];
 }
 function ZoomContainer({ zoomRange, zoomIn, zoomOut }) {
-  return /* @__PURE__ */ import_react7.default.createElement("div", {
+  return /* @__PURE__ */ import_react9.default.createElement("div", {
     className: "zoomContainer"
-  }, /* @__PURE__ */ import_react7.default.createElement("span", {
+  }, /* @__PURE__ */ import_react9.default.createElement("span", {
     id: "minus",
     className: "zoom-sign",
     onClick: zoomIn
-  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react9.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react7.default.createElement("path", {
+  }, /* @__PURE__ */ import_react9.default.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3.125 12.5C3.125 12.0685 3.47478 11.7188 3.90625 11.7188H21.0938C21.5252 11.7188 21.875 12.0685 21.875 12.5C21.875 12.9315 21.5252 13.2812 21.0938 13.2812H3.90625C3.47478 13.2812 3.125 12.9315 3.125 12.5Z",
     fill: "currentcolor"
-  }))), /* @__PURE__ */ import_react7.default.createElement("span", {
+  }))), /* @__PURE__ */ import_react9.default.createElement("span", {
     id: "zoomRange",
     className: "zoom-range"
-  }, Math.floor(zoomRange * 100)), /* @__PURE__ */ import_react7.default.createElement("span", {
+  }, Math.floor(zoomRange * 100)), /* @__PURE__ */ import_react9.default.createElement("span", {
     id: "plus",
     className: "zoom-sign",
     onClick: zoomOut
-  }, /* @__PURE__ */ import_react7.default.createElement("svg", {
+  }, /* @__PURE__ */ import_react9.default.createElement("svg", {
     width: "25",
     height: "25",
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, /* @__PURE__ */ import_react7.default.createElement("path", {
+  }, /* @__PURE__ */ import_react9.default.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12.5 3.125C12.9315 3.125 13.2812 3.47478 13.2812 3.90625V11.7188H21.0938C21.5252 11.7188 21.875 12.0685 21.875 12.5C21.875 12.9315 21.5252 13.2812 21.0938 13.2812H13.2812V21.0938C13.2812 21.5252 12.9315 21.875 12.5 21.875C12.0685 21.875 11.7187 21.5252 11.7187 21.0938V13.2812H3.90625C3.47478 13.2812 3.125 12.9315 3.125 12.5C3.125 12.0685 3.47478 11.7188 3.90625 11.7188H11.7188V3.90625C11.7188 3.47478 12.0685 3.125 12.5 3.125Z",
@@ -1104,6 +1369,7 @@ function ZoomContainer({ zoomRange, zoomIn, zoomOut }) {
 var ZoomContainer_default2 = ZoomContainer;
 
 // app/components/utils/idb.js
+init_react();
 var Idb = class {
   constructor() {
   }
@@ -1166,10 +1432,11 @@ var Idb = class {
 var idb_default = Idb;
 
 // app/contexts/socketContext.js
-var import_react8 = __toESM(require("react"));
-var SocketContext = (0, import_react8.createContext)(void 0);
+init_react();
+var import_react10 = __toESM(require("react"));
+var SocketContext = (0, import_react10.createContext)(void 0);
 function SocketProvider({ socket, children }) {
-  return /* @__PURE__ */ import_react8.default.createElement(SocketContext.Provider, {
+  return /* @__PURE__ */ import_react10.default.createElement(SocketContext.Provider, {
     value: socket
   }, children);
 }
@@ -1194,10 +1461,12 @@ var baseConfig = {
   baseFontSize: 24,
   baseLineHeight: 150 * 24 / 100
 };
-var MainComponent = class extends import_react9.default.Component {
+var MainComponent = class extends import_react11.default.Component {
   constructor(props) {
     super(props);
     this.state = __spreadValues({
+      scrollX: 0,
+      scrollY: 0,
       canvasWidth: 0,
       canvasHeight: 0,
       selectedTheme: "light",
@@ -1222,16 +1491,14 @@ var MainComponent = class extends import_react9.default.Component {
     this.zoomIn = this.zoomIn.bind(this);
     this.zoomOut = this.zoomOut.bind(this);
     this.idb = new idb_default();
-    this.mainCanvas = import_react9.default.createRef();
-    this.tempCanvas = import_react9.default.createRef();
+    this.mainCanvas = import_react11.default.createRef();
+    this.tempCanvas = import_react11.default.createRef();
     this.selectedElement = null;
     this.id = 0;
     this.mouseXPosition = null;
     this.mouseYPosition = null;
     this.isUserDragging = false;
     this.draggingElement = null;
-    this.scrollX = 0;
-    this.scrollY = 0;
   }
   componentDidMount() {
     this.idb.getDataFromIdb("app-state-persist").then((data) => {
@@ -1338,7 +1605,7 @@ var MainComponent = class extends import_react9.default.Component {
   onEvent(ev) {
     ev._x = ev.x;
     ev._y = ev.y;
-    this.props.mouseMove({ x: this.changeToOneScalingFactor(ev.x - this.scrollX), y: this.changeToOneScalingFactor(ev.y - this.scrollY) });
+    this.props.mouseMove({ x: this.changeToOneScalingFactor(ev.x - this.state.scrollX), y: this.changeToOneScalingFactor(ev.y - this.state.scrollY) });
     if (this.state.selectedTool === "select") {
       if (ev.type === "mousedown") {
         this.mouseXPosition = ev._x;
@@ -1363,9 +1630,9 @@ var MainComponent = class extends import_react9.default.Component {
     }
     if (this.isUserDragging) {
       if (!this.draggingElement) {
-        ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
-        ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
-        let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - this.scrollX), this.changeToOneScalingFactor(this.mouseYPosition - this.scrollY), this.state.shapes);
+        ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
+        ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
+        let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - this.state.scrollX), this.changeToOneScalingFactor(this.mouseYPosition - this.state.scrollY), this.state.shapes);
         if (elementSelected) {
           this.selectedElement = elementSelected;
           let shapes = this.state.shapes.filter((shape) => shape.id !== elementSelected.id);
@@ -1440,12 +1707,12 @@ var MainComponent = class extends import_react9.default.Component {
   imgUpdate(drawenImage) {
     if (drawenImage && drawenImage.type) {
       let modifiedImage = __spreadProps(__spreadValues({}, drawenImage), {
-        x: this.changeToOneScalingFactor(drawenImage.x - this.scrollX),
-        y: this.changeToOneScalingFactor(drawenImage.y - this.scrollY),
-        endX: this.changeToOneScalingFactor(drawenImage.endX - this.scrollX),
-        endY: this.changeToOneScalingFactor(drawenImage.endY - this.scrollY),
-        startX: this.changeToOneScalingFactor(drawenImage.startX - this.scrollX),
-        startY: this.changeToOneScalingFactor(drawenImage.startY - this.scrollY),
+        x: this.changeToOneScalingFactor(drawenImage.x - this.state.scrollX),
+        y: this.changeToOneScalingFactor(drawenImage.y - this.state.scrollY),
+        endX: this.changeToOneScalingFactor(drawenImage.endX - this.state.scrollX),
+        endY: this.changeToOneScalingFactor(drawenImage.endY - this.state.scrollY),
+        startX: this.changeToOneScalingFactor(drawenImage.startX - this.state.scrollX),
+        startY: this.changeToOneScalingFactor(drawenImage.startY - this.state.scrollY),
         radius: this.changeToOneScalingFactor(drawenImage.radius),
         width: drawenImage.width ? this.changeToOneScalingFactor(drawenImage.width) : null,
         height: drawenImage.height ? this.changeToOneScalingFactor(drawenImage.height) : null,
@@ -1472,13 +1739,13 @@ var MainComponent = class extends import_react9.default.Component {
     ;
     this.state.shapes.forEach((shape) => {
       if (shape.type === "rectangle") {
-        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + this.scrollX, this.changeFromOneScalingFactor(shape.y) + this.scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height));
+        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + this.state.scrollX, this.changeFromOneScalingFactor(shape.y) + this.state.scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height));
       } else if (shape.type === "arrow") {
         let headlen = 10;
-        let x = this.changeFromOneScalingFactor(shape.x) + this.scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + this.scrollY;
-        let endX = this.changeFromOneScalingFactor(shape.endX) + this.scrollX;
-        let endY = this.changeFromOneScalingFactor(shape.endY) + this.scrollY;
+        let x = this.changeFromOneScalingFactor(shape.x) + this.state.scrollX;
+        let y = this.changeFromOneScalingFactor(shape.y) + this.state.scrollY;
+        let endX = this.changeFromOneScalingFactor(shape.endX) + this.state.scrollX;
+        let endY = this.changeFromOneScalingFactor(shape.endY) + this.state.scrollY;
         let dx = endX - x;
         let dy = endY - y;
         let angle = Math.atan2(dy, dx);
@@ -1492,22 +1759,22 @@ var MainComponent = class extends import_react9.default.Component {
         this.tempContext.closePath();
       } else if (shape.type === "line") {
         this.tempContext.beginPath();
-        this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + this.scrollX, this.changeFromOneScalingFactor(shape.y) + this.scrollY);
-        this.tempContext.lineTo(this.changeFromOneScalingFactor(shape.endX) + this.scrollX, this.changeFromOneScalingFactor(shape.endY) + this.scrollY);
+        this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + this.state.scrollX, this.changeFromOneScalingFactor(shape.y) + this.state.scrollY);
+        this.tempContext.lineTo(this.changeFromOneScalingFactor(shape.endX) + this.state.scrollX, this.changeFromOneScalingFactor(shape.endY) + this.state.scrollY);
         this.tempContext.stroke();
         this.tempContext.closePath();
       } else if (shape.type === "text") {
         let color = this.state.selectedTheme === "dark" ? "#FFFFFF" : "#000000";
-        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x) + this.scrollX, this.changeFromOneScalingFactor(shape.y) + this.scrollY, this.changeFromOneScalingFactor(shape.width), this.state.baseLineHeight, color, this.state.baseFontSize);
+        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x) + this.state.scrollX, this.changeFromOneScalingFactor(shape.y) + this.state.scrollY, this.changeFromOneScalingFactor(shape.width), this.state.baseLineHeight, color, this.state.baseFontSize);
       } else if (shape.type === "circle") {
-        let x = this.changeFromOneScalingFactor(shape.x) + this.scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + this.scrollY;
+        let x = this.changeFromOneScalingFactor(shape.x) + this.state.scrollX;
+        let y = this.changeFromOneScalingFactor(shape.y) + this.state.scrollY;
         this.tempContext.beginPath();
         this.tempContext.arc(x, y, this.changeFromOneScalingFactor(shape.radius), 0, 2 * Math.PI);
         this.tempContext.stroke();
       } else if (shape.type === "diamond") {
-        let xCenter = this.changeFromOneScalingFactor(shape.x) + this.scrollX;
-        let yCenter = this.changeFromOneScalingFactor(shape.y) + this.scrollY;
+        let xCenter = this.changeFromOneScalingFactor(shape.x) + this.state.scrollX;
+        let yCenter = this.changeFromOneScalingFactor(shape.y) + this.state.scrollY;
         let size = this.changeFromOneScalingFactor(shape.x - shape.endX);
         drawDiamond(xCenter, yCenter, size, this.tempContext);
       }
@@ -1518,8 +1785,8 @@ var MainComponent = class extends import_react9.default.Component {
     this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
   }
   changeToTextTool(ev) {
-    ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
-    ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
+    ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
+    ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
     let enclosedElement = getElementsAtPosition(ev._x, ev._y, this.state.shapes);
     this.resetDraggingValues();
     this.setState({ selectedTool: "text" }, () => {
@@ -1539,7 +1806,7 @@ var MainComponent = class extends import_react9.default.Component {
       let func = this.tool[ev.type];
       if (func) {
         this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-        func(ev, enclosedElement, { scrollX: this.scrollX, scrollY: this.scrollY, scalingFactor: this.state.scalingFactor });
+        func(ev, enclosedElement, { scrollX: this.state.scrollX, scrollY: this.state.scrollY, scalingFactor: this.state.scalingFactor });
       }
     });
   }
@@ -1560,8 +1827,8 @@ var MainComponent = class extends import_react9.default.Component {
     }
   }
   onDocumentClick(ev) {
-    ev._x = this.changeToOneScalingFactor(ev.x - this.scrollX);
-    ev._y = this.changeToOneScalingFactor(ev.y - this.scrollY);
+    ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
+    ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
     if (this.state.selectedTool === "text") {
       this.tool["onBlur"]();
       return;
@@ -1573,30 +1840,30 @@ var MainComponent = class extends import_react9.default.Component {
       console.log(selectedElement);
       if (this.selectedElement) {
         if (this.selectedElement.type === "rectangle") {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.state.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.state.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === "line" || this.selectedElement.type === "arrow") {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.state.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.state.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === "circle") {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.state.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.state.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.beginPath();
           this.tempContext.arc(x, y, this.changeFromOneScalingFactor(this.selectedElement.radius) + 10, 0, 2 * Math.PI);
           this.tempContext.stroke();
         } else if (this.selectedElement.type === "diamond") {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.state.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.state.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === "text") {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.state.scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.state.scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width), this.changeFromOneScalingFactor(this.selectedElement.height));
         }
@@ -1607,9 +1874,14 @@ var MainComponent = class extends import_react9.default.Component {
     if (this.state.selectedTool === "text") {
       this.tool["onBlur"]();
     }
-    this.scrollX = this.scrollX - e.deltaX;
-    this.scrollY = this.scrollY - e.deltaY;
-    this.redraw();
+    this.setState((prevstate) => {
+      return {
+        scrollX: prevstate.scrollX - e.deltaX,
+        scrollY: prevstate.scrollY - e.deltaY
+      };
+    }, () => {
+      this.redraw();
+    });
   }
   resetDraggingValues() {
     this.isUserDragging = false;
@@ -1632,41 +1904,41 @@ var MainComponent = class extends import_react9.default.Component {
     });
   }
   render() {
-    return /* @__PURE__ */ import_react9.default.createElement("div", {
+    return /* @__PURE__ */ import_react11.default.createElement("div", {
       style: { "--font-size": `${this.state.baseFontSize}px`, "--line-height": `${this.state.baseLineHeight}px`, cursor: `${this.state.selectedTool === "select" ? `url('../assets/cursor.svg')` : "crosshair"}` },
       className: `${this.state.selectedTheme === "dark" ? "dark-mode" : "light-mode"}`
-    }, /* @__PURE__ */ import_react9.default.createElement("div", {
+    }, /* @__PURE__ */ import_react11.default.createElement("div", {
       id: "wrapper"
-    }, /* @__PURE__ */ import_react9.default.createElement("div", {
+    }, /* @__PURE__ */ import_react11.default.createElement("div", {
       id: "blackboardPlaceholder"
-    }, /* @__PURE__ */ import_react9.default.createElement("canvas", {
+    }, /* @__PURE__ */ import_react11.default.createElement("canvas", {
       id: "drawingCanvas",
       ref: this.mainCanvas,
       width: this.state.canvasWidth,
       height: this.state.canvasHeight
-    }, /* @__PURE__ */ import_react9.default.createElement("p", {
+    }, /* @__PURE__ */ import_react11.default.createElement("p", {
       className: "noscript"
-    }, "We're sorry, this web application is currently not supported with your browser. Please use an alternate browser or download a supported ", /* @__PURE__ */ import_react9.default.createElement("br", null), "browser.Supported browsers: ", /* @__PURE__ */ import_react9.default.createElement("a", {
+    }, "We're sorry, this web application is currently not supported with your browser. Please use an alternate browser or download a supported ", /* @__PURE__ */ import_react11.default.createElement("br", null), "browser.Supported browsers: ", /* @__PURE__ */ import_react11.default.createElement("a", {
       href: "http://www.google.com/chrome"
-    }, "Google Chrome"), ", ", /* @__PURE__ */ import_react9.default.createElement("a", {
+    }, "Google Chrome"), ", ", /* @__PURE__ */ import_react11.default.createElement("a", {
       href: "http://www.opera.com"
-    }, "Opera"), ", ", /* @__PURE__ */ import_react9.default.createElement("a", {
+    }, "Opera"), ", ", /* @__PURE__ */ import_react11.default.createElement("a", {
       href: "http://www.mozilla.com"
-    }, "Firefox"), ", ", /* @__PURE__ */ import_react9.default.createElement("a", {
+    }, "Firefox"), ", ", /* @__PURE__ */ import_react11.default.createElement("a", {
       href: "http://www.apple.com/safari"
-    }, "Safari"), ", ", /* @__PURE__ */ import_react9.default.createElement("br", null), "and ", /* @__PURE__ */ import_react9.default.createElement("a", {
+    }, "Safari"), ", ", /* @__PURE__ */ import_react11.default.createElement("br", null), "and ", /* @__PURE__ */ import_react11.default.createElement("a", {
       href: "http://www.konqueror.org"
-    }, "Konqueror"), ". Also make sure your JavaScript is enabled.")), /* @__PURE__ */ import_react9.default.createElement("canvas", {
+    }, "Konqueror"), ". Also make sure your JavaScript is enabled.")), /* @__PURE__ */ import_react11.default.createElement("canvas", {
       id: "tempCanvas",
       ref: this.tempCanvas,
       width: this.state.canvasWidth,
       height: this.state.canvasHeight
-    }))), /* @__PURE__ */ import_react9.default.createElement(SelectTool_default2, {
+    }))), /* @__PURE__ */ import_react11.default.createElement(SelectTool_default2, {
       selectedTool: this.state.selectedTool,
       updateTool: this.onClickTool
-    }), /* @__PURE__ */ import_react9.default.createElement(ConfigTool_default2, {
+    }), /* @__PURE__ */ import_react11.default.createElement(ConfigTool_default2, {
       toggleTheme: this.updateTheme
-    }), /* @__PURE__ */ import_react9.default.createElement(TextTool_default2, null), /* @__PURE__ */ import_react9.default.createElement(ZoomContainer_default2, {
+    }), /* @__PURE__ */ import_react11.default.createElement(TextTool_default2, null), /* @__PURE__ */ import_react11.default.createElement(ZoomContainer_default2, {
       zoomRange: this.state.scalingFactor,
       zoomOut: this.zoomOut,
       zoomIn: this.zoomIn
@@ -1688,9 +1960,9 @@ var links = () => [
   { rel: "stylesheet", href: styles_default }
 ];
 function FreeDrawIndex() {
-  return /* @__PURE__ */ import_react10.default.createElement("div", {
+  return /* @__PURE__ */ import_react12.default.createElement("div", {
     style: { fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }
-  }, /* @__PURE__ */ import_react10.default.createElement(main_default2, {
+  }, /* @__PURE__ */ import_react12.default.createElement(main_default2, {
     mouseMove: () => {
     },
     updateShape: () => {
@@ -1701,92 +1973,16 @@ function FreeDrawIndex() {
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/draw/$drawId.jsx
 var drawId_exports = {};
 __export(drawId_exports, {
-  action: () => action,
+  action: () => action2,
   default: () => DrawIndex,
   links: () => links2,
-  loader: () => loader
+  loader: () => loader2
 });
-var import_react11 = __toESM(require("react"));
-var import_node = require("@remix-run/node");
-var import_react12 = require("@remix-run/react");
+init_react();
+var import_react13 = __toESM(require("react"));
+var import_node2 = require("@remix-run/node");
+var import_react14 = require("@remix-run/react");
 var import_socket = __toESM(require("socket.io-client"));
-
-// server/db.js
-var import_firestore = require("firebase-admin/firestore");
-var dataPoint = (collectionPath) => {
-  return (0, import_firestore.getFirestore)().collection(collectionPath);
-};
-var db = {
-  rooms: () => dataPoint("rooms"),
-  room: (roomId) => dataPoint(`rooms/${roomId}`),
-  shapeCollection: (roomId) => dataPoint(`rooms/${roomId}/shapes`),
-  collaborators: (roomId) => dataPoint(`rooms/${roomId}/collaborators`)
-};
-async function createRoom(name) {
-  const newRoomRef = db.rooms().doc();
-  await db.collaborators(newRoomRef.id).doc().set({ name, color: "blue", isActive: true });
-  await newRoomRef.set({ id: newRoomRef.id });
-  return { id: newRoomRef.id };
-}
-function addShape(roomId, shape) {
-  const newShapeRef = db.shapeCollection(roomId).doc();
-  console.log("New Id", newShapeRef.id);
-  const shapeJSON = JSON.parse(shape);
-  console.log("Addding Shape Called", roomId, shape);
-  return new Promise((resolve, reject) => {
-    newShapeRef.set(__spreadProps(__spreadValues({}, shapeJSON), { id: newShapeRef.id })).then((doc) => {
-      console.log("Inside THen");
-      resolve({ id: newShapeRef.id });
-    }).catch((err) => {
-      reject({ error: err });
-    });
-  });
-}
-function getShapes(roomId) {
-  return new Promise((resolve, reject) => {
-    db.shapeCollection(roomId).get().then((snapshot) => {
-      let data = [];
-      if (snapshot.empty) {
-        data = [];
-      } else {
-        snapshot.forEach((doc) => {
-          data.push(doc.data());
-        });
-      }
-      resolve(data);
-    }).catch((err) => {
-      reject(err);
-    });
-  });
-}
-function getUsers(roomId) {
-  return new Promise((resolve, reject) => {
-    db.collaborators(roomId).get().then((snapshot) => {
-      let data = [];
-      if (snapshot.empty) {
-        data = [];
-      } else {
-        snapshot.forEach((doc) => {
-          data.push(doc.data());
-        });
-      }
-      resolve(data);
-    }).catch((err) => {
-      reject(err);
-    });
-  });
-}
-function getInitialDrawData(roomId) {
-  return new Promise((resolve, reject) => {
-    Promise.all([getShapes(roomId), getUsers(roomId)]).then(([shapes, users]) => {
-      resolve({ shapes: shapes && shapes.length > 0 ? shapes : [], users: users && users.length > 0 ? users : [] });
-    }).catch((err) => {
-      reject({ message: err });
-    });
-  });
-}
-
-// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/draw/$drawId.jsx
 var links2 = () => [
   ...MainComponentStyles(),
   ...SelectToolLinks(),
@@ -1795,27 +1991,27 @@ var links2 = () => [
   ...ZoomContainerLinks(),
   { rel: "stylesheet", href: styles_default }
 ];
-var loader = async ({ request, params }) => {
+var loader2 = async ({ request, params }) => {
   console.log(params);
   let drawData = await getInitialDrawData(params.drawId);
-  return (0, import_node.json)({ drawData });
+  return (0, import_node2.json)({ drawData });
 };
-var action = async ({ request, params }) => {
+var action2 = async ({ request, params }) => {
   const body = await request.formData();
   let name = body.get("data");
   const data = await addShape(params.drawId, name);
-  return (0, import_node.json)({ data });
+  return (0, import_node2.json)({ data });
 };
 function DrawIndex() {
-  const fetcher = (0, import_react12.useFetcher)();
-  const data = (0, import_react12.useLoaderData)();
-  const actionData = (0, import_react12.useActionData)();
+  const fetcher = (0, import_react14.useFetcher)();
+  const data = (0, import_react14.useLoaderData)();
+  const actionData = (0, import_react14.useActionData)();
   console.log(actionData);
-  const [socket, setSocket] = (0, import_react11.useState)();
-  const idb = (0, import_react11.useMemo)(() => {
+  const [socket, setSocket] = (0, import_react13.useState)();
+  const idb = (0, import_react13.useMemo)(() => {
     return new idb_default();
   });
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     const socket2 = (0, import_socket.default)();
     setSocket(socket2);
     socket2.emit("event", "conenction success");
@@ -1823,7 +2019,7 @@ function DrawIndex() {
       socket2.close();
     };
   }, []);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (!socket)
       return;
     socket.on("confirmation", (data2) => {
@@ -1841,60 +2037,317 @@ function DrawIndex() {
   function onMouseMove(eventDetails) {
     socket.emit("mousemove", eventDetails);
   }
-  return /* @__PURE__ */ import_react11.default.createElement("div", {
+  return /* @__PURE__ */ import_react13.default.createElement("div", {
     style: { fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }
-  }, /* @__PURE__ */ import_react11.default.createElement(SocketProvider, {
+  }, /* @__PURE__ */ import_react13.default.createElement(SocketProvider, {
     socket
-  }, /* @__PURE__ */ import_react11.default.createElement(main_default2, {
+  }, /* @__PURE__ */ import_react13.default.createElement(main_default2, {
     mouseMove: onMouseMove,
     updateShape
   })));
 }
 
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/index.jsx
+var rooms_exports = {};
+__export(rooms_exports, {
+  default: () => rooms_default,
+  loader: () => loader3
+});
+init_react();
+var import_node5 = require("@remix-run/node");
+var import_react15 = require("@remix-run/react");
+var import_react16 = __toESM(require("react"));
+
+// server/auth.js
+init_react();
+var import_node4 = require("@remix-run/node");
+var import_auth = require("firebase/auth");
+
+// app/sessions.js
+init_react();
+var import_node3 = require("@remix-run/node");
+var { getSession: getSession2, commitSession, destroySession } = (0, import_node3.createCookieSessionStorage)({
+  cookie: {
+    name: "__session",
+    secrets: ["fancy-secret-key"],
+    maxAge: 60 * 60 * 24 * 7,
+    sameSite: "lax",
+    path: "/",
+    httpOnly: true
+  }
+});
+
+// server/auth.js
+var import_firebase = __toESM(require_firebase_server());
+var checkSessionCookie2 = async (session) => {
+  try {
+    const decodedIdToken = await import_firebase.auth.server.verifySessionCookie(session.get("session") || "");
+    return decodedIdToken;
+  } catch {
+    return { uid: void 0 };
+  }
+};
+var requireAuth = async (request) => {
+  const session = await getSession2(request.headers.get("cookie"));
+  const { uid } = await checkSessionCookie2(session);
+  if (!uid) {
+    throw (0, import_node4.redirect)("/signin", {
+      headers: { "Set-Cookie": await destroySession(session) }
+    });
+  }
+  return import_firebase.auth.server.getUser(uid);
+};
+var signIn = async (email, password) => {
+  const { user } = await (0, import_auth.signInWithEmailAndPassword)(import_firebase.auth.client, email, password);
+  const idToken = await user.getIdToken();
+  const expiresIn = 1e3 * 60 * 60 * 24 * 7;
+  const sessionCookie = await import_firebase.auth.server.createSessionCookie(idToken, {
+    expiresIn
+  });
+  return { sessionCookie, user };
+};
+var signUp = async (name, email, password) => {
+  let { uid } = await import_firebase.auth.server.createUser({
+    email,
+    password,
+    displayName: name
+  });
+  console.log("added user success", uid);
+  await addUser(name, uid, email);
+  return await signIn(email, password);
+};
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/rooms/index.jsx
+async function loader3({ request }) {
+  console.log("rooms loader");
+  const { displayName, uid } = await requireAuth(request);
+  console.log("uid", uid);
+  const userData = await getUser(uid);
+  console.log("Error", userData.error);
+  if (userData.error) {
+    return (0, import_node5.redirect)("/");
+  } else {
+    return (0, import_node5.json)({ user: userData.data });
+  }
+}
+function Rooms() {
+  const data = (0, import_react15.useLoaderData)();
+  console.log(data);
+  return /* @__PURE__ */ import_react16.default.createElement(import_react16.default.Fragment, null, /* @__PURE__ */ import_react16.default.createElement("p", null, /* @__PURE__ */ import_react16.default.createElement(import_react15.Link, {
+    to: "/createRoom"
+  }, "Create Room")), /* @__PURE__ */ import_react16.default.createElement("p", null, /* @__PURE__ */ import_react16.default.createElement(import_react15.Link, {
+    to: "/enterRoom"
+  }, "Enter Room")), /* @__PURE__ */ import_react16.default.createElement("p", null, "Rooms List"), /* @__PURE__ */ import_react16.default.createElement(import_react15.Outlet, null));
+}
+var rooms_default = Rooms;
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/SignIn.jsx
+var SignIn_exports = {};
+__export(SignIn_exports, {
+  action: () => action3,
+  default: () => Login,
+  loader: () => loader4
+});
+init_react();
+var import_node6 = require("@remix-run/node");
+var import_react17 = require("@remix-run/react");
+var import_react18 = require("react");
+var loader4 = async ({ request }) => {
+  const session = await getSession2(request.headers.get("cookie"));
+  const { uid } = await checkSessionCookie2(session);
+  const headers = {
+    "Set-Cookie": await commitSession(session)
+  };
+  if (uid) {
+    return (0, import_node6.redirect)("/rooms", { headers });
+  }
+  return (0, import_node6.json)({}, { headers });
+};
+var action3 = async ({ request }) => {
+  const form = await request.formData();
+  const idToken = form.get("idToken");
+  try {
+    const email = form.get("email");
+    const password = form.get("password");
+    const formError = (0, import_node6.json)({ error: "Please fill all fields!" }, { status: 400 });
+    if (typeof email !== "string")
+      return formError;
+    if (typeof password !== "string")
+      return formError;
+    let { sessionCookie } = await signIn(email, password);
+    const session = await getSession2(request.headers.get("cookie"));
+    session.set("session", sessionCookie);
+    return (0, import_node6.redirect)("/rooms", {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return (0, import_node6.json)({ error: String(error) }, { status: 401 });
+  }
+};
+function Login() {
+  const action6 = (0, import_react17.useActionData)();
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "Login"), (action6 == null ? void 0 : action6.error) && /* @__PURE__ */ React.createElement("p", null, action6 == null ? void 0 : action6.error), /* @__PURE__ */ React.createElement("form", {
+    method: "post"
+  }, /* @__PURE__ */ React.createElement("input", {
+    style: { display: "block" },
+    name: "email",
+    placeholder: "you@example.com",
+    type: "email"
+  }), /* @__PURE__ */ React.createElement("input", {
+    style: { display: "block" },
+    name: "password",
+    placeholder: "password",
+    type: "password"
+  }), /* @__PURE__ */ React.createElement("button", {
+    style: { display: "block" },
+    type: "submit"
+  }, "Login")), /* @__PURE__ */ React.createElement("p", null, "Do you want to ", /* @__PURE__ */ React.createElement(import_react17.Link, {
+    to: "/SignUp"
+  }, "join"), "?"), /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement(import_react17.Link, {
+    to: "/draw/freedraw",
+    className: "text-xl text-blue-600 underline"
+  }, "Try without Login")));
+}
+
+// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/SignUp.jsx
+var SignUp_exports = {};
+__export(SignUp_exports, {
+  action: () => action4,
+  default: () => Login2,
+  loader: () => loader5
+});
+init_react();
+var import_node7 = require("@remix-run/node");
+var import_react19 = require("@remix-run/react");
+var loader5 = async ({ request }) => {
+  const session = await getSession2(request.headers.get("cookie"));
+  const { uid } = await checkSessionCookie2(session);
+  const headers = {
+    "Set-Cookie": await commitSession(session)
+  };
+  if (uid) {
+    return (0, import_node7.redirect)("/rooms", { headers });
+  }
+  return (0, import_node7.json)(null, { headers });
+};
+var action4 = async ({ request }) => {
+  const form = await request.formData();
+  const name = form.get("name");
+  const email = form.get("email");
+  const password = form.get("password");
+  const formError = (0, import_node7.json)({ error: "Please fill all fields!" }, { status: 400 });
+  if (typeof name !== "string")
+    return formError;
+  if (typeof email !== "string")
+    return formError;
+  if (typeof password !== "string")
+    return formError;
+  try {
+    const { sessionCookie } = await signUp(name, email, password);
+    const session = await getSession2(request.headers.get("cookie"));
+    session.set("session", sessionCookie);
+    return (0, import_node7.redirect)("/rooms", {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return (0, import_node7.json)({ error: String(error) }, { status: 401 });
+  }
+};
+function Login2() {
+  const action6 = (0, import_react19.useActionData)();
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "Join"), (action6 == null ? void 0 : action6.error) && /* @__PURE__ */ React.createElement("p", null, action6.error), /* @__PURE__ */ React.createElement(import_react19.Form, {
+    method: "post"
+  }, /* @__PURE__ */ React.createElement("input", {
+    style: { display: "block" },
+    name: "name",
+    placeholder: "Peter",
+    type: "text"
+  }), /* @__PURE__ */ React.createElement("input", {
+    style: { display: "block" },
+    name: "email",
+    placeholder: "you@example.com",
+    type: "email"
+  }), /* @__PURE__ */ React.createElement("input", {
+    style: { display: "block" },
+    name: "password",
+    placeholder: "password",
+    type: "password"
+  }), /* @__PURE__ */ React.createElement("button", {
+    style: { display: "block" },
+    type: "submit"
+  }, "Join")), /* @__PURE__ */ React.createElement("p", null, "Do you want to ", /* @__PURE__ */ React.createElement(import_react19.Link, {
+    to: "/login"
+  }, "login"), "?"));
+}
+
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/index.jsx
 var routes_exports = {};
 __export(routes_exports, {
-  action: () => action2,
-  default: () => Index
+  action: () => action5,
+  default: () => Index,
+  loader: () => loader6
 });
-var import_react13 = __toESM(require("react"));
-var import_react14 = require("@remix-run/react");
-var import_node2 = require("@remix-run/node");
-async function action2({ request }) {
+init_react();
+var import_react20 = __toESM(require("react"));
+var import_react21 = require("@remix-run/react");
+var import_node8 = require("@remix-run/node");
+async function loader6({ request }) {
+  const session = await getSession2(request.headers.get("Cookie"));
+  console.log(session.has("__session"));
+  if (session.has("__session")) {
+    console.log("Isnndie UserId");
+    return (0, import_node8.redirect)("/rooms");
+  }
+  return null;
+}
+async function action5({ request }) {
   const body = await request.formData();
   let name = body.get("name");
   const draw = await createRoom(name);
+  const session = await getSession2(request.headers.get("Cookie"));
+  session.set("userId", draw.userId);
   console.log(draw);
-  return (0, import_node2.redirect)(`/draw/${draw.id}`);
+  return (0, import_node8.redirect)(`/draw/${draw.id}`, {
+    headers: {
+      "Set-Cookie": await commitSession(session)
+    }
+  });
 }
 function Index() {
   var _a;
-  const transition = (0, import_react14.useTransition)();
-  const actionData = (0, import_react14.useActionData)();
-  return /* @__PURE__ */ import_react13.default.createElement(import_react14.Form, {
+  const transition = (0, import_react21.useTransition)();
+  const actionData = (0, import_react21.useActionData)();
+  return /* @__PURE__ */ import_react20.default.createElement(import_react21.Form, {
     method: "post"
-  }, /* @__PURE__ */ import_react13.default.createElement("fieldset", {
+  }, /* @__PURE__ */ import_react20.default.createElement("fieldset", {
     disabled: transition.state === "submitting"
-  }, /* @__PURE__ */ import_react13.default.createElement("p", null, /* @__PURE__ */ import_react13.default.createElement("label", null, "Name:", " ", /* @__PURE__ */ import_react13.default.createElement("input", {
+  }, /* @__PURE__ */ import_react20.default.createElement("p", null, /* @__PURE__ */ import_react20.default.createElement("label", null, "Name:", " ", /* @__PURE__ */ import_react20.default.createElement("input", {
     name: "name",
     type: "text",
     defaultValue: actionData ? actionData.values.name : void 0,
     style: {
       borderColor: (actionData == null ? void 0 : actionData.errors.name) ? "red" : ""
     }
-  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react13.default.createElement(ValidationMessage, {
+  }))), (actionData == null ? void 0 : actionData.errors.name) ? /* @__PURE__ */ import_react20.default.createElement(ValidationMessage, {
     isSubmitting: transition.state === "submitting",
     error: (_a = actionData == null ? void 0 : actionData.errors) == null ? void 0 : _a.name
-  }) : null, /* @__PURE__ */ import_react13.default.createElement("p", null, /* @__PURE__ */ import_react13.default.createElement("button", {
+  }) : null, /* @__PURE__ */ import_react20.default.createElement("p", null, /* @__PURE__ */ import_react20.default.createElement("button", {
     type: "submit"
-  }, transition.state === "submitting" ? "Configuring..." : "Enter Room")), /* @__PURE__ */ import_react13.default.createElement(import_react14.Link, {
+  }, transition.state === "submitting" ? "Configuring..." : "Enter Room")), /* @__PURE__ */ import_react20.default.createElement(import_react21.Link, {
     to: "/draw/freedraw",
     className: "text-xl text-blue-600 underline"
   }, "Try without Login")));
 }
 
 // server-assets-manifest:@remix-run/dev/assets-manifest
-var assets_manifest_default = { "version": "337c55cc", "entry": { "module": "/build/entry.client-FRQPTBET.js", "imports": ["/build/_shared/chunk-PRHOWYG5.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-AAGBJ56Y.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-NV3VFURE.js", "imports": ["/build/_shared/chunk-OJO3AYYF.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-H7APQMMZ.js", "imports": ["/build/_shared/chunk-OJO3AYYF.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-DL6BQ7SL.js", "imports": void 0, "hasAction": true, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-337C55CC.js" };
+init_react();
+var assets_manifest_default = { "version": "3005d0dd", "entry": { "module": "/build/entry.client-FRQPTBET.js", "imports": ["/build/_shared/chunk-PRHOWYG5.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-AAGBJ56Y.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignIn": { "id": "routes/SignIn", "parentId": "root", "path": "SignIn", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignIn-BHGP7XTB.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignUp": { "id": "routes/SignUp", "parentId": "root", "path": "SignUp", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignUp-FK2ZBO4N.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-Y7HGZVY3.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-OZBGCPOJ.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-ZQHUHMP2.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/createRoom": { "id": "routes/rooms/createRoom", "parentId": "root", "path": "rooms/createRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/createRoom-XEVBJHB6.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/enterRoom": { "id": "routes/rooms/enterRoom", "parentId": "root", "path": "rooms/enterRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/enterRoom-JDZMUWXH.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/index": { "id": "routes/rooms/index", "parentId": "root", "path": "rooms", "index": true, "caseSensitive": void 0, "module": "/build/routes/rooms/index-ANOMJWFK.js", "imports": void 0, "hasAction": false, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-3005D0DD.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var entry = { module: entry_server_exports };
@@ -1906,6 +2359,22 @@ var routes = {
     index: void 0,
     caseSensitive: void 0,
     module: root_exports
+  },
+  "routes/rooms/createRoom": {
+    id: "routes/rooms/createRoom",
+    parentId: "root",
+    path: "rooms/createRoom",
+    index: void 0,
+    caseSensitive: void 0,
+    module: createRoom_exports
+  },
+  "routes/rooms/enterRoom": {
+    id: "routes/rooms/enterRoom",
+    parentId: "root",
+    path: "rooms/enterRoom",
+    index: void 0,
+    caseSensitive: void 0,
+    module: enterRoom_exports
   },
   "routes/draw/freeDraw": {
     id: "routes/draw/freeDraw",
@@ -1922,6 +2391,30 @@ var routes = {
     index: void 0,
     caseSensitive: void 0,
     module: drawId_exports
+  },
+  "routes/rooms/index": {
+    id: "routes/rooms/index",
+    parentId: "root",
+    path: "rooms",
+    index: true,
+    caseSensitive: void 0,
+    module: rooms_exports
+  },
+  "routes/SignIn": {
+    id: "routes/SignIn",
+    parentId: "root",
+    path: "SignIn",
+    index: void 0,
+    caseSensitive: void 0,
+    module: SignIn_exports
+  },
+  "routes/SignUp": {
+    id: "routes/SignUp",
+    parentId: "root",
+    path: "SignUp",
+    index: void 0,
+    caseSensitive: void 0,
+    module: SignUp_exports
   },
   "routes/index": {
     id: "routes/index",
