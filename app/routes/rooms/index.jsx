@@ -1,7 +1,7 @@
 import { useOutletContext } from '@remix-run/react';
 import React from 'react';
 import SingleRoom, { RoomLinks } from '../../components/SingleRoom/SingleRoom';
-import styles from './index.css';
+import styles from '~/styles/room.css';
 
 export const links = () => [
   ...RoomLinks(),
