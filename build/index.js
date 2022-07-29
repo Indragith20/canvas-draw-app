@@ -1805,7 +1805,7 @@ __export(drawId_exports, {
 });
 init_react();
 var import_react11 = __toESM(require("react"));
-var import_node = require("@remix-run/node");
+var import_node3 = require("@remix-run/node");
 var import_react12 = require("@remix-run/react");
 var import_socket = __toESM(require("socket.io-client"));
 
@@ -1932,6 +1932,66 @@ function getUser(userId) {
   });
 }
 
+// server/auth.js
+init_react();
+var import_node2 = require("@remix-run/node");
+var import_auth = require("firebase/auth");
+
+// app/sessions.js
+init_react();
+var import_node = require("@remix-run/node");
+var { getSession: getSession2, commitSession, destroySession } = (0, import_node.createCookieSessionStorage)({
+  cookie: {
+    name: "__session",
+    secrets: ["fancy-secret-key"],
+    maxAge: 60 * 60 * 24 * 7,
+    sameSite: "lax",
+    path: "/",
+    httpOnly: true
+  }
+});
+
+// server/auth.js
+var import_firebase = __toESM(require_firebase_server());
+var checkSessionCookie2 = async (session) => {
+  try {
+    const decodedIdToken = await import_firebase.auth.server.verifySessionCookie(session.get("session") || "");
+    return decodedIdToken;
+  } catch {
+    return { uid: void 0 };
+  }
+};
+var requireAuth = async (request, redirectTo = new URL(request.url).pathname) => {
+  const session = await getSession2(request.headers.get("cookie"));
+  const { uid } = await checkSessionCookie2(session);
+  if (!uid) {
+    const searchParams = new URLSearchParams([
+      ["redirectTo", redirectTo]
+    ]);
+    throw (0, import_node2.redirect)(`/signIn?${searchParams}`);
+  }
+  return import_firebase.auth.server.getUser(uid);
+};
+var signIn = async (email, password) => {
+  const { user } = await (0, import_auth.signInWithEmailAndPassword)(import_firebase.auth.client, email, password);
+  const idToken = await user.getIdToken();
+  const expiresIn = 1e3 * 60 * 60 * 24 * 7;
+  const sessionCookie = await import_firebase.auth.server.createSessionCookie(idToken, {
+    expiresIn
+  });
+  return { sessionCookie, user };
+};
+var signUp = async (name, email, password) => {
+  let { uid } = await import_firebase.auth.server.createUser({
+    email,
+    password,
+    displayName: name
+  });
+  console.log("added user success", uid);
+  await addUser(name, uid, email);
+  return await signIn(email, password);
+};
+
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/draw/$drawId.jsx
 var links2 = () => [
   ...MainComponentStyles(),
@@ -1943,14 +2003,30 @@ var links2 = () => [
 ];
 var loader = async ({ request, params }) => {
   console.log(params);
-  let drawData = await getInitialDrawData(params.drawId);
-  return (0, import_node.json)({ drawData });
+  const { displayName, uid } = await requireAuth(request);
+  console.log("uid", uid);
+  const userData = await getUser(uid);
+  console.log("Errorsssssssss", userData.error);
+  if (userData.error) {
+    const searchParams = new URLSearchParams([
+      ["redirectTo", `/draw/${params.drawId}`]
+    ]);
+    console.log("Redirectibng to signin");
+    return (0, import_node3.redirect)(`/SignUp?${searchParams}`, {
+      headers: {
+        referrer: `/draw/${params.drawId}`
+      }
+    });
+  } else {
+    let drawData = await getInitialDrawData(params.drawId);
+    return (0, import_node3.json)({ drawData });
+  }
 };
 var action = async ({ request, params }) => {
   const body = await request.formData();
   let name = body.get("data");
   const data = await addShape(params.drawId, name);
-  return (0, import_node.json)({ data });
+  return (0, import_node3.json)({ data });
 };
 function DrawIndex() {
   const fetcher = (0, import_react12.useFetcher)();
@@ -2008,67 +2084,6 @@ init_react();
 var import_node4 = require("@remix-run/node");
 var import_react13 = require("@remix-run/react");
 var import_react14 = require("react");
-
-// server/auth.js
-init_react();
-var import_node3 = require("@remix-run/node");
-var import_auth = require("firebase/auth");
-
-// app/sessions.js
-init_react();
-var import_node2 = require("@remix-run/node");
-var { getSession: getSession2, commitSession, destroySession } = (0, import_node2.createCookieSessionStorage)({
-  cookie: {
-    name: "__session",
-    secrets: ["fancy-secret-key"],
-    maxAge: 60 * 60 * 24 * 7,
-    sameSite: "lax",
-    path: "/",
-    httpOnly: true
-  }
-});
-
-// server/auth.js
-var import_firebase = __toESM(require_firebase_server());
-var checkSessionCookie2 = async (session) => {
-  try {
-    const decodedIdToken = await import_firebase.auth.server.verifySessionCookie(session.get("session") || "");
-    return decodedIdToken;
-  } catch {
-    return { uid: void 0 };
-  }
-};
-var requireAuth = async (request) => {
-  const session = await getSession2(request.headers.get("cookie"));
-  const { uid } = await checkSessionCookie2(session);
-  if (!uid) {
-    throw (0, import_node3.redirect)("/signin", {
-      headers: { "Set-Cookie": await destroySession(session) }
-    });
-  }
-  return import_firebase.auth.server.getUser(uid);
-};
-var signIn = async (email, password) => {
-  const { user } = await (0, import_auth.signInWithEmailAndPassword)(import_firebase.auth.client, email, password);
-  const idToken = await user.getIdToken();
-  const expiresIn = 1e3 * 60 * 60 * 24 * 7;
-  const sessionCookie = await import_firebase.auth.server.createSessionCookie(idToken, {
-    expiresIn
-  });
-  return { sessionCookie, user };
-};
-var signUp = async (name, email, password) => {
-  let { uid } = await import_firebase.auth.server.createUser({
-    email,
-    password,
-    displayName: name
-  });
-  console.log("added user success", uid);
-  await addUser(name, uid, email);
-  return await signIn(email, password);
-};
-
-// route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/SignIn.jsx
 var loader2 = async ({ request }) => {
   const session = await getSession2(request.headers.get("cookie"));
   const { uid } = await checkSessionCookie2(session);
@@ -2080,7 +2095,7 @@ var loader2 = async ({ request }) => {
   }
   return (0, import_node4.json)({}, { headers });
 };
-var action2 = async ({ request }) => {
+var action2 = async ({ request, params }) => {
   const form = await request.formData();
   const idToken = form.get("idToken");
   try {
@@ -2094,6 +2109,15 @@ var action2 = async ({ request }) => {
     let { sessionCookie } = await signIn(email, password);
     const session = await getSession2(request.headers.get("cookie"));
     session.set("session", sessionCookie);
+    const url = new URL(request.url);
+    const id = url.searchParams.get("redirectTo");
+    if (id) {
+      return (0, import_node4.redirect)(id, {
+        headers: {
+          "Set-Cookie": await commitSession(session)
+        }
+      });
+    }
     return (0, import_node4.redirect)("/rooms", {
       headers: {
         "Set-Cookie": await commitSession(session)
@@ -2105,9 +2129,12 @@ var action2 = async ({ request }) => {
   }
 };
 function Login() {
+  const transition = useTransition();
   const action7 = (0, import_react13.useActionData)();
   return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "Login"), (action7 == null ? void 0 : action7.error) && /* @__PURE__ */ React.createElement("p", null, action7 == null ? void 0 : action7.error), /* @__PURE__ */ React.createElement("form", {
     method: "post"
+  }, /* @__PURE__ */ React.createElement("fieldset", {
+    disabled: transition.state === "submitting"
   }, /* @__PURE__ */ React.createElement("input", {
     style: { display: "block" },
     name: "email",
@@ -2121,7 +2148,7 @@ function Login() {
   }), /* @__PURE__ */ React.createElement("button", {
     style: { display: "block" },
     type: "submit"
-  }, "Login")), /* @__PURE__ */ React.createElement("p", null, "Do you want to ", /* @__PURE__ */ React.createElement(import_react13.Link, {
+  }, transition.state === "submitting" ? "Loginnggg..." : "Login"))), /* @__PURE__ */ React.createElement("p", null, "Do you want to ", /* @__PURE__ */ React.createElement(import_react13.Link, {
     to: "/SignUp"
   }, "join"), "?"), /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement(import_react13.Link, {
     to: "/draw/freedraw",
@@ -2273,7 +2300,6 @@ var import_node7 = require("@remix-run/node");
 var import_react18 = require("@remix-run/react");
 var import_react19 = __toESM(require("react"));
 async function loader5({ request }) {
-  console.log("rooms loader");
   const { displayName, uid } = await requireAuth(request);
   console.log("uid", uid);
   const userData = await getUser(uid);
@@ -2454,7 +2480,7 @@ function RoomsList() {
 
 // server-assets-manifest:@remix-run/dev/assets-manifest
 init_react();
-var assets_manifest_default = { "version": "abac592c", "entry": { "module": "/build/entry.client-QVCCK646.js", "imports": ["/build/_shared/chunk-BTGCRVGG.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-PP6GWIB6.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignIn": { "id": "routes/SignIn", "parentId": "root", "path": "SignIn", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignIn-D2QXIAEA.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignUp": { "id": "routes/SignUp", "parentId": "root", "path": "SignUp", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignUp-UVSR54J7.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-GQMVGSWM.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-OZBGCPOJ.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-RRLLWBQ7.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms": { "id": "routes/rooms", "parentId": "root", "path": "rooms", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms-SJR7I53V.js", "imports": void 0, "hasAction": false, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/createRoom": { "id": "routes/rooms/createRoom", "parentId": "routes/rooms", "path": "createRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/createRoom-4F4VFPK4.js", "imports": void 0, "hasAction": true, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/enterRoom": { "id": "routes/rooms/enterRoom", "parentId": "routes/rooms", "path": "enterRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/enterRoom-X2HGBLRR.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/index": { "id": "routes/rooms/index", "parentId": "routes/rooms", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/rooms/index-TCCPJZG5.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-ABAC592C.js" };
+var assets_manifest_default = { "version": "45a5a404", "entry": { "module": "/build/entry.client-SDKSEGGD.js", "imports": ["/build/_shared/chunk-MKUK623B.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-HVJ7FR7F.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignIn": { "id": "routes/SignIn", "parentId": "root", "path": "SignIn", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignIn-BXCLNZAI.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignUp": { "id": "routes/SignUp", "parentId": "root", "path": "SignUp", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignUp-RYMIXDFM.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-G323TSPD.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-OZBGCPOJ.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-LCVVEMQX.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms": { "id": "routes/rooms", "parentId": "root", "path": "rooms", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms-QKQIXX3I.js", "imports": void 0, "hasAction": false, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/createRoom": { "id": "routes/rooms/createRoom", "parentId": "routes/rooms", "path": "createRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/createRoom-L5Z3MMGI.js", "imports": void 0, "hasAction": true, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/enterRoom": { "id": "routes/rooms/enterRoom", "parentId": "routes/rooms", "path": "enterRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/enterRoom-BK67MJ2F.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/index": { "id": "routes/rooms/index", "parentId": "routes/rooms", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/rooms/index-FMPBLWBH.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-45A5A404.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var entry = { module: entry_server_exports };

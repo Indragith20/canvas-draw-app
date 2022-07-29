@@ -16,13 +16,15 @@ export const checkSessionCookie = async (session) => {
   }
 };
 
-export const requireAuth = async (request) => {
+export const requireAuth = async (request, redirectTo = new URL(request.url).pathname) => {
   const session = await getSession(request.headers.get('cookie'));
+
   const { uid } = await checkSessionCookie(session);
   if (!uid) {
-    throw redirect('/signin', {
-      headers: { 'Set-Cookie': await destroySession(session) },
-    });
+    const searchParams = new URLSearchParams([
+      ["redirectTo", redirectTo],
+    ]);
+    throw redirect(`/signIn?${searchParams}`);
   }
   return auth.server.getUser(uid);
 };

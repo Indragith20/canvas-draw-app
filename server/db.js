@@ -162,6 +162,7 @@ function getUser(userId) {
 
 export {
   addUser,
+  addRoomToUser,
   createRoom,
   getInitialDrawData,
   addShape,

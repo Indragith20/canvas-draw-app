@@ -5,7 +5,6 @@ import { requireAuth } from '../../server/auth';
 import { getUser } from '../../server/db';
 
 export async function loader({ request }) {
-  console.log('rooms loader');
   const { displayName, uid } = await requireAuth(request);
   console.log('uid', uid);
   const userData = await getUser(uid);

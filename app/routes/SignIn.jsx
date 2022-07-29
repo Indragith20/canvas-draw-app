@@ -22,7 +22,7 @@ export const loader = async ({ request }) => {
   return json({}, { headers });
 };
 
-export const action = async ({ request }) => {
+export const action = async ({ request, params }) => {
   const form = await request.formData();
   const idToken = form.get('idToken');
   try {
@@ -37,6 +37,17 @@ export const action = async ({ request }) => {
     let { sessionCookie } = await signIn(email, password);
     const session = await getSession(request.headers.get('cookie'));
     session.set('session', sessionCookie);
+    const url = new URL(request.url);
+    const id = url.searchParams.get('redirectTo');
+
+    if (id) {
+      // shared url flow
+      return redirect(id, {
+        headers: {
+          'Set-Cookie': await commitSession(session),
+        },
+      });
+    }
     return redirect('/rooms', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -49,6 +60,7 @@ export const action = async ({ request }) => {
 };
 
 export default function Login() {
+  const transition = useTransition();
   const action = useActionData();
 
   return (
@@ -56,21 +68,23 @@ export default function Login() {
       <h1>Login</h1>
       {action?.error && <p>{action?.error}</p>}
       <form method='post'>
-        <input
-          style={{ display: 'block' }}
-          name='email'
-          placeholder='you@example.com'
-          type='email'
-        />
-        <input
-          style={{ display: 'block' }}
-          name='password'
-          placeholder='password'
-          type='password'
-        />
-        <button style={{ display: 'block' }} type='submit'>
-          Login
-        </button>
+        <fieldset disabled={transition.state === 'submitting'}>
+          <input
+            style={{ display: 'block' }}
+            name='email'
+            placeholder='you@example.com'
+            type='email'
+          />
+          <input
+            style={{ display: 'block' }}
+            name='password'
+            placeholder='password'
+            type='password'
+          />
+          <button style={{ display: 'block' }} type='submit'>
+            {transition.state === 'submitting' ? 'Loginnggg...' : 'Login'}
+          </button>
+        </fieldset>
       </form>
       <p>
         Do you want to <Link to='/SignUp'>join</Link>?

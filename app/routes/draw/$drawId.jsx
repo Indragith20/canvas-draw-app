@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { json } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 import {
   useLoaderData,
   useFetcher,
@@ -16,8 +16,9 @@ import { ZoomContainerLinks } from '~/components/ZoomContainer/ZoomContainer';
 import { handleDataRequest } from '~/entry.server';
 import styles from '../../styles/styles.css';
 import { SocketProvider } from '~/contexts/socketContext';
-import { addShape, getInitialDrawData } from '../../../server/db';
+import { addShape, getInitialDrawData, getUser } from '../../../server/db';
 import Idb from '~/components/utils/idb';
+import { requireAuth } from '../../../server/auth';
 
 export const links = () => [
   ...MainComponentStyles(),
@@ -30,8 +31,25 @@ export const links = () => [
 
 export const loader = async ({ request, params }) => {
   console.log(params);
-  let drawData = await getInitialDrawData(params.drawId);
-  return json({ drawData });
+  const { displayName, uid } = await requireAuth(request);
+  console.log('uid', uid);
+  const userData = await getUser(uid);
+  console.log('Errorsssssssss', userData.error);
+  if (userData.error) {
+    // Not signed in user
+    const searchParams = new URLSearchParams([
+      ['redirectTo', `/draw/${params.drawId}`],
+    ]);
+    console.log('Redirectibng to signin');
+    return redirect(`/SignUp?${searchParams}`, {
+      headers: {
+        referrer: `/draw/${params.drawId}`,
+      },
+    });
+  } else {
+    let drawData = await getInitialDrawData(params.drawId);
+    return json({ drawData });
+  }
 };
 
 export const action = async ({ request, params }) => {
