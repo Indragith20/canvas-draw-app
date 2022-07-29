@@ -17,8 +17,8 @@ export default function RoomsList() {
         {userData.rooms.map((room) => {
           return (
             <SingleRoom
-              key={room.roomId}
-              roomId={room.roomId}
+              key={room.id}
+              roomId={room.id}
               roomName={room.roomName}
             />
           );

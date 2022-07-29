@@ -2,7 +2,7 @@ import { json, redirect } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import React from 'react';
 import { requireAuth } from '../../server/auth';
-import { getUser } from '../../server/db';
+import { getRoomDetails, getUser } from '../../server/db';
 
 export async function loader({ request }) {
   const { displayName, uid } = await requireAuth(request);
@@ -12,7 +12,18 @@ export async function loader({ request }) {
   if (userData.error) {
     return redirect('/');
   } else {
-    return json({ ...userData.data });
+    let roomIds = userData.data.rooms;
+
+    if (roomIds.length > 0) {
+      let promises = [];
+      roomIds.forEach((id) => {
+        promises.push(getRoomDetails(id));
+      });
+      let roomData = await Promise.all(promises);
+      return json({ ...userData.data, rooms: roomData });
+    } else {
+      return json({ ...userData.data });
+    }
   }
 }
 

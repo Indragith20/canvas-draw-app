@@ -1296,7 +1296,7 @@ var MainComponent = class extends import_react9.default.Component {
       canvasHeight: 0,
       selectedTheme: "light",
       selectedTool: "chalk",
-      shapes: []
+      shapes: props.shapes
     }, baseConfig);
     this.addEventListeners = this.addEventListeners.bind(this);
     this.updateTool = this.updateTool.bind(this);
@@ -1770,6 +1770,9 @@ var MainComponent = class extends import_react9.default.Component {
     }));
   }
 };
+MainComponent.defaultProps = {
+  shapes: []
+};
 var main_default2 = MainComponent;
 
 // app/styles/styles.css
@@ -1817,6 +1820,7 @@ var dataPoint = (collectionPath) => {
 };
 var db = {
   rooms: () => dataPoint("rooms"),
+  roomDetails: () => dataPoint("roomDetails"),
   users: () => dataPoint("users"),
   room: (roomId) => dataPoint(`rooms/${roomId}`),
   user: (userId) => dataPoint(`users/${userId}`),
@@ -1825,10 +1829,11 @@ var db = {
 };
 async function createRoom(userId, userName, roomName) {
   return new Promise((resolve, reject) => {
-    const newRoomRef = db.rooms().doc();
-    addRoomToUser(userId, newRoomRef.id, roomName).then(() => {
+    const newRoomDetailsRef = db.roomDetails().doc();
+    const newRoomRef = db.rooms().doc(newRoomDetailsRef.id);
+    addRoomToUser(userId, newRoomRef.id).then(() => {
       let collaboratorPromise = db.collaborators(newRoomRef.id).doc().set({ name: userName, color: "blue", isActive: true, id: userId });
-      let roomPromise = newRoomRef.set({ id: newRoomRef.id, roomName });
+      let roomPromise = newRoomDetailsRef.set({ id: newRoomRef.id, roomName });
       Promise.all([collaboratorPromise, roomPromise]).then(() => {
         console.log("Resolbve", userId);
         resolve({ id: newRoomRef.id, userId });
@@ -1851,6 +1856,10 @@ function addShape(roomId, shape) {
       reject({ error: err });
     });
   });
+}
+async function addCollaborator(roomId, collaborator) {
+  const newCollaboratorRef = db.collaborators(roomId).doc(collaborator.id);
+  return await newCollaboratorRef.set(__spreadValues({}, collaborator));
 }
 function getShapes(roomId) {
   return new Promise((resolve, reject) => {
@@ -1905,11 +1914,10 @@ async function addUser(name, userId, email) {
     });
   });
 }
-function addRoomToUser(userId, roomId, roomName) {
-  console.log(userId, roomId, roomName);
+function addRoomToUser(userId, roomId) {
   return new Promise((resolve, reject) => {
     let userRef = db.users().doc(userId);
-    userRef.update({ rooms: import_firestore.FieldValue.arrayUnion({ roomId, roomName }) }).then(() => {
+    userRef.update({ rooms: import_firestore.FieldValue.arrayUnion(roomId) }).then(() => {
       resolve();
     }).catch((err) => {
       reject(err);
@@ -1928,6 +1936,19 @@ function getUser(userId) {
       }
     }).catch((err) => {
       reject(err);
+    });
+  });
+}
+function getRoomDetails(roomId) {
+  return new Promise((resolve, reject) => {
+    db.roomDetails().doc(roomId).get().then((doc) => {
+      if (!doc.exists) {
+        resolve({ data: {} });
+      } else {
+        resolve(__spreadValues({}, doc.data()));
+      }
+    }).catch((err) => {
+      reject({ error: err });
     });
   });
 }
@@ -2019,7 +2040,7 @@ var loader = async ({ request, params }) => {
     });
   } else {
     let drawData = await getInitialDrawData(params.drawId);
-    return (0, import_node3.json)({ drawData });
+    return (0, import_node3.json)(__spreadValues({}, drawData));
   }
 };
 var action = async ({ request, params }) => {
@@ -2032,6 +2053,7 @@ function DrawIndex() {
   const fetcher = (0, import_react12.useFetcher)();
   const data = (0, import_react12.useLoaderData)();
   const actionData = (0, import_react12.useActionData)();
+  console.log(data);
   console.log(actionData);
   const [socket, setSocket] = (0, import_react11.useState)();
   const idb = (0, import_react11.useMemo)(() => {
@@ -2068,6 +2090,7 @@ function DrawIndex() {
   }, /* @__PURE__ */ import_react11.default.createElement(SocketProvider, {
     socket
   }, /* @__PURE__ */ import_react11.default.createElement(main_default2, {
+    shapes: data.shapes,
     mouseMove: onMouseMove,
     updateShape
   })));
@@ -2106,13 +2129,22 @@ var action2 = async ({ request, params }) => {
       return formError;
     if (typeof password !== "string")
       return formError;
-    let { sessionCookie } = await signIn(email, password);
+    let { sessionCookie, user } = await signIn(email, password);
     const session = await getSession2(request.headers.get("cookie"));
     session.set("session", sessionCookie);
     const url = new URL(request.url);
-    const id = url.searchParams.get("redirectTo");
-    if (id) {
-      return (0, import_node4.redirect)(id, {
+    const redirectUrl = url.searchParams.get("redirectTo");
+    if (redirectUrl) {
+      let roomId = redirectUrl.split("/").pop();
+      await Promise.all([
+        addCollaborator(roomId, {
+          name: user.displayName,
+          isActive: true,
+          id: user.uid
+        }),
+        addRoomToUser(user.uid, roomId)
+      ]);
+      return (0, import_node4.redirect)(redirectUrl, {
         headers: {
           "Set-Cookie": await commitSession(session)
         }
@@ -2129,7 +2161,7 @@ var action2 = async ({ request, params }) => {
   }
 };
 function Login() {
-  const transition = useTransition();
+  const transition = (0, import_react13.useTransition)();
   const action7 = (0, import_react13.useActionData)();
   return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", null, "Login"), (action7 == null ? void 0 : action7.error) && /* @__PURE__ */ React.createElement("p", null, action7 == null ? void 0 : action7.error), /* @__PURE__ */ React.createElement("form", {
     method: "post"
@@ -2307,7 +2339,17 @@ async function loader5({ request }) {
   if (userData.error) {
     return (0, import_node7.redirect)("/");
   } else {
-    return (0, import_node7.json)(__spreadValues({}, userData.data));
+    let roomIds = userData.data.rooms;
+    if (roomIds.length > 0) {
+      let promises = [];
+      roomIds.forEach((id) => {
+        promises.push(getRoomDetails(id));
+      });
+      let roomData = await Promise.all(promises);
+      return (0, import_node7.json)(__spreadProps(__spreadValues({}, userData.data), { rooms: roomData }));
+    } else {
+      return (0, import_node7.json)(__spreadValues({}, userData.data));
+    }
   }
 }
 function Rooms() {
@@ -2471,8 +2513,8 @@ function RoomsList() {
     className: "roomContainer"
   }, userData.rooms.map((room) => {
     return /* @__PURE__ */ import_react27.default.createElement(SingleRoom, {
-      key: room.roomId,
-      roomId: room.roomId,
+      key: room.id,
+      roomId: room.id,
       roomName: room.roomName
     });
   })));
@@ -2480,7 +2522,7 @@ function RoomsList() {
 
 // server-assets-manifest:@remix-run/dev/assets-manifest
 init_react();
-var assets_manifest_default = { "version": "45a5a404", "entry": { "module": "/build/entry.client-SDKSEGGD.js", "imports": ["/build/_shared/chunk-MKUK623B.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-HVJ7FR7F.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignIn": { "id": "routes/SignIn", "parentId": "root", "path": "SignIn", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignIn-BXCLNZAI.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignUp": { "id": "routes/SignUp", "parentId": "root", "path": "SignUp", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignUp-RYMIXDFM.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-G323TSPD.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-OZBGCPOJ.js", "imports": ["/build/_shared/chunk-SK4MHGYH.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-LCVVEMQX.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms": { "id": "routes/rooms", "parentId": "root", "path": "rooms", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms-QKQIXX3I.js", "imports": void 0, "hasAction": false, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/createRoom": { "id": "routes/rooms/createRoom", "parentId": "routes/rooms", "path": "createRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/createRoom-L5Z3MMGI.js", "imports": void 0, "hasAction": true, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/enterRoom": { "id": "routes/rooms/enterRoom", "parentId": "routes/rooms", "path": "enterRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/enterRoom-BK67MJ2F.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/index": { "id": "routes/rooms/index", "parentId": "routes/rooms", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/rooms/index-FMPBLWBH.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-45A5A404.js" };
+var assets_manifest_default = { "version": "9d0e8a84", "entry": { "module": "/build/entry.client-SDKSEGGD.js", "imports": ["/build/_shared/chunk-MKUK623B.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-HVJ7FR7F.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignIn": { "id": "routes/SignIn", "parentId": "root", "path": "SignIn", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignIn-WVVDPBGU.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignUp": { "id": "routes/SignUp", "parentId": "root", "path": "SignUp", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignUp-RYMIXDFM.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-UP6ZBKBL.js", "imports": ["/build/_shared/chunk-AL5RLRJ4.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-T2S3AE5P.js", "imports": ["/build/_shared/chunk-AL5RLRJ4.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-LCVVEMQX.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms": { "id": "routes/rooms", "parentId": "root", "path": "rooms", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms-S4W2PT7D.js", "imports": void 0, "hasAction": false, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/createRoom": { "id": "routes/rooms/createRoom", "parentId": "routes/rooms", "path": "createRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/createRoom-L5Z3MMGI.js", "imports": void 0, "hasAction": true, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/enterRoom": { "id": "routes/rooms/enterRoom", "parentId": "routes/rooms", "path": "enterRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/enterRoom-BK67MJ2F.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/index": { "id": "routes/rooms/index", "parentId": "routes/rooms", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/rooms/index-3OIC24FS.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-9D0E8A84.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var entry = { module: entry_server_exports };

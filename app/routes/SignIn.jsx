@@ -2,10 +2,12 @@ import { json, redirect } from '@remix-run/node';
 import {
   Link,
   useActionData,
+  useTransition,
   useLoaderData,
   useSubmit,
 } from '@remix-run/react';
 import { useCallback, useState } from 'react';
+import { addCollaborator, addRoomToUser } from 'server/db';
 
 import { checkSessionCookie, signIn } from '../../server/auth';
 import { commitSession, getSession } from '../sessions';
@@ -34,15 +36,24 @@ export const action = async ({ request, params }) => {
     );
     if (typeof email !== 'string') return formError;
     if (typeof password !== 'string') return formError;
-    let { sessionCookie } = await signIn(email, password);
+    let { sessionCookie, user } = await signIn(email, password);
     const session = await getSession(request.headers.get('cookie'));
     session.set('session', sessionCookie);
     const url = new URL(request.url);
-    const id = url.searchParams.get('redirectTo');
+    const redirectUrl = url.searchParams.get('redirectTo');
 
-    if (id) {
+    if (redirectUrl) {
       // shared url flow
-      return redirect(id, {
+      let roomId = redirectUrl.split('/').pop();
+      await Promise.all([
+        addCollaborator(roomId, {
+          name: user.displayName,
+          isActive: true,
+          id: user.uid,
+        }),
+        addRoomToUser(user.uid, roomId),
+      ]);
+      return redirect(redirectUrl, {
         headers: {
           'Set-Cookie': await commitSession(session),
         },

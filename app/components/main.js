@@ -52,7 +52,7 @@ class MainComponent extends React.Component {
       canvasHeight: 0,
       selectedTheme: 'light',
       selectedTool: 'chalk',
-      shapes: [],
+      shapes: props.shapes,
       ...baseConfig
     };
     this.addEventListeners = this.addEventListeners.bind(this);
@@ -110,6 +110,7 @@ class MainComponent extends React.Component {
     }).catch(err => {
       console.log(err);
     })
+
     this.setState({ canvasWidth: window.innerWidth, canvasHeight: window.innerHeight })
     this.mainContext = this.mainCanvas.current.getContext('2d');
     this.tempContext = this.tempCanvas.current.getContext('2d');
@@ -126,6 +127,7 @@ class MainComponent extends React.Component {
 
     this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, this.id);
     this.addEventListeners();
+
   }
 
   componentWillUnmount() {
@@ -643,6 +645,10 @@ class MainComponent extends React.Component {
       </div>
     )
   }
+}
+
+MainComponent.defaultProps = {
+  shapes: []
 }
 
 export default MainComponent;

@@ -48,7 +48,7 @@ export const loader = async ({ request, params }) => {
     });
   } else {
     let drawData = await getInitialDrawData(params.drawId);
-    return json({ drawData });
+    return json({ ...drawData });
   }
 };
 
@@ -64,6 +64,7 @@ export default function DrawIndex() {
   const data = useLoaderData();
   const actionData = useActionData();
 
+  console.log(data);
   console.log(actionData);
   const [socket, setSocket] = useState();
   const idb = useMemo(() => {
@@ -102,7 +103,11 @@ export default function DrawIndex() {
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
       <SocketProvider socket={socket}>
-        <MainComponent mouseMove={onMouseMove} updateShape={updateShape} />
+        <MainComponent
+          shapes={data.shapes}
+          mouseMove={onMouseMove}
+          updateShape={updateShape}
+        />
       </SocketProvider>
     </div>
   );

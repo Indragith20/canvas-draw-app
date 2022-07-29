@@ -6,6 +6,7 @@ const dataPoint = (collectionPath) => {
 
 const db = {
   rooms: () => dataPoint('rooms'),
+  roomDetails: () => dataPoint('roomDetails'),
   users: () => dataPoint('users'),
   room: (roomId) => dataPoint(`rooms/${roomId}`),
   user: (userId) => dataPoint(`users/${userId}`),
@@ -13,13 +14,19 @@ const db = {
   collaborators: (roomId) => dataPoint(`rooms/${roomId}/collaborators`)
 }
 
+/**
+ * Collbaorator data sample
+ * name: userName, color: 'blue', isActive: true, id: userId
+ */
+
 
 async function createRoom(userId, userName, roomName) {
   return new Promise((resolve, reject) => {
-    const newRoomRef = db.rooms().doc();
-    addRoomToUser(userId, newRoomRef.id, roomName).then(() => {
+    const newRoomDetailsRef = db.roomDetails().doc();
+    const newRoomRef = db.rooms().doc(newRoomDetailsRef.id);
+    addRoomToUser(userId, newRoomRef.id).then(() => {
       let collaboratorPromise = db.collaborators(newRoomRef.id).doc().set({ name: userName, color: 'blue', isActive: true, id: userId });
-      let roomPromise = newRoomRef.set({ id: newRoomRef.id, roomName });
+      let roomPromise = newRoomDetailsRef.set({ id: newRoomRef.id, roomName });
       Promise.all([collaboratorPromise, roomPromise]).then(() => {
         console.log("Resolbve", userId);
         resolve({ id: newRoomRef.id, userId: userId });
@@ -69,6 +76,12 @@ function getShapes(roomId) {
     }).catch(err => {
       reject(err);
     })
+  })
+}
+
+function getRoom(roomId) {
+  return new Promise((resolve, reject) => {
+
   })
 }
 
@@ -131,11 +144,10 @@ async function addUser(name, userId, email) {
   })
 }
 
-function addRoomToUser(userId, roomId, roomName) {
-  console.log(userId, roomId, roomName);
+function addRoomToUser(userId, roomId) {
   return new Promise((resolve, reject) => {
     let userRef = db.users().doc(userId);
-    userRef.update({ rooms: FieldValue.arrayUnion({ roomId, roomName }) }).then(() => {
+    userRef.update({ rooms: FieldValue.arrayUnion(roomId) }).then(() => {
       resolve();
     }).catch(err => {
       reject(err);
@@ -160,6 +172,21 @@ function getUser(userId) {
   })
 }
 
+
+function getRoomDetails(roomId) {
+  return new Promise((resolve, reject) => {
+    db.roomDetails().doc(roomId).get().then((doc) => {
+      if (!doc.exists) {
+        resolve({ data: {} });
+      } else {
+        resolve({ ...doc.data() });
+      }
+    }).catch(err => {
+      reject({ error: err })
+    })
+  })
+}
+
 export {
   addUser,
   addRoomToUser,
@@ -169,5 +196,6 @@ export {
   deleteShape,
   addCollaborator,
   deleteCollaborator,
-  getUser
+  getUser,
+  getRoomDetails
 }
