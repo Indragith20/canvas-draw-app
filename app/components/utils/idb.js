@@ -1,5 +1,10 @@
-class Idb {
-  constructor() { }
+class LocalIdb {
+  constructor() {
+    this.initializeIndexedDb = this.initializeIndexedDb.bind(this);
+    this.performTransaction = this.performTransaction.bind(this);
+    this.getDataFromIdb = this.getDataFromIdb.bind(this);
+    this.updateDb = this.updateDb.bind(this);
+  }
 
   initializeIndexedDb() {
     return new Promise((resolve, reject) => {
@@ -49,23 +54,18 @@ class Idb {
 
   getDataFromIdb(key) {
     return this.performTransaction('readonly', { key }).then((transactionEvent) => {
-      const messageObj = {
-        message: 'GET_DATA_SUCCESS',
-        payload: transactionEvent.target.result
-      };
-      return transactionEvent.target.result
-      // syncTabs(clientId, messageObj);
+      return transactionEvent.target.result;
     });
   }
 
   updateDb(data, key) {
     this.performTransaction('readwrite', { transactionData: data, key }).then((transactionDet) => {
-      // TODO: Uncomment the below line if syncing is required between tabs.
-      /* syncTabs(clientId, data); */
-      console.log('Error while performing transaction', transactionDet);
+      console.log('Performed transaction', transactionDet);
     });
   }
 }
+
+const Idb = new LocalIdb();
 
 
 export default Idb;
