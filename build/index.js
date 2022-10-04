@@ -212,6 +212,7 @@ var ConfigTool_default2 = ConfigTool;
 // app/components/main.js
 init_react();
 var import_react9 = __toESM(require("react"));
+var import_uuid = require("uuid");
 
 // app/components/main.css
 var main_default = "/build/_assets/main-YLJ6JLO4.css";
@@ -1195,8 +1196,12 @@ var ZoomContainer_default2 = ZoomContainer;
 
 // app/components/utils/idb.js
 init_react();
-var Idb = class {
+var LocalIdb = class {
   constructor() {
+    this.initializeIndexedDb = this.initializeIndexedDb.bind(this);
+    this.performTransaction = this.performTransaction.bind(this);
+    this.getDataFromIdb = this.getDataFromIdb.bind(this);
+    this.updateDb = this.updateDb.bind(this);
   }
   initializeIndexedDb() {
     return new Promise((resolve, reject) => {
@@ -1241,19 +1246,16 @@ var Idb = class {
   }
   getDataFromIdb(key) {
     return this.performTransaction("readonly", { key }).then((transactionEvent) => {
-      const messageObj = {
-        message: "GET_DATA_SUCCESS",
-        payload: transactionEvent.target.result
-      };
       return transactionEvent.target.result;
     });
   }
   updateDb(data, key) {
     this.performTransaction("readwrite", { transactionData: data, key }).then((transactionDet) => {
-      console.log("Error while performing transaction", transactionDet);
+      console.log("Performed transaction", transactionDet);
     });
   }
 };
+var Idb = new LocalIdb();
 var idb_default = Idb;
 
 // app/contexts/socketContext.js
@@ -1286,7 +1288,7 @@ var baseConfig = {
   baseFontSize: 24,
   baseLineHeight: 150 * 24 / 100
 };
-var MainComponent = class extends import_react9.default.Component {
+var MainComponent = class extends import_react9.default.PureComponent {
   constructor(props) {
     super(props);
     this.state = __spreadValues({
@@ -1315,37 +1317,28 @@ var MainComponent = class extends import_react9.default.Component {
     this.onResize = this.onResize.bind(this);
     this.zoomIn = this.zoomIn.bind(this);
     this.zoomOut = this.zoomOut.bind(this);
-    this.idb = new idb_default();
     this.mainCanvas = import_react9.default.createRef();
     this.tempCanvas = import_react9.default.createRef();
     this.selectedElement = null;
-    this.id = 0;
     this.mouseXPosition = null;
     this.mouseYPosition = null;
     this.isUserDragging = false;
     this.draggingElement = null;
   }
   componentDidMount() {
-    this.idb.getDataFromIdb("app-state-persist").then((data) => {
-      if (data && data.length >= 0) {
-        this.setState({ shapes: data }, () => {
-          this.id = data.length + 1;
-          this.redraw();
-        });
-      }
-    }).catch((err) => {
-      console.log(err);
+    this.setState({ canvasWidth: window.innerWidth, canvasHeight: window.innerHeight }, () => {
+      this.redraw();
     });
-    this.setState({ canvasWidth: window.innerWidth, canvasHeight: window.innerHeight });
+    let { selectedTheme, selectedTool } = this.state;
     this.mainContext = this.mainCanvas.current.getContext("2d");
     this.tempContext = this.tempCanvas.current.getContext("2d");
-    this.tempContext.strokeStyle = this.state.selectedTheme === "dark" ? "#FFFFFF" : "#000000";
+    this.tempContext.strokeStyle = selectedTheme === "dark" ? "#FFFFFF" : "#000000";
     this.tempContext.lineWidth = 1;
-    this.tempContext.fillStyle = this.state.selectedTheme === "dark" ? "#424242" : "#FFFFFF";
+    this.tempContext.fillStyle = selectedTheme === "dark" ? "#424242" : "#FFFFFF";
     this.tempContext.fillRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
     this.tools = tools;
-    let selectedOne = this.tools[this.state.selectedTool];
-    this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, this.id);
+    let selectedOne = this.tools[selectedTool];
+    this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, (0, import_uuid.v4)());
     this.addEventListeners();
   }
   componentWillUnmount() {
@@ -1373,7 +1366,8 @@ var MainComponent = class extends import_react9.default.Component {
   }
   zoomIn(e) {
     e.stopPropagation();
-    if (this.state.scalingFactor <= 0.1) {
+    let { scalingFactor } = this.state;
+    if (scalingFactor <= 0.1) {
       return;
     }
     this.setState((prevstate) => {
@@ -1385,13 +1379,14 @@ var MainComponent = class extends import_react9.default.Component {
         baseLineHeight
       });
     }, () => {
-      this.idb.updateDb(this.state.scalingFactor, "scalingFactor");
+      this.props.updateDb(scalingFactor, "scalingFactor");
       this.redraw();
     });
   }
   zoomOut(e) {
     e.stopPropagation();
-    if (this.state.scalingFactor >= 2) {
+    let { scalingFactor } = this.state;
+    if (scalingFactor >= 2) {
       return;
     }
     this.setState((prevstate) => {
@@ -1403,21 +1398,22 @@ var MainComponent = class extends import_react9.default.Component {
         baseLineHeight
       });
     }, () => {
+      this.props.updateDb(scalingFactor, "scalingFactor");
       this.redraw();
     });
   }
   updateTool(value, id = null) {
     if (this.tools[value]) {
       this.setState({ selectedTool: value }, () => {
-        let selectedOne = this.tools[this.state.selectedTool];
+        let { selectedTool, selectedTheme } = this.state;
+        let selectedOne = this.tools[selectedTool];
         if (!selectedOne || selectedOne === "select") {
           return;
         }
         if (!id) {
-          this.id = this.id + 1;
-          this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, this.id, this.state.selectedTheme);
+          this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, (0, import_uuid.v4)(), selectedTheme);
         } else {
-          this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, id, this.state.selectedTheme);
+          this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, id, selectedTheme);
         }
       });
     }
@@ -1430,8 +1426,10 @@ var MainComponent = class extends import_react9.default.Component {
   onEvent(ev) {
     ev._x = ev.x;
     ev._y = ev.y;
-    this.props.mouseMove({ x: this.changeToOneScalingFactor(ev.x - this.state.scrollX), y: this.changeToOneScalingFactor(ev.y - this.state.scrollY) });
-    if (this.state.selectedTool === "select") {
+    let { mouseMove } = this.props;
+    let { selectedTool, scrollX, scrollY, shapes } = this.state;
+    mouseMove({ x: this.changeToOneScalingFactor(ev.x - scrollX), y: this.changeToOneScalingFactor(ev.y - scrollY) });
+    if (selectedTool === "select") {
       if (ev.type === "mousedown") {
         this.mouseXPosition = ev._x;
         this.mouseYPosition = ev._y;
@@ -1455,14 +1453,16 @@ var MainComponent = class extends import_react9.default.Component {
     }
     if (this.isUserDragging) {
       if (!this.draggingElement) {
-        ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
-        ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
-        let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - this.state.scrollX), this.changeToOneScalingFactor(this.mouseYPosition - this.state.scrollY), this.state.shapes);
+        ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
+        ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
+        let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - scrollX), this.changeToOneScalingFactor(this.mouseYPosition - scrollY), shapes);
         if (elementSelected) {
           this.selectedElement = elementSelected;
-          let shapes = this.state.shapes.filter((shape) => shape.id !== elementSelected.id);
-          this.setState({ shapes, selectedTool: "move" }, () => {
-            this.idb.updateDb(this.state.shapes, "app-state-persist");
+          let updatedShapes = shapes.filter((shape) => shape.id !== elementSelected.id);
+          this.setState({ shapes: updatedShapes, selectedTool: "move" }, () => {
+            let { shapes: shapes2, scalingFactor, selectedTheme } = this.state;
+            let { updateDb } = this.props;
+            updateDb(shapes2, "app-state-persist");
             this.redraw();
             this.draggingElement = elementSelected;
             this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
@@ -1476,9 +1476,9 @@ var MainComponent = class extends import_react9.default.Component {
               radius: this.changeFromOneScalingFactor(this.selectedElement.radius),
               width: this.selectedElement.width ? this.changeFromOneScalingFactor(this.selectedElement.width) : null,
               height: this.selectedElement.height ? this.changeFromOneScalingFactor(this.selectedElement.height) : null,
-              scalingFactor: this.state.scalingFactor
+              scalingFactor
             });
-            this.tool = new MoveTool_default(this.tempCanvas.current, this.tempContext, this.imgUpdate, selectedElement, this.state.selectedTheme);
+            this.tool = new MoveTool_default(this.tempCanvas.current, this.tempContext, this.imgUpdate, selectedElement, selectedTheme);
             this.tool["mousedown"](ev);
           });
         }
@@ -1515,14 +1515,15 @@ var MainComponent = class extends import_react9.default.Component {
     console.log(this.state.shapes, this.state.selectedTool);
     this.resetDraggingValues();
     requestAnimationFrame(() => {
-      if (this.state.selectedTool === "move" || this.state.selectedTool === "text") {
+      let { selectedTool } = this.state;
+      if (selectedTool === "move" || selectedTool === "text") {
         this.redraw();
         this.setState({ selectedTool: "select" });
         this.tool = null;
       } else {
         this.mainContext.drawImage(this.tempCanvas.current, 0, 0);
         this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
-        if (this.state.selectedTool !== "text") {
+        if (selectedTool !== "text") {
           this.setState({ selectedTool: "select" });
           this.tool = null;
         }
@@ -1531,22 +1532,24 @@ var MainComponent = class extends import_react9.default.Component {
   }
   imgUpdate(drawenImage) {
     if (drawenImage && drawenImage.type) {
+      let { scrollX, scrollY, scalingFactor, shapes } = this.state;
       let modifiedImage = __spreadProps(__spreadValues({}, drawenImage), {
-        x: this.changeToOneScalingFactor(drawenImage.x - this.state.scrollX),
-        y: this.changeToOneScalingFactor(drawenImage.y - this.state.scrollY),
-        endX: this.changeToOneScalingFactor(drawenImage.endX - this.state.scrollX),
-        endY: this.changeToOneScalingFactor(drawenImage.endY - this.state.scrollY),
-        startX: this.changeToOneScalingFactor(drawenImage.startX - this.state.scrollX),
-        startY: this.changeToOneScalingFactor(drawenImage.startY - this.state.scrollY),
+        x: this.changeToOneScalingFactor(drawenImage.x - scrollX),
+        y: this.changeToOneScalingFactor(drawenImage.y - scrollY),
+        endX: this.changeToOneScalingFactor(drawenImage.endX - scrollX),
+        endY: this.changeToOneScalingFactor(drawenImage.endY - scrollY),
+        startX: this.changeToOneScalingFactor(drawenImage.startX - scrollX),
+        startY: this.changeToOneScalingFactor(drawenImage.startY - scrollY),
         radius: this.changeToOneScalingFactor(drawenImage.radius),
         width: drawenImage.width ? this.changeToOneScalingFactor(drawenImage.width) : null,
         height: drawenImage.height ? this.changeToOneScalingFactor(drawenImage.height) : null,
-        scalingFactor: this.state.scalingFactor
+        scalingFactor
       });
-      let filteredShapes = this.state.shapes.filter((shape) => shape.id !== drawenImage.id);
+      let filteredShapes = shapes.filter((shape) => shape.id !== drawenImage.id);
       this.setState({ shapes: [...filteredShapes, modifiedImage] }, () => {
-        this.idb.updateDb(this.state.shapes, "app-state-persist");
-        this.props.updateShape(modifiedImage);
+        let { updateDb, updateShape } = this.props;
+        updateDb(this.state.shapes, "app-state-persist");
+        updateShape(modifiedImage);
         this.drawImage();
       });
     } else {
@@ -1624,8 +1627,7 @@ var MainComponent = class extends import_react9.default.Component {
           this.redraw();
         });
       } else {
-        this.id = this.id + 1;
-        textId = this.id;
+        textId = (0, import_uuid.v4)();
       }
       this.tool = new DrawText_default(this.tempCanvas.current, this.tempContext, this.imgUpdate, textId, this.state.selectedTheme);
       let func = this.tool[ev.type];
@@ -1645,6 +1647,8 @@ var MainComponent = class extends import_react9.default.Component {
         if (ev.which === 46 || ev.which === 8) {
           let shapes = this.state.shapes.filter((shape) => shape.id !== this.selectedElement.id);
           this.setState({ shapes }, () => {
+            this.props.updateDb(this.state.shapes, "app-state-persist");
+            this.props.updateShape(this.selectedElement, "delete");
             this.redraw();
           });
         }
@@ -1729,6 +1733,7 @@ var MainComponent = class extends import_react9.default.Component {
     });
   }
   render() {
+    console.log("Inside Render");
     return /* @__PURE__ */ import_react9.default.createElement("div", {
       style: { "--font-size": `${this.state.baseFontSize}px`, "--line-height": `${this.state.baseLineHeight}px`, cursor: `${this.state.selectedTool === "select" ? `url('../assets/cursor.svg')` : "crosshair"}` },
       className: `${this.state.selectedTheme === "dark" ? "dark-mode" : "light-mode"}`
@@ -1776,7 +1781,7 @@ MainComponent.defaultProps = {
 var main_default2 = MainComponent;
 
 // app/styles/styles.css
-var styles_default = "/build/_assets/styles-WBSHHNAM.css";
+var styles_default = "/build/_assets/styles-RCHBMIYP.css";
 
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/draw/freeDraw.jsx
 var links = () => [
@@ -1788,13 +1793,28 @@ var links = () => [
   { rel: "stylesheet", href: styles_default }
 ];
 function FreeDrawIndex() {
-  return /* @__PURE__ */ import_react10.default.createElement("div", {
+  const [loading, setLoading] = (0, import_react10.useState)(true);
+  const [shapes, setShapes] = (0, import_react10.useState)([]);
+  (0, import_react10.useEffect)(() => {
+    idb_default.getDataFromIdb("app-state-persist").then((data) => {
+      setShapes(data);
+      setLoading(false);
+    }).catch((err) => {
+      setLoading(false);
+      setShapes([]);
+    });
+  }, []);
+  return loading ? /* @__PURE__ */ import_react10.default.createElement("div", {
+    className: "loading"
+  }, "Setting Up environment") : /* @__PURE__ */ import_react10.default.createElement("div", {
     style: { fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }
   }, /* @__PURE__ */ import_react10.default.createElement(main_default2, {
+    shapes,
     mouseMove: () => {
     },
     updateShape: () => {
-    }
+    },
+    updateDb: idb_default.updateDb
   }));
 }
 
@@ -1802,7 +1822,7 @@ function FreeDrawIndex() {
 var drawId_exports = {};
 __export(drawId_exports, {
   action: () => action,
-  default: () => DrawIndex,
+  default: () => drawId_default,
   links: () => links2,
   loader: () => loader
 });
@@ -1844,18 +1864,21 @@ async function createRoom(userId, userName, roomName) {
   });
 }
 function addShape(roomId, shape) {
-  const newShapeRef = db.shapeCollection(roomId).doc();
-  console.log("New Id", newShapeRef.id);
   const shapeJSON = JSON.parse(shape);
   console.log("Addding Shape Called", roomId, shape);
   return new Promise((resolve, reject) => {
-    newShapeRef.set(__spreadProps(__spreadValues({}, shapeJSON), { id: newShapeRef.id })).then((doc) => {
+    db.shapeCollection(roomId).doc(`${shapeJSON.id}`).set(__spreadValues({}, shapeJSON)).then((doc) => {
       console.log("Inside THen");
-      resolve({ id: newShapeRef.id });
+      resolve({ id: shapeJSON.id });
     }).catch((err) => {
       reject({ error: err });
     });
   });
+}
+async function deleteShape(roomId, shape) {
+  const shapeJSON = JSON.parse(shape);
+  console.log("Delete Shape Called", roomId, shape);
+  return await db.shapeCollection(roomId).doc(`${shapeJSON.id}`).delete();
 }
 async function addCollaborator(roomId, collaborator) {
   const newCollaboratorRef = db.collaborators(roomId).doc(collaborator.id);
@@ -2046,19 +2069,21 @@ var loader = async ({ request, params }) => {
 var action = async ({ request, params }) => {
   const body = await request.formData();
   let name = body.get("data");
-  const data = await addShape(params.drawId, name);
+  let action7 = body.get("action");
+  let data = null;
+  if (action7 === "add") {
+    data = await addShape(params.drawId, name);
+  } else if (action7 === "delete") {
+    console.log("delete action called");
+    data = await deleteShape(params.drawId, name);
+  }
   return (0, import_node3.json)({ data });
 };
 function DrawIndex() {
   const fetcher = (0, import_react12.useFetcher)();
   const data = (0, import_react12.useLoaderData)();
-  const actionData = (0, import_react12.useActionData)();
-  console.log(data);
-  console.log(actionData);
+  console.log("render called");
   const [socket, setSocket] = (0, import_react11.useState)();
-  const idb = (0, import_react11.useMemo)(() => {
-    return new idb_default();
-  });
   (0, import_react11.useEffect)(() => {
     const socket2 = (0, import_socket.default)();
     setSocket(socket2);
@@ -2076,15 +2101,16 @@ function DrawIndex() {
     socket.on("mousemove", (data2) => {
       console.log(data2);
     });
-  });
-  function updateShape(shape) {
+  }, [socket]);
+  const updateShape = (0, import_react11.useCallback)((shape, action7 = "add") => {
     let formData = new FormData();
     formData.set("data", JSON.stringify(__spreadValues({}, shape)));
+    formData.set("action", action7);
     fetcher.submit(formData, { method: "post" });
-  }
-  function onMouseMove(eventDetails) {
+  }, [fetcher]);
+  const onMouseMove = (0, import_react11.useCallback)((eventDetails) => {
     socket.emit("mousemove", eventDetails);
-  }
+  }, [socket]);
   return /* @__PURE__ */ import_react11.default.createElement("div", {
     style: { fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }
   }, /* @__PURE__ */ import_react11.default.createElement(SocketProvider, {
@@ -2092,9 +2118,11 @@ function DrawIndex() {
   }, /* @__PURE__ */ import_react11.default.createElement(main_default2, {
     shapes: data.shapes,
     mouseMove: onMouseMove,
-    updateShape
+    updateShape,
+    updateDb: idb_default.updateDb
   })));
 }
+var drawId_default = import_react11.default.memo(DrawIndex);
 
 // route:/Users/indragith/Practice/remix-learn/my-remix-app/app/routes/SignIn.jsx
 var SignIn_exports = {};
@@ -2340,7 +2368,7 @@ async function loader5({ request }) {
     return (0, import_node7.redirect)("/");
   } else {
     let roomIds = userData.data.rooms;
-    if (roomIds.length > 0) {
+    if (roomIds && roomIds.length > 0) {
       let promises = [];
       roomIds.forEach((id) => {
         promises.push(getRoomDetails(id));
@@ -2348,7 +2376,7 @@ async function loader5({ request }) {
       let roomData = await Promise.all(promises);
       return (0, import_node7.json)(__spreadProps(__spreadValues({}, userData.data), { rooms: roomData }));
     } else {
-      return (0, import_node7.json)(__spreadValues({}, userData.data));
+      return (0, import_node7.json)(__spreadProps(__spreadValues({}, userData.data), { rooms: [] }));
     }
   }
 }
@@ -2522,7 +2550,7 @@ function RoomsList() {
 
 // server-assets-manifest:@remix-run/dev/assets-manifest
 init_react();
-var assets_manifest_default = { "version": "9d0e8a84", "entry": { "module": "/build/entry.client-SDKSEGGD.js", "imports": ["/build/_shared/chunk-MKUK623B.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-HVJ7FR7F.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignIn": { "id": "routes/SignIn", "parentId": "root", "path": "SignIn", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignIn-WVVDPBGU.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignUp": { "id": "routes/SignUp", "parentId": "root", "path": "SignUp", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignUp-RYMIXDFM.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-UP6ZBKBL.js", "imports": ["/build/_shared/chunk-AL5RLRJ4.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-T2S3AE5P.js", "imports": ["/build/_shared/chunk-AL5RLRJ4.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-LCVVEMQX.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms": { "id": "routes/rooms", "parentId": "root", "path": "rooms", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms-S4W2PT7D.js", "imports": void 0, "hasAction": false, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/createRoom": { "id": "routes/rooms/createRoom", "parentId": "routes/rooms", "path": "createRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/createRoom-L5Z3MMGI.js", "imports": void 0, "hasAction": true, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/enterRoom": { "id": "routes/rooms/enterRoom", "parentId": "routes/rooms", "path": "enterRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/enterRoom-BK67MJ2F.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/index": { "id": "routes/rooms/index", "parentId": "routes/rooms", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/rooms/index-3OIC24FS.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-9D0E8A84.js" };
+var assets_manifest_default = { "version": "fc4d5b28", "entry": { "module": "/build/entry.client-SDKSEGGD.js", "imports": ["/build/_shared/chunk-MKUK623B.js", "/build/_shared/chunk-FN7GJDOI.js"] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "module": "/build/root-HVJ7FR7F.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignIn": { "id": "routes/SignIn", "parentId": "root", "path": "SignIn", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignIn-WVVDPBGU.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/SignUp": { "id": "routes/SignUp", "parentId": "root", "path": "SignUp", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/SignUp-RYMIXDFM.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/$drawId": { "id": "routes/draw/$drawId", "parentId": "root", "path": "draw/:drawId", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/$drawId-6KQQCXM2.js", "imports": ["/build/_shared/chunk-FJHTQ3L2.js"], "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/draw/freeDraw": { "id": "routes/draw/freeDraw", "parentId": "root", "path": "draw/freeDraw", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/draw/freeDraw-4X6MAPVJ.js", "imports": ["/build/_shared/chunk-FJHTQ3L2.js"], "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/index": { "id": "routes/index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/index-LCVVEMQX.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms": { "id": "routes/rooms", "parentId": "root", "path": "rooms", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms-CPGOUZ66.js", "imports": void 0, "hasAction": false, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/createRoom": { "id": "routes/rooms/createRoom", "parentId": "routes/rooms", "path": "createRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/createRoom-L5Z3MMGI.js", "imports": void 0, "hasAction": true, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/enterRoom": { "id": "routes/rooms/enterRoom", "parentId": "routes/rooms", "path": "enterRoom", "index": void 0, "caseSensitive": void 0, "module": "/build/routes/rooms/enterRoom-BK67MJ2F.js", "imports": void 0, "hasAction": true, "hasLoader": true, "hasCatchBoundary": false, "hasErrorBoundary": false }, "routes/rooms/index": { "id": "routes/rooms/index", "parentId": "routes/rooms", "path": void 0, "index": true, "caseSensitive": void 0, "module": "/build/routes/rooms/index-3OIC24FS.js", "imports": void 0, "hasAction": false, "hasLoader": false, "hasCatchBoundary": false, "hasErrorBoundary": false } }, "url": "/build/manifest-FC4D5B28.js" };
 
 // server-entry-module:@remix-run/dev/server-build
 var entry = { module: entry_server_exports };

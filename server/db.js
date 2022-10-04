@@ -38,14 +38,13 @@ async function createRoom(userId, userName, roomName) {
 }
 
 function addShape(roomId, shape) {
-  const newShapeRef = db.shapeCollection(roomId).doc();
-  console.log('New Id', newShapeRef.id)
   const shapeJSON = JSON.parse(shape);
   console.log('Addding Shape Called', roomId, shape);
+  //const newShapeRef = db.shapeCollection(roomId).doc(`${shape.id}`);
   return new Promise((resolve, reject) => {
-    newShapeRef.set({ ...shapeJSON, id: newShapeRef.id }).then((doc) => {
+    db.shapeCollection(roomId).doc(`${shapeJSON.id}`).set({ ...shapeJSON }).then((doc) => {
       console.log('Inside THen');
-      resolve({ id: newShapeRef.id });
+      resolve({ id: shapeJSON.id });
     }).catch(err => {
       reject({ error: err });
     });
@@ -53,7 +52,15 @@ function addShape(roomId, shape) {
 }
 
 async function deleteShape(roomId, shape) {
-  return await db.shapeCollection(roomId).doc(shape.id).delete();
+  const shapeJSON = JSON.parse(shape);
+  console.log('Delete Shape Called', roomId, shape);
+  return await db.shapeCollection(roomId).doc(`${shapeJSON.id}`).delete();
+}
+
+async function updateShape(roomId, shape) {
+  const shapeJSON = JSON.parse(shape);
+  console.log('update Shape Called', roomId, shape);
+  return await db.shapeCollection(roomId).doc(`${shapeJSON.id}`).update({ ...shapeJSON });
 }
 
 async function addCollaborator(roomId, collaborator) {
@@ -194,6 +201,7 @@ export {
   getInitialDrawData,
   addShape,
   deleteShape,
+  updateShape,
   addCollaborator,
   deleteCollaborator,
   getUser,

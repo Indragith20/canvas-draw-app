@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+} from 'react';
 import { json, redirect } from '@remix-run/node';
 import {
   useLoaderData,
@@ -16,7 +22,12 @@ import { ZoomContainerLinks } from '~/components/ZoomContainer/ZoomContainer';
 import { handleDataRequest } from '~/entry.server';
 import styles from '../../styles/styles.css';
 import { SocketProvider } from '~/contexts/socketContext';
-import { addShape, getInitialDrawData, getUser } from '../../../server/db';
+import {
+  addShape,
+  deleteShape,
+  getInitialDrawData,
+  getUser,
+} from '../../../server/db';
 import Idb from '~/components/utils/idb';
 import { requireAuth } from '../../../server/auth';
 
@@ -55,21 +66,28 @@ export const loader = async ({ request, params }) => {
 export const action = async ({ request, params }) => {
   const body = await request.formData();
   let name = body.get('data');
-  const data = await addShape(params.drawId, name);
+  let action = body.get('action');
+  let data = null;
+  if (action === 'add') {
+    data = await addShape(params.drawId, name);
+  } else if (action === 'delete') {
+    console.log('delete action called');
+    data = await deleteShape(params.drawId, name);
+  }
+
   return json({ data });
 };
 
-export default function DrawIndex() {
+function DrawIndex() {
   const fetcher = useFetcher();
   const data = useLoaderData();
-  const actionData = useActionData();
+  // const actionData = useActionData();
 
-  console.log(data);
-  console.log(actionData);
+  // console.log(data);
+  // console.log(actionData);
+
+  console.log('render called');
   const [socket, setSocket] = useState();
-  const idb = useMemo(() => {
-    return new Idb();
-  });
 
   useEffect(() => {
     const socket = io();
@@ -88,17 +106,30 @@ export default function DrawIndex() {
     socket.on('mousemove', (data) => {
       console.log(data);
     });
-  });
+  }, [socket]);
 
-  function updateShape(shape) {
-    let formData = new FormData();
-    formData.set('data', JSON.stringify({ ...shape }));
-    fetcher.submit(formData, { method: 'post' });
-  }
+  // function updateShape(shape) {
+  //   let formData = new FormData();
+  //   formData.set('data', JSON.stringify({ ...shape }));
+  //   fetcher.submit(formData, { method: 'post' });
+  // }
 
-  function onMouseMove(eventDetails) {
-    socket.emit('mousemove', eventDetails);
-  }
+  const updateShape = useCallback(
+    (shape, action = 'add') => {
+      let formData = new FormData();
+      formData.set('data', JSON.stringify({ ...shape }));
+      formData.set('action', action);
+      fetcher.submit(formData, { method: 'post' });
+    },
+    [fetcher]
+  );
+
+  const onMouseMove = useCallback(
+    (eventDetails) => {
+      socket.emit('mousemove', eventDetails);
+    },
+    [socket]
+  );
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
@@ -107,8 +138,11 @@ export default function DrawIndex() {
           shapes={data.shapes}
           mouseMove={onMouseMove}
           updateShape={updateShape}
+          updateDb={Idb.updateDb}
         />
       </SocketProvider>
     </div>
   );
 }
+
+export default React.memo(DrawIndex);

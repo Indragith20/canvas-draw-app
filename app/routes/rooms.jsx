@@ -14,7 +14,7 @@ export async function loader({ request }) {
   } else {
     let roomIds = userData.data.rooms;
 
-    if (roomIds.length > 0) {
+    if (roomIds && roomIds.length > 0) {
       let promises = [];
       roomIds.forEach((id) => {
         promises.push(getRoomDetails(id));
@@ -22,7 +22,7 @@ export async function loader({ request }) {
       let roomData = await Promise.all(promises);
       return json({ ...userData.data, rooms: roomData });
     } else {
-      return json({ ...userData.data });
+      return json({ ...userData.data, rooms: [] });
     }
   }
 }
