@@ -415,21 +415,22 @@ class MainComponent extends React.PureComponent {
 
   redraw() {
     console.log('redraw')
+    let { selectedTheme, shapes, scrollX, scrollY, baseLineHeight, baseFontSize } = this.state;
     this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
     this.tempContext.restore();
     this.tempContext.setLineDash([]);
-    this.tempContext.strokeStyle = this.state.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';;
-    this.tempContext.fillStyle = this.state.selectedTheme === 'dark' ? "#424242" : '#000000';;
+    this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
+    this.tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
 
-    this.state.shapes.forEach(shape => {
+    shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
-        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + this.state.scrollX, this.changeFromOneScalingFactor(shape.y) + this.state.scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height));
+        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height));
       } else if (shape.type === 'arrow') {
         let headlen = 10;
-        let x = this.changeFromOneScalingFactor(shape.x) + this.state.scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + this.state.scrollY;
-        let endX = this.changeFromOneScalingFactor(shape.endX) + this.state.scrollX;
-        let endY = this.changeFromOneScalingFactor(shape.endY) + this.state.scrollY;
+        let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
+        let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
+        let endX = this.changeFromOneScalingFactor(shape.endX) + scrollX;
+        let endY = this.changeFromOneScalingFactor(shape.endY) + scrollY;
         let dx = endX - x;
         let dy = endY - y;
         let angle = Math.atan2(dy, dx);
@@ -443,22 +444,22 @@ class MainComponent extends React.PureComponent {
         this.tempContext.closePath();
       } else if (shape.type === 'line') {
         this.tempContext.beginPath();
-        this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + this.state.scrollX, this.changeFromOneScalingFactor(shape.y) + this.state.scrollY);
-        this.tempContext.lineTo(this.changeFromOneScalingFactor(shape.endX) + this.state.scrollX, this.changeFromOneScalingFactor(shape.endY) + this.state.scrollY);
+        this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY);
+        this.tempContext.lineTo(this.changeFromOneScalingFactor(shape.endX) + scrollX, this.changeFromOneScalingFactor(shape.endY) + scrollY);
         this.tempContext.stroke();
         this.tempContext.closePath();
       } else if (shape.type === 'text') {
-        let color = this.state.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
-        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x) + this.state.scrollX, this.changeFromOneScalingFactor(shape.y) + this.state.scrollY, this.changeFromOneScalingFactor(shape.width), this.state.baseLineHeight, color, this.state.baseFontSize);
+        let color = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
+        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), baseLineHeight, color, baseFontSize);
       } else if (shape.type === 'circle') {
-        let x = this.changeFromOneScalingFactor(shape.x) + this.state.scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + this.state.scrollY;
+        let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
+        let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
         this.tempContext.beginPath();
         this.tempContext.arc(x, y, this.changeFromOneScalingFactor(shape.radius), 0, 2 * Math.PI);
         this.tempContext.stroke();
       } else if (shape.type === 'diamond') {
-        let xCenter = this.changeFromOneScalingFactor(shape.x) + this.state.scrollX;
-        let yCenter = this.changeFromOneScalingFactor(shape.y) + this.state.scrollY;
+        let xCenter = this.changeFromOneScalingFactor(shape.x) + scrollX;
+        let yCenter = this.changeFromOneScalingFactor(shape.y) + scrollY;
         let size = this.changeFromOneScalingFactor(shape.x - shape.endX);
         drawDiamond(xCenter, yCenter, size, this.tempContext);
       }
@@ -473,19 +474,22 @@ class MainComponent extends React.PureComponent {
   }
 
   changeToTextTool(ev) {
-    ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
-    ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
+    let { scrollX, scrollY, shapes } = this.state;
+    ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
+    ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
 
-    let enclosedElement = getElementsAtPosition(ev._x, ev._y, this.state.shapes);
+    let enclosedElement = getElementsAtPosition(ev._x, ev._y, shapes);
 
     // Temporarily updating tool manually
     //this.updateTool('text', enclosedElement && enclosedElement.type === 'text' ? enclosedElement.id : null);
     this.resetDraggingValues();
 
     this.setState({ selectedTool: 'text' }, () => {
+      let { scrollX, scrollY, selectedTheme, scalingFactor } = this.state;
       this.resetDraggingValues();
 
       let textId = null;
+
       if (enclosedElement && enclosedElement.type === 'text') {
         textId = enclosedElement.id;
         let shapes = this.state.shapes.filter(shape => shape.id !== this.selectedElement.id);
@@ -496,7 +500,7 @@ class MainComponent extends React.PureComponent {
         //this.id = this.id + 1;
         textId = uuidv4();
       }
-      this.tool = new DrawText(this.tempCanvas.current, this.tempContext, this.imgUpdate, textId, this.state.selectedTheme);
+      this.tool = new DrawText(this.tempCanvas.current, this.tempContext, this.imgUpdate, textId, selectedTheme);
       // if (enclosedElement && enclosedElement.type === 'text') {
       //   let shapes = this.state.shapes.filter(shape => shape.id !== this.selectedElement.id);
       //   this.setState({ shapes }, () => {
@@ -508,7 +512,7 @@ class MainComponent extends React.PureComponent {
       if (func) {
         this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
         // func will be dbclick in drawtext
-        func(ev, enclosedElement, { scrollX: this.state.scrollX, scrollY: this.state.scrollY, scalingFactor: this.state.scalingFactor });
+        func(ev, enclosedElement, { scrollX: scrollX, scrollY: scrollY, scalingFactor: scalingFactor });
       }
     })
 
@@ -531,8 +535,9 @@ class MainComponent extends React.PureComponent {
         if (ev.which === 46 || ev.which === 8) {
           let shapes = this.state.shapes.filter(shape => shape.id !== this.selectedElement.id);
           this.setState({ shapes }, () => {
-            this.props.updateDb(this.state.shapes, 'app-state-persist');
-            this.props.updateShape(this.selectedElement, 'delete');
+            let { updateDb, updateShape } = this.props;
+            updateDb(this.state.shapes, 'app-state-persist');
+            updateShape(this.selectedElement, 'delete');
             this.redraw();
           })
 
@@ -542,10 +547,11 @@ class MainComponent extends React.PureComponent {
   }
 
   onDocumentClick(ev) {
-    ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
-    ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
+    let { scrollX, scrollY, selectedTool, shapes } = this.state;
+    ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
+    ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
 
-    if (this.state.selectedTool === 'text') {
+    if (selectedTool === 'text') {
       //Revertting tyhius is required.
 
 
@@ -555,37 +561,37 @@ class MainComponent extends React.PureComponent {
       return;
     }
 
-    if (this.state.selectedTool === 'select') {
+    if (selectedTool === 'select') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
-      let selectedElement = getElementsAtPosition(ev._x, ev._y, this.state.shapes);
+      let selectedElement = getElementsAtPosition(ev._x, ev._y, shapes);
       this.selectedElement = selectedElement;
       console.log(selectedElement);
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.state.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.state.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === 'line' || this.selectedElement.type === 'arrow') {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.state.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.state.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === 'circle') {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.state.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.state.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.beginPath();
           this.tempContext.arc(x, y, this.changeFromOneScalingFactor(this.selectedElement.radius) + 10, 0, 2 * Math.PI);
           this.tempContext.stroke();
         } else if (this.selectedElement.type === 'diamond') {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + this.state.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + this.state.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
         } else if (this.selectedElement.type === 'text') {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + this.state.scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + this.state.scrollY;
+          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + scrollX;
+          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + scrollY;
           this.tempContext.setLineDash([6]);
           this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width), this.changeFromOneScalingFactor(this.selectedElement.height));
         }
@@ -640,27 +646,28 @@ class MainComponent extends React.PureComponent {
 
   render() {
     console.log('Inside Render');
+    let { baseFontSize, baseLineHeight, selectedTool, selectedTheme, canvasWidth, canvasHeight, scalingFactor } = this.state;
     return (
       <div
-        style={{ '--font-size': `${this.state.baseFontSize}px`, '--line-height': `${this.state.baseLineHeight}px`, cursor: `${this.state.selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
-        className={`${this.state.selectedTheme === 'dark' ? 'dark-mode' : 'light-mode'}`}>
+        style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: `${selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
+        className={`${selectedTheme === 'dark' ? 'dark-mode' : 'light-mode'}`}>
         <div id="wrapper" >
           <div id="blackboardPlaceholder">
-            <canvas id="drawingCanvas" ref={this.mainCanvas} width={this.state.canvasWidth} height={this.state.canvasHeight}>
+            <canvas id="drawingCanvas" ref={this.mainCanvas} width={canvasWidth} height={canvasHeight}>
               <p className="noscript">We're sorry, this web application is currently not supported with your browser. Please use
                 an alternate browser or download a supported <br />browser.Supported browsers: <a
                   href="http://www.google.com/chrome">Google Chrome</a>, <a href="http://www.opera.com">Opera</a>, <a
                     href="http://www.mozilla.com">Firefox</a>, <a href="http://www.apple.com/safari">Safari</a>, <br />and <a
                       href="http://www.konqueror.org">Konqueror</a>. Also make sure your JavaScript is enabled.</p>
             </canvas>
-            <canvas id="tempCanvas" ref={this.tempCanvas} width={this.state.canvasWidth} height={this.state.canvasHeight}></canvas>
+            <canvas id="tempCanvas" ref={this.tempCanvas} width={canvasWidth} height={canvasHeight}></canvas>
           </div>
 
         </div>
-        <SelectTool selectedTool={this.state.selectedTool} updateTool={this.onClickTool} />
+        <SelectTool selectedTool={selectedTool} updateTool={this.onClickTool} />
         <ConfigTool toggleTheme={this.updateTheme} />
         <TextTool />
-        <ZoomContainer zoomRange={this.state.scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
+        <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
       </div>
     )
   }

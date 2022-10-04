@@ -108,12 +108,6 @@ function DrawIndex() {
     });
   }, [socket]);
 
-  // function updateShape(shape) {
-  //   let formData = new FormData();
-  //   formData.set('data', JSON.stringify({ ...shape }));
-  //   fetcher.submit(formData, { method: 'post' });
-  // }
-
   const updateShape = useCallback(
     (shape, action = 'add') => {
       let formData = new FormData();
