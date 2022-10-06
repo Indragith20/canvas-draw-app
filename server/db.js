@@ -11,7 +11,8 @@ const db = {
   room: (roomId) => dataPoint(`rooms/${roomId}`),
   user: (userId) => dataPoint(`users/${userId}`),
   shapeCollection: (roomId) => dataPoint(`rooms/${roomId}/shapes`),
-  collaborators: (roomId) => dataPoint(`rooms/${roomId}/collaborators`)
+  collaborators: (roomId) => dataPoint(`rooms/${roomId}/collaborators`),
+  activeUserCollection: (roomId) => dataPoint(`rooms/${roomId}/activeUsers`)
 }
 
 /**
@@ -25,7 +26,7 @@ async function createRoom(userId, userName, roomName) {
     const newRoomDetailsRef = db.roomDetails().doc();
     const newRoomRef = db.rooms().doc(newRoomDetailsRef.id);
     addRoomToUser(userId, newRoomRef.id).then(() => {
-      let collaboratorPromise = db.collaborators(newRoomRef.id).doc().set({ name: userName, color: 'blue', isActive: true, id: userId });
+      let collaboratorPromise = db.collaborators(newRoomRef.id).doc(userId).set({ name: userName, color: 'blue', isActive: true, id: userId });
       let roomPromise = newRoomDetailsRef.set({ id: newRoomRef.id, roomName });
       Promise.all([collaboratorPromise, roomPromise]).then(() => {
         console.log("Resolbve", userId);
@@ -66,6 +67,10 @@ async function updateShape(roomId, shape) {
 async function addCollaborator(roomId, collaborator) {
   const newCollaboratorRef = db.collaborators(roomId).doc(collaborator.id);
   return await newCollaboratorRef.set({ ...collaborator });
+}
+
+async function updateCollaborator(roomId, collaborator) {
+  return await db.collaborators(roomId).doc(collaborator.id).update({ ...collaborator })
 }
 
 function getShapes(roomId) {
@@ -194,8 +199,56 @@ function getRoomDetails(roomId) {
   })
 }
 
+function addLiveUsers(roomId, socketId, userDetails) {
+  // TODO: cache in redis
+  return new Promise((resolve, reject) => {
+    Promise.all([
+      addCollaborator(roomId, userDetails),
+      db.activeUserCollection(roomId).doc(socketId).set({ id: socketId })
+    ]).then(() => {
+      resolve('Success');
+    }).catch(err => {
+      reject(err);
+    })
+  })
+}
+
+function getLiveUsers(roomId) {
+  // TODO: cache in redis
+  return new Promise((resolve, reject) => {
+    db.activeUserCollection(roomId).get().then((snapshot) => {
+      let data = [];
+      if (snapshot.empty) {
+        data = [];
+      } else {
+        snapshot.forEach(doc => {
+          data.push(doc.data());
+        })
+      }
+      resolve(data);
+    }).catch(err => {
+      reject(err);
+    })
+  })
+}
+
+function removeLiveUsers(roomId, socketId, userDetails) {
+  // TODO: cache in redis
+  return new Promise((resolve, reject) => {
+    Promise.all([
+      updateCollaborator(roomId, userDetails),
+      db.activeUserCollection(roomId).doc(socketId).delete()
+    ]).then(() => {
+      resolve('Success')
+    }).catch(err => {
+      reject(err)
+    })
+  })
+}
+
 export {
   addUser,
+  addLiveUsers,
   addRoomToUser,
   createRoom,
   getInitialDrawData,
@@ -205,5 +258,8 @@ export {
   addCollaborator,
   deleteCollaborator,
   getUser,
-  getRoomDetails
+  getRoomDetails,
+  getUsers,
+  getLiveUsers,
+  removeLiveUsers
 }

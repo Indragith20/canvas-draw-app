@@ -12,6 +12,7 @@ const { auth } = require('./server/firebase.server');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const { default: onSocketConnect } = require('server/socket');
 
 const BUILD_DIR = path.join(process.cwd(), "build");
 
@@ -28,33 +29,40 @@ auth.server;
 
 let clients = [];
 
+// io.on('connection', (socket) => {
+//   console.log(socket.id, 'connected');
+
+
+//   socket.emit('confirmation', 'connected!');
+
+//   socket.on('event', (data) => {
+//     console.log(socket.id, data);
+//     //clients.push(socket.id);
+//     socket.emit('event', 'pong');
+//   });
+
+
+//   socket.on('mousemove', (data) => {
+//     // console.log(clients);
+//     // clients.forEach((clientId) => {
+//     //   if (clientId !== socket.id) {
+//     //     io.to(clientId).emit('mousemove', data);
+//     //   }
+//     // })
+//   })
+
+//   socket.on('update', (data) => {
+
+//   })
+
+//   socket.on('disconnect', (data) => {
+//     //clients = clients.filter(clientId => clientId !== socket.id);
+//     console.log(socket.id, "diconnected");
+//   })
+//});
 
 io.on('connection', (socket) => {
-  console.log(socket.id, 'connected');
-
-
-  socket.emit('confirmation', 'connected!');
-
-  socket.on('event', (data) => {
-    console.log(socket.id, data);
-    //clients.push(socket.id);
-    socket.emit('event', 'pong');
-  });
-
-
-  socket.on('mousemove', (data) => {
-    // console.log(clients);
-    // clients.forEach((clientId) => {
-    //   if (clientId !== socket.id) {
-    //     io.to(clientId).emit('mousemove', data);
-    //   }
-    // })
-  })
-
-  socket.on('disconnect', (data) => {
-    //clients = clients.filter(clientId => clientId !== socket.id);
-    console.log(socket.id, "diconnected");
-  })
+  onSocketConnect(socket, io);
 });
 
 
