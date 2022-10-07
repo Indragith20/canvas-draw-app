@@ -7,10 +7,12 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production remix build",
     "dev": "cross-env NODE_ENV=development remix build && run-p dev:*",
-    "dev:node": "cross-env NODE_ENV=development nodemon ./server.js --watch server ./server.js",
+    "dev:node": "npm run transpile && cross-env NODE_ENV=development nodemon ./build/server/server.js --watch server",
     "dev:remix": "cross-env NODE_ENV=development remix watch",
     "postinstall": "remix setup node",
-    "start": "cross-env NODE_ENV=production node ./server.js"
+    "transpile": "babel ./server -d build/server",
+    "clean": "rimraf dist-server",
+    "start": "npm run transpile && cross-env NODE_ENV=production node ./build/server/server.js"
   },
   "dependencies": {
     "@remix-run/express": "^1.6.1",
@@ -30,12 +32,18 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@babel/cli": "^7.14.5",
+    "@babel/core": "^7.14.6",
+    "@babel/node": "^7.14.7",
+    "@babel/preset-env": "^7.14.7",
     "@remix-run/dev": "^1.2.3",
     "@remix-run/eslint-config": "^1.2.3",
+    "babel-plugin-source-map-support": "^2.2.0",
     "eslint": "^8.9.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "nodemon": "^2.0.15",
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "^4.1.5",
+    "source-map-support": "^0.5.21"
   },
   "engines": {
     "node": ">=14"

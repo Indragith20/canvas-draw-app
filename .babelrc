@@ -1,0 +1,16 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "esmodules": true
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    "source-map-support"
+  ],
+  "sourceMaps" : "inline"
+}

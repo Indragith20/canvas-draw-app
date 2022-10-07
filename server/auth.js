@@ -3,11 +3,11 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 
 import { destroySession, getSession } from '~/sessions';
 import { addUser } from './db';
-import { auth } from './firebase.server';
+import { getServerAuth, getClientAuth } from './firebase.server';
 
 export const checkSessionCookie = async (session) => {
   try {
-    const decodedIdToken = await auth.server.verifySessionCookie(
+    const decodedIdToken = await getServerAuth().verifySessionCookie(
       session.get('session') || ''
     );
     return decodedIdToken;
@@ -26,25 +26,25 @@ export const requireAuth = async (request, redirectTo = new URL(request.url).pat
     ]);
     throw redirect(`/signIn?${searchParams}`);
   }
-  return auth.server.getUser(uid);
+  return getServerAuth().getUser(uid);
 };
 
 export const signIn = async (email, password) => {
   const { user } = await signInWithEmailAndPassword(
-    auth.client,
+    getClientAuth(),
     email,
     password
   );
   const idToken = await user.getIdToken();
   const expiresIn = 1000 * 60 * 60 * 24 * 7; // 1 week
-  const sessionCookie = await auth.server.createSessionCookie(idToken, {
+  const sessionCookie = await getServerAuth().createSessionCookie(idToken, {
     expiresIn,
   });
   return { sessionCookie, user };
 };
 
 export const signUp = async (name, email, password) => {
-  let { uid } = await auth.server.createUser({
+  let { uid } = await getServerAuth().createUser({
     email,
     password,
     displayName: name,

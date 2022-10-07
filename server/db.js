@@ -8,11 +8,11 @@ const db = {
   rooms: () => dataPoint('rooms'),
   roomDetails: () => dataPoint('roomDetails'),
   users: () => dataPoint('users'),
+  activeUsers: () => dataPoint('activeUsers'),
   room: (roomId) => dataPoint(`rooms/${roomId}`),
   user: (userId) => dataPoint(`users/${userId}`),
   shapeCollection: (roomId) => dataPoint(`rooms/${roomId}/shapes`),
   collaborators: (roomId) => dataPoint(`rooms/${roomId}/collaborators`),
-  activeUserCollection: (roomId) => dataPoint(`rooms/${roomId}/activeUsers`)
 }
 
 /**
@@ -65,6 +65,7 @@ async function updateShape(roomId, shape) {
 }
 
 async function addCollaborator(roomId, collaborator) {
+  console.log(roomId, collaborator);
   const newCollaboratorRef = db.collaborators(roomId).doc(collaborator.id);
   return await newCollaboratorRef.set({ ...collaborator });
 }
@@ -202,9 +203,10 @@ function getRoomDetails(roomId) {
 function addLiveUsers(roomId, socketId, userDetails) {
   // TODO: cache in redis
   return new Promise((resolve, reject) => {
+
     Promise.all([
-      addCollaborator(roomId, userDetails),
-      db.activeUserCollection(roomId).doc(socketId).set({ id: socketId })
+      addCollaborator(roomId, { ...userDetails, isActive: true }),
+      db.activeUsers().doc(socketId).set({ id: socketId, collaboratorId: userDetails.id, roomId: roomId })
     ]).then(() => {
       resolve('Success');
     }).catch(err => {
@@ -216,32 +218,42 @@ function addLiveUsers(roomId, socketId, userDetails) {
 function getLiveUsers(roomId) {
   // TODO: cache in redis
   return new Promise((resolve, reject) => {
-    db.activeUserCollection(roomId).get().then((snapshot) => {
-      let data = [];
+    db.activeUsers().where('roomId', '==', roomId).get().then((snapshot) => {
       if (snapshot.empty) {
-        data = [];
+        resolve([]);
       } else {
+        let users = []
         snapshot.forEach(doc => {
-          data.push(doc.data());
-        })
+          users.push(doc.data());
+        });
+        resolve(users);
       }
-      resolve(data);
     }).catch(err => {
       reject(err);
     })
   })
 }
 
-function removeLiveUsers(roomId, socketId, userDetails) {
+function removeLiveUsers(socketId) {
   // TODO: cache in redis
   return new Promise((resolve, reject) => {
-    Promise.all([
-      updateCollaborator(roomId, userDetails),
-      db.activeUserCollection(roomId).doc(socketId).delete()
-    ]).then(() => {
-      resolve('Success')
+    let docRef = db.activeUsers().doc(socketId);
+    docRef.get().then((snapshot) => {
+      if (snapshot.exists) {
+        let socketDetails = snapshot.data();
+        Promise.all([
+          updateCollaborator(socketDetails.roomId, { id: socketDetails.collaboratorId, isActive: false }),
+          docRef.delete()
+        ]).then(() => {
+          resolve();
+        }).catch(err => {
+          reject(err);
+        });
+      } else {
+        resolve();
+      }
     }).catch(err => {
-      reject(err)
+      reject(err);
     })
   })
 }

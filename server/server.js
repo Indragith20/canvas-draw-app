@@ -1,18 +1,19 @@
 /* eslint-disable no-undef */
-require('dotenv/config')
+import * as config from './config';
+import express from 'express';
+import path from 'path';
 
-const express = require("express");
-const compression = require("compression");
-const morgan = require("morgan");
-const { createRequestHandler } = require("@remix-run/express");
+import compression from "compression";
+import morgan from "morgan";
+import { createRequestHandler } from '@remix-run/express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import { onSocketConnect } from './socket';
 
-const { auth } = require('./server/firebase.server');
 
+// eslint-disable-next-line import/first
+import { getServerAuth } from './firebase.server';
 
-const { createServer } = require('http');
-const { Server } = require('socket.io');
-const path = require('path');
-const { default: onSocketConnect } = require('server/socket');
 
 const BUILD_DIR = path.join(process.cwd(), "build");
 
@@ -25,41 +26,8 @@ const httpServer = createServer(app);
 const io = new Server(httpServer);
 
 //Initializing the firebase server
-auth.server;
+getServerAuth();
 
-let clients = [];
-
-// io.on('connection', (socket) => {
-//   console.log(socket.id, 'connected');
-
-
-//   socket.emit('confirmation', 'connected!');
-
-//   socket.on('event', (data) => {
-//     console.log(socket.id, data);
-//     //clients.push(socket.id);
-//     socket.emit('event', 'pong');
-//   });
-
-
-//   socket.on('mousemove', (data) => {
-//     // console.log(clients);
-//     // clients.forEach((clientId) => {
-//     //   if (clientId !== socket.id) {
-//     //     io.to(clientId).emit('mousemove', data);
-//     //   }
-//     // })
-//   })
-
-//   socket.on('update', (data) => {
-
-//   })
-
-//   socket.on('disconnect', (data) => {
-//     //clients = clients.filter(clientId => clientId !== socket.id);
-//     console.log(socket.id, "diconnected");
-//   })
-//});
 
 io.on('connection', (socket) => {
   onSocketConnect(socket, io);

@@ -1,14 +1,16 @@
 import { addLiveUsers, getLiveUsers, removeLiveUsers } from "./db";
-
+//const { addLiveUsers, getLiveUsers, removeLiveUsers } = require('./db');
 
 function emitData(io, socket, key, data) {
-  getLiveUsers(data.roomId).then((clients) => {
-    clients.forEach((clientId) => {
-      if (clientId !== socket.id) {
-        io.to(clientId).emit(key, data);
-      }
+  if (data.roomId) {
+    getLiveUsers(data.roomId).then((clients) => {
+      clients.forEach((clientId) => {
+        if (clientId !== socket.id) {
+          io.to(clientId).emit(key, data);
+        }
+      })
     })
-  })
+  }
 }
 
 function onSocketConnect(socket, io) {
@@ -32,14 +34,16 @@ function onSocketConnect(socket, io) {
     emitData(io, socket, 'update', data);
   });
 
-  socket.on('connection', (data) => {
+  socket.on('setliveuser', (data) => {
+    console.log(data.userDetails);
     addLiveUsers(data.roomId, socket.id, data.userDetails);
-  })
+  });
 
   socket.on('disconnect', (data) => {
-    removeLiveUsers(data.roomId, socket.id, data.userDetails);
+    console.log('socket disconnected');
+    removeLiveUsers(socket.id);
   })
 }
 
 
-export default onSocketConnect;
+export { onSocketConnect };

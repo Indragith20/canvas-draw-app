@@ -59,20 +59,24 @@ export const loader = async ({ request, params }) => {
     });
   } else {
     let drawData = await getInitialDrawData(params.drawId);
-    return json({ ...drawData });
+    return json({
+      ...drawData,
+      currentUser: userData.data,
+      roomId: params.drawId,
+    });
   }
 };
 
 export const action = async ({ request, params }) => {
   const body = await request.formData();
-  let name = body.get('data');
+  let actionData = body.get('data');
   let action = body.get('action');
   let data = null;
   if (action === 'add') {
-    data = await addShape(params.drawId, name);
+    data = await addShape(params.drawId, actionData);
   } else if (action === 'delete') {
     console.log('delete action called');
-    data = await deleteShape(params.drawId, name);
+    data = await deleteShape(params.drawId, actionData);
   }
 
   return json({ data });
@@ -80,10 +84,10 @@ export const action = async ({ request, params }) => {
 
 function DrawIndex() {
   const fetcher = useFetcher();
-  const data = useLoaderData();
+  const { currentUser, shapes, users, roomId } = useLoaderData();
   // const actionData = useActionData();
 
-  // console.log(data);
+  console.log(shapes, users, currentUser, roomId);
   // console.log(actionData);
 
   console.log('render called');
@@ -93,20 +97,33 @@ function DrawIndex() {
     const socket = io();
     setSocket(socket);
     socket.emit('event', 'conenction success');
+
     return () => {
       socket.close();
     };
-  }, []);
+  }, [roomId, currentUser]);
 
   useEffect(() => {
-    if (!socket) return;
-    socket.on('confirmation', (data) => {
+    if (!socket) {
+      return;
+    }
+
+    function onConfirm() {
+      socket.emit('setliveuser', { roomId: roomId, userDetails: currentUser });
+    }
+
+    function onMouseMove(data) {
       console.log(data);
-    });
-    socket.on('mousemove', (data) => {
-      console.log(data);
-    });
-  }, [socket]);
+    }
+
+    socket.on('confirmation', onConfirm);
+    socket.on('mousemove', onMouseMove);
+
+    return () => {
+      socket.off('confirmation', onConfirm);
+      socket.off('mousemove', onMouseMove);
+    };
+  }, [socket, currentUser, roomId]);
 
   const updateShape = useCallback(
     (shape, action = 'add') => {
@@ -129,7 +146,7 @@ function DrawIndex() {
     <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
       <SocketProvider socket={socket}>
         <MainComponent
-          shapes={data.shapes}
+          shapes={shapes}
           mouseMove={onMouseMove}
           updateShape={updateShape}
           updateDb={Idb.updateDb}
