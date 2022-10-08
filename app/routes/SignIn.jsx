@@ -44,26 +44,38 @@ export const action = async ({ request, params }) => {
 
     if (redirectUrl) {
       // shared url flow
-      let roomId = redirectUrl.split('/').pop();
-      await Promise.all([
-        addCollaborator(roomId, {
-          name: user.displayName,
-          isActive: true,
-          id: user.uid,
-        }),
-        addRoomToUser(user.uid, roomId),
-      ]);
-      return redirect(redirectUrl, {
+
+      let promises = [];
+      if (redirectUrl.indexOf('draw') === 1) {
+        let roomId = redirectUrl.split('/').pop();
+        promises.push(
+          addCollaborator(roomId, {
+            name: user.displayName,
+            isActive: true,
+            id: user.uid,
+          })
+        );
+        promises.push(addRoomToUser(user.uid, roomId));
+        await Promise.all(promises);
+        return redirect(redirectUrl, {
+          headers: {
+            'Set-Cookie': await commitSession(session),
+          },
+        });
+      } else {
+        return redirect(redirectUrl, {
+          headers: {
+            'Set-Cookie': await commitSession(session),
+          },
+        });
+      }
+    } else {
+      return redirect('/rooms', {
         headers: {
           'Set-Cookie': await commitSession(session),
         },
       });
     }
-    return redirect('/rooms', {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
   } catch (error) {
     console.error(error);
     return json({ error: String(error) }, { status: 401 });

@@ -22,6 +22,7 @@ const db = {
 
 
 async function createRoom(userId, userName, roomName) {
+  console.log('Creating Room');
   return new Promise((resolve, reject) => {
     const newRoomDetailsRef = db.roomDetails().doc();
     const newRoomRef = db.rooms().doc(newRoomDetailsRef.id);
@@ -40,7 +41,7 @@ async function createRoom(userId, userName, roomName) {
 
 function addShape(roomId, shape) {
   const shapeJSON = JSON.parse(shape);
-  console.log('Addding Shape Called', roomId, shape);
+  console.log('Addding Shape Called', roomId);
   //const newShapeRef = db.shapeCollection(roomId).doc(`${shape.id}`);
   return new Promise((resolve, reject) => {
     db.shapeCollection(roomId).doc(`${shapeJSON.id}`).set({ ...shapeJSON }).then((doc) => {
@@ -92,11 +93,6 @@ function getShapes(roomId) {
   })
 }
 
-function getRoom(roomId) {
-  return new Promise((resolve, reject) => {
-
-  })
-}
 
 function getUsers(roomId) {
   return new Promise((resolve, reject) => {
@@ -172,7 +168,6 @@ function getUser(userId) {
   return new Promise((resolve, reject) => {
     let userRef = db.users().doc(userId);
     userRef.get().then((doc) => {
-      console.log(doc.data());
       if (!doc.exists) {
         resolve({ error: 'No such document!' });
       } else {
@@ -201,6 +196,7 @@ function getRoomDetails(roomId) {
 }
 
 function addLiveUsers(roomId, socketId, userDetails) {
+  console.log('Adding Live Users')
   // TODO: cache in redis
   return new Promise((resolve, reject) => {
 
@@ -217,6 +213,7 @@ function addLiveUsers(roomId, socketId, userDetails) {
 
 function getLiveUsers(roomId) {
   // TODO: cache in redis
+  console.log('Getting Live USers');
   return new Promise((resolve, reject) => {
     db.activeUsers().where('roomId', '==', roomId).get().then((snapshot) => {
       if (snapshot.empty) {
@@ -226,6 +223,7 @@ function getLiveUsers(roomId) {
         snapshot.forEach(doc => {
           users.push(doc.data());
         });
+        console.log('Users')
         resolve(users);
       }
     }).catch(err => {
@@ -236,6 +234,7 @@ function getLiveUsers(roomId) {
 
 function removeLiveUsers(socketId) {
   // TODO: cache in redis
+  console.log('Removing Live users');
   return new Promise((resolve, reject) => {
     let docRef = db.activeUsers().doc(socketId);
     docRef.get().then((snapshot) => {
@@ -258,6 +257,41 @@ function removeLiveUsers(socketId) {
   })
 }
 
+async function deleteQueryBatch(db, query, resolve) {
+  const snapshot = await query.get();
+
+  const batchSize = snapshot.size;
+  if (batchSize === 0) {
+    // When there are no documents left, we are done
+    resolve();
+    return;
+  }
+
+  // Delete documents in a batch
+  const batch = getFirestore().batch();
+  snapshot.docs.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+  await batch.commit();
+
+  // Recurse on the next process tick, to avoid
+  // exploding the stack.
+  // eslint-disable-next-line no-undef
+  process.nextTick(() => {
+    deleteQueryBatch(db, query, resolve);
+  });
+}
+
+function resetAllLiveUsers() {
+  // Think of alternate way
+  return new Promise((resolve, reject) => {
+    const collectionRef = db.activeUsers();
+    const query = collectionRef.limit(50);
+
+    deleteQueryBatch(db, query, resolve).catch(reject);
+  })
+}
+
 export {
   addUser,
   addLiveUsers,
@@ -273,5 +307,6 @@ export {
   getRoomDetails,
   getUsers,
   getLiveUsers,
-  removeLiveUsers
+  removeLiveUsers,
+  resetAllLiveUsers
 }

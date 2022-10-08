@@ -13,6 +13,7 @@ import { onSocketConnect } from './socket';
 
 // eslint-disable-next-line import/first
 import { getServerAuth } from './firebase.server';
+import { resetAllLiveUsers } from './db';
 
 
 const BUILD_DIR = path.join(process.cwd(), "build");
@@ -27,6 +28,8 @@ const io = new Server(httpServer);
 
 //Initializing the firebase server
 getServerAuth();
+
+
 
 
 io.on('connection', (socket) => {
@@ -70,6 +73,8 @@ app.all(
 
 const port = process.env.PORT || 3000;
 httpServer.listen(port, () => {
+  // Think of an alternate way 
+  //resetAllLiveUsers();
   console.log(`Express server listening on port ${port}`);
 });
 

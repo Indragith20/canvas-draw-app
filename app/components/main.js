@@ -17,6 +17,7 @@ import { getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
 import Idb from './utils/idb';
 import { SocketContext } from '~/contexts/socketContext';
+import UserActivity from './UserActivity/UserActivity';
 
 export function MainComponentStyles() {
   return [{ rel: 'stylesheet', href: styles }];
@@ -73,6 +74,8 @@ class MainComponent extends React.PureComponent {
     this.onResize = this.onResize.bind(this);
     this.zoomIn = this.zoomIn.bind(this);
     this.zoomOut = this.zoomOut.bind(this);
+    this.addShape = this.addShape.bind(this);
+    this.removeShape = this.removeShape.bind(this);
 
     //this.idb = new Idb();
 
@@ -625,6 +628,23 @@ class MainComponent extends React.PureComponent {
   }
 
 
+
+  addShape(shape) {
+    let shapes = [...this.state.shapes];
+    shapes.push(shape);
+    this.setState({ shapes }, () => {
+      this.redraw();
+    })
+  }
+
+  removeShape(shapeTobeDeleted) {
+    let updatedShapes = this.state.shapes.filter(shape => shape.id !== shapeTobeDeleted.id);
+    this.setState({ updatedShapes }, () => {
+      this.redraw();
+    })
+  }
+
+
   updateTheme(e) {
     e.stopPropagation();
     this.setState(
@@ -645,8 +665,7 @@ class MainComponent extends React.PureComponent {
   }
 
   render() {
-    console.log('Inside Render');
-    let { baseFontSize, baseLineHeight, selectedTool, selectedTheme, canvasWidth, canvasHeight, scalingFactor } = this.state;
+    let { baseFontSize, baseLineHeight, selectedTool, selectedTheme, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY } = this.state;
     return (
       <div
         style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: `${selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
@@ -661,6 +680,15 @@ class MainComponent extends React.PureComponent {
                       href="http://www.konqueror.org">Konqueror</a>. Also make sure your JavaScript is enabled.</p>
             </canvas>
             <canvas id="tempCanvas" ref={this.tempCanvas} width={canvasWidth} height={canvasHeight}></canvas>
+            <UserActivity
+              width={canvasWidth}
+              height={canvasHeight}
+              scrollX={scrollX}
+              scrollY={scrollY}
+              scalingFactor={scalingFactor}
+              addShape={this.addShape}
+              removeShape={this.removeShape}
+            />
           </div>
 
         </div>

@@ -30,6 +30,7 @@ import {
 } from '../../../server/db';
 import Idb from '~/components/utils/idb';
 import { requireAuth } from '../../../server/auth';
+import { UserActivityLinks } from '~/components/UserActivity/UserActivity';
 
 export const links = () => [
   ...MainComponentStyles(),
@@ -37,6 +38,7 @@ export const links = () => [
   ...ConfigToolLinks(),
   ...TextToolLinks(),
   ...ZoomContainerLinks(),
+  ...UserActivityLinks(),
   { rel: 'stylesheet', href: styles },
 ];
 
@@ -79,18 +81,18 @@ export const action = async ({ request, params }) => {
     data = await deleteShape(params.drawId, actionData);
   }
 
-  return json({ data });
+  return json({ data, action });
 };
 
 function DrawIndex() {
   const fetcher = useFetcher();
   const { currentUser, shapes, users, roomId } = useLoaderData();
-  // const actionData = useActionData();
+  let { id, name } = currentUser;
+  const actionData = useActionData();
 
   console.log(shapes, users, currentUser, roomId);
-  // console.log(actionData);
+  console.log(actionData);
 
-  console.log('render called');
   const [socket, setSocket] = useState();
 
   useEffect(() => {
@@ -98,48 +100,54 @@ function DrawIndex() {
     setSocket(socket);
     socket.emit('event', 'conenction success');
 
-    return () => {
-      socket.close();
-    };
-  }, [roomId, currentUser]);
-
-  useEffect(() => {
-    if (!socket) {
-      return;
-    }
-
     function onConfirm() {
-      socket.emit('setliveuser', { roomId: roomId, userDetails: currentUser });
-    }
-
-    function onMouseMove(data) {
-      console.log(data);
+      socket.emit('setliveuser', {
+        roomId: roomId,
+        userDetails: { id, name, isActive: true },
+      });
     }
 
     socket.on('confirmation', onConfirm);
-    socket.on('mousemove', onMouseMove);
 
     return () => {
       socket.off('confirmation', onConfirm);
-      socket.off('mousemove', onMouseMove);
+      socket.close();
     };
-  }, [socket, currentUser, roomId]);
+  }, [roomId, id, name]);
+
+  // useEffect(() => {
+  //   if (!socket) {
+  //     return;
+  //   }
+
+  //   function onConfirm() {
+  //     socket.emit('setliveuser', { roomId: roomId, userDetails: currentUser });
+  //   }
+
+  //   socket.on('confirmation', onConfirm);
+
+  //   return () => {
+  //     socket.off('confirmation', onConfirm);
+  //   };
+  // }, [socket, currentUser, roomId]);
 
   const updateShape = useCallback(
     (shape, action = 'add') => {
       let formData = new FormData();
       formData.set('data', JSON.stringify({ ...shape }));
       formData.set('action', action);
-      fetcher.submit(formData, { method: 'post' });
+      const data = fetcher.submit(formData, { method: 'post' });
+      console.log('fetcher data', data);
+      socket.emit('updateshape', { user: currentUser, roomId, shape, action });
     },
-    [fetcher]
+    [fetcher, socket, currentUser, roomId]
   );
 
   const onMouseMove = useCallback(
     (eventDetails) => {
-      socket.emit('mousemove', eventDetails);
+      socket.emit('mousemove', { ...eventDetails, user: currentUser, roomId });
     },
-    [socket]
+    [socket, currentUser, roomId]
   );
 
   return (
