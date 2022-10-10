@@ -1,17 +1,6 @@
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { json, redirect } from '@remix-run/node';
-import {
-  useLoaderData,
-  useFetcher,
-  useTransition,
-  useActionData,
-} from '@remix-run/react';
+import { useLoaderData, useFetcher, useActionData } from '@remix-run/react';
 import io from 'socket.io-client';
 
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
@@ -19,7 +8,6 @@ import MainComponent, { MainComponentStyles } from '~/components/main';
 import { SelectToolLinks } from '~/components/SelectTool/SelectTool';
 import { TextToolLinks } from '~/components/TextTool/TextTool';
 import { ZoomContainerLinks } from '~/components/ZoomContainer/ZoomContainer';
-import { handleDataRequest } from '~/entry.server';
 import styles from '../../styles/styles.css';
 import { SocketProvider } from '~/contexts/socketContext';
 import {
@@ -44,7 +32,7 @@ export const links = () => [
 
 export const loader = async ({ request, params }) => {
   console.log(params);
-  const { displayName, uid } = await requireAuth(request);
+  const { uid } = await requireAuth(request);
   console.log('uid', uid);
   const userData = await getUser(uid);
   console.log('Errorsssssssss', userData.error);

@@ -1,12 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import {
-  Link,
-  useActionData,
-  useTransition,
-  useLoaderData,
-  useSubmit,
-} from '@remix-run/react';
-import { useCallback, useState } from 'react';
+import { Link, useActionData, useTransition } from '@remix-run/react';
 import { addCollaborator, addRoomToUser } from 'server/db';
 
 import { checkSessionCookie, signIn } from '../../server/auth';
@@ -26,7 +19,7 @@ export const loader = async ({ request }) => {
 
 export const action = async ({ request, params }) => {
   const form = await request.formData();
-  const idToken = form.get('idToken');
+  //const idToken = form.get('idToken');
   try {
     const email = form.get('email');
     const password = form.get('password');

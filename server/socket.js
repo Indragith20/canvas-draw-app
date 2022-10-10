@@ -1,4 +1,4 @@
-import { addLiveUsers, getLiveUsers, removeLiveUsers, resetAllLiveUsers } from "./db";
+import { addLiveUsers, getLiveUsers, removeLiveUsers } from "./db";
 //const { addLiveUsers, getLiveUsers, removeLiveUsers } = require('./db');
 
 function emitData(io, socket, key, data) {

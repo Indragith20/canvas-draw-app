@@ -13,7 +13,6 @@ import { onSocketConnect } from './socket';
 
 // eslint-disable-next-line import/first
 import { getServerAuth } from './firebase.server';
-import { resetAllLiveUsers } from './db';
 
 
 const BUILD_DIR = path.join(process.cwd(), "build");

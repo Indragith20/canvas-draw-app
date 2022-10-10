@@ -15,8 +15,6 @@ import TextTool from './TextTool/TextTool';
 import { drawDiamond, drawText } from './utils/drawShapes';
 import { getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
-import Idb from './utils/idb';
-import { SocketContext } from '~/contexts/socketContext';
 import UserActivity from './UserActivity/UserActivity';
 
 export function MainComponentStyles() {
@@ -629,9 +627,20 @@ class MainComponent extends React.PureComponent {
 
 
 
-  addShape(shape) {
-    let shapes = [...this.state.shapes];
-    shapes.push(shape);
+  addShape(newShape) {
+    let isExistingShape = false;
+    let shapes = this.state.shapes.map(shape => {
+      if (shape.id === newShape.id) {
+        isExistingShape = true;
+        return newShape;
+      } else {
+        return shape;
+      }
+    })
+    if (!isExistingShape) {
+      shapes.push(newShape);
+    }
+
     this.setState({ shapes }, () => {
       this.redraw();
     })
