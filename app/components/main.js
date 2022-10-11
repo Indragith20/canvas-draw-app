@@ -51,7 +51,7 @@ class MainComponent extends React.PureComponent {
       canvasWidth: 0,
       canvasHeight: 0,
       selectedTheme: 'light',
-      selectedTool: 'chalk',
+      selectedTool: 'select',
       shapes: props.shapes,
       ...baseConfig
     };
@@ -130,7 +130,13 @@ class MainComponent extends React.PureComponent {
 
     let selectedOne = this.tools[selectedTool];
 
-    this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, uuidv4());
+    if (selectedOne === 'select') {
+      this.tool = null;
+    } else {
+      this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, uuidv4());
+    }
+
+
     this.addEventListeners();
 
 
@@ -213,6 +219,7 @@ class MainComponent extends React.PureComponent {
         let { selectedTool, selectedTheme } = this.state;
         let selectedOne = this.tools[selectedTool];
         if (!selectedOne || selectedOne === 'select') {
+          this.tool = null;
           return;
         }
         // For storing the shapes. we are generating ids.
@@ -350,7 +357,6 @@ class MainComponent extends React.PureComponent {
 
 
   drawImage() {
-    console.log(this.state.shapes, this.state.selectedTool);
     this.resetDraggingValues();
 
 
@@ -365,7 +371,7 @@ class MainComponent extends React.PureComponent {
         this.tool = null;
       } else {
         this.mainContext.drawImage(this.tempCanvas.current, 0, 0);
-        ///this.tempContext.restore();
+        //this.tempContext.restore();
         this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
         //this.renderParticularShape(modifiedImage);
 
@@ -400,11 +406,30 @@ class MainComponent extends React.PureComponent {
         height: drawenImage.height ? this.changeToOneScalingFactor(drawenImage.height) : null,
         scalingFactor: scalingFactor
       }
-      let filteredShapes = shapes.filter(shape => shape.id !== drawenImage.id);
+
+      if (drawenImage.type === 'chalk') {
+        modifiedImage.drawPoints = drawenImage.drawPoints.map(point => {
+          return { x: this.changeToOneScalingFactor(point[0] - scrollX), y: this.changeToOneScalingFactor(point[1] - scrollY) }
+        })
+      }
+
+      let isExistingShape = false;
+      let filteredShapes = shapes.filter(shape => {
+        if (shape.id === modifiedImage.id) {
+          isExistingShape = true;
+          return null;
+        } else {
+          return shape;
+        }
+      })
+
+      //let filteredShapes = shapes.filter(shape => shape.id !== drawenImage.id);
+
+
       this.setState({ shapes: [...filteredShapes, modifiedImage] }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
-        updateShape(modifiedImage);
+        updateShape(modifiedImage, isExistingShape ? 'update' : 'add');
         this.drawImage();
       })
     } else {
@@ -422,6 +447,7 @@ class MainComponent extends React.PureComponent {
     this.tempContext.setLineDash([]);
     this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
     this.tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
+    this.tempContext.lineWidth = 1.0;
 
     shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
@@ -463,6 +489,16 @@ class MainComponent extends React.PureComponent {
         let yCenter = this.changeFromOneScalingFactor(shape.y) + scrollY;
         let size = this.changeFromOneScalingFactor(shape.x - shape.endX);
         drawDiamond(xCenter, yCenter, size, this.tempContext);
+      } else if (shape.type === 'chalk') {
+        let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
+        let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
+        this.tempContext.beginPath();
+        this.tempContext.moveTo(x, y);
+        shape.drawPoints.forEach(point => {
+          this.tempContext.lineTo(this.changeFromOneScalingFactor(point.x) + scrollX, this.changeFromOneScalingFactor(point.y) + scrollY)
+        });
+        this.tempContext.stroke();
+        this.tempContext.closePath();
       }
     });
 

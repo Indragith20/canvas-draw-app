@@ -1,5 +1,7 @@
 class Chalk {
-  constructor(tempCanvas, tempContext, callback) {
+  constructor(tempCanvas, tempContext, callback, id) {
+    this.id = id;
+    this.points = [];
     this.tempCanvas = tempCanvas;
     this.tempContext = tempContext;
     this.callback = callback;
@@ -7,10 +9,12 @@ class Chalk {
     this.mouseup = this.mouseUp.bind(this);
     this.mousedown = this.mouseDown.bind(this);
     this.mousemove = this.mouseMove.bind(this);
+    this.tempContext.setLineDash([0]);
   }
 
   mouseMove(e) {
     if (this.started) {
+      this.points.push([e._x, e._y]);
       this.tempContext.lineTo(e._x, e._y);
       this.tempContext.stroke();
     }
@@ -18,15 +22,26 @@ class Chalk {
 
   mouseDown(e) {
     this.tempContext.beginPath();
+    this.startX = e._x;
+    this.startY = e._y;
     this.tempContext.moveTo(e._x, e._y);
     this.started = true;
   }
 
   mouseUp(e) {
+    console.log(this.tempContext);
     if (this.started) {
       this.mousemove(e);
       this.started = false;
-      this.callback();
+      this.callback({
+        id: this.id,
+        type: 'chalk',
+        x: this.startX,
+        y: this.startY,
+        drawPoints: this.points,
+        endX: e._x,
+        endY: e._y
+      });
     }
   }
 }
