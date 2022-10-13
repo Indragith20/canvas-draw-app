@@ -106,6 +106,8 @@ function getElementsAtPosition(x, y, shapes) {
             }
           }
         }
+      } else if (shape.type === 'chalk') {
+        // Implement divide and conquer ??
       }
 
     })

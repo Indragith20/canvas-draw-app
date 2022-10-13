@@ -1,15 +1,32 @@
 import { addLiveUsers, getLiveUsers, removeLiveUsers } from "./db";
+import { getAllCachedDataByKey, getCachedData, setDataForCaching } from "./redis";
 //const { addLiveUsers, getLiveUsers, removeLiveUsers } = require('./db');
 
 function emitData(io, socket, key, data) {
   if (data.roomId) {
-    getLiveUsers(data.roomId).then((clients) => {
-      clients.forEach((client) => {
-        if (client.id !== socket.id) {
-          io.to(client.id).emit(key, data);
-        }
-      })
+    getAllCachedDataByKey(data.roomId).then((value) => {
+      if (value.liveUserFetchNeeded === 'true') {
+        getLiveUsers(data.roomId).then((clients) => {
+          setDataForCaching(data.roomId, 'liveUsers', JSON.stringify(clients));
+          setDataForCaching(data.roomId, 'liveUserFetchNeeded', 'false');
+          clients.forEach((client) => {
+            if (client.id !== socket.id) {
+              io.to(client.id).emit(key, data);
+            }
+          })
+        })
+      } else {
+        getCachedData(data.roomId, 'liveUsers').then((clients) => {
+          let parsedClients = JSON.parse(clients);
+          parsedClients.forEach((client) => {
+            if (client.id !== socket.id) {
+              io.to(client.id).emit(key, data);
+            }
+          })
+        })
+      }
     })
+
   }
 }
 
@@ -38,7 +55,10 @@ function onSocketConnect(socket, io) {
 
   socket.on('setliveuser', (data) => {
     console.log(data.userDetails);
-    addLiveUsers(data.roomId, socket.id, data.userDetails);
+    if (data.roomId) {
+      setDataForCaching(data.roomId, 'liveUserFetchNeeded', 'true');
+      addLiveUsers(data.roomId, socket.id, data.userDetails);
+    }
   });
 
   socket.on('disconnect', (data) => {

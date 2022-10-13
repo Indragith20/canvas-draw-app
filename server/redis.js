@@ -1,0 +1,77 @@
+import { createClient } from 'redis';
+
+
+// liveUserFetchNeeded -> true
+
+let redisClient;
+
+
+function initRedisConnection() {
+  return new Promise((resolve, reject) => {
+    let promise;
+    // eslint-disable-next-line no-undef
+    redisClient = createClient({
+      // eslint-disable-next-line no-undef
+      url: process.env.REDIS_URL
+    });
+
+    redisClient.on('error', (err) => {
+      console.log(err);
+      console.log('Failed to initialize redis client');
+    });
+
+    promise = redisClient.connect();
+
+    promise.then(() => {
+      resolve();
+    }).catch(err => {
+      reject(err);
+    })
+  })
+}
+
+
+export function setDataForCaching(key, fieldName, fieldValue) {
+  return new Promise((resolve, reject) => {
+    if (redisClient) {
+      redisClient.hSet(key, fieldName, fieldValue).then(() => {
+        resolve();
+      }).catch(err => {
+        reject(err);
+      })
+    }
+  })
+}
+
+
+export function getCachedData(key, fieldValue) {
+  return new Promise((resolve, reject) => {
+    if (redisClient) {
+      redisClient.hGet(key, fieldValue).then((data) => {
+        resolve(data);
+      }).catch(err => {
+        reject(err);
+      })
+    }
+  })
+}
+
+export function getAllCachedDataByKey(key) {
+  return new Promise((resolve, reject) => {
+    if (redisClient) {
+      redisClient.hGetAll(key).then((data) => {
+        resolve(data);
+      }).catch(err => {
+        reject(err);
+      })
+    }
+  })
+}
+
+
+export function deleteAllCaches() {
+  console.log('Deleting caches');
+  return redisClient.flushDb();
+}
+
+export default initRedisConnection;

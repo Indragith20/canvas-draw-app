@@ -29,7 +29,8 @@ async function createRoom(userId, userName, roomName) {
     addRoomToUser(userId, newRoomRef.id).then(() => {
       let collaboratorPromise = db.collaborators(newRoomRef.id).doc(userId).set({ name: userName, color: 'blue', isActive: true, id: userId });
       let roomPromise = newRoomDetailsRef.set({ id: newRoomRef.id, roomName });
-      Promise.all([collaboratorPromise, roomPromise]).then(() => {
+      let shapePromise = db.shapeCollection(newRoomRef.id).doc('shapeList').set({ shapeList: [] })
+      Promise.all([collaboratorPromise, roomPromise, shapePromise]).then(() => {
         console.log("Resolbve", userId);
         resolve({ id: newRoomRef.id, userId: userId });
       }).catch(err => {
@@ -44,25 +45,68 @@ function addShape(roomId, shape) {
   console.log('Addding Shape Called', roomId);
   //const newShapeRef = db.shapeCollection(roomId).doc(`${shape.id}`);
   return new Promise((resolve, reject) => {
-    db.shapeCollection(roomId).doc(`${shapeJSON.id}`).set({ ...shapeJSON }).then((doc) => {
-      console.log('Inside THen');
-      resolve({ id: shapeJSON.id });
+    db.shapeCollection(roomId).doc('shapeList').update({
+      shapeList: FieldValue.arrayUnion({ ...shapeJSON })
+    }).then(() => {
+      resolve({ id: shapeJSON.id })
     }).catch(err => {
-      reject({ error: err });
-    });
+      reject({ error: err })
+    })
+    // db.shapeCollection(roomId).doc(`${shapeJSON.id}`).set({ ...shapeJSON }).then((doc) => {
+    //   console.log('Inside THen');
+    //   resolve({ id: shapeJSON.id });
+    // }).catch(err => {
+    //   reject({ error: err });
+    // });
   });
 }
 
-async function deleteShape(roomId, shape) {
-  const shapeJSON = JSON.parse(shape);
-  console.log('Delete Shape Called', roomId, shape);
-  return await db.shapeCollection(roomId).doc(`${shapeJSON.id}`).delete();
+async function deleteShape(roomId, shapeTobeDeleted) {
+  return new Promise((resolve, reject) => {
+    const shapeJSON = JSON.parse(shapeTobeDeleted);
+    console.log('Delete Shape Called', roomId, shapeJSON);
+    let docRef = db.shapeCollection(roomId).doc('shapeList');
+    docRef.get().then((snapshot) => {
+      if (snapshot.exists) {
+        let { shapeList } = snapshot.data();
+        let updatedShapeList = shapeList.filter(shape => shape.id !== shapeJSON.id);
+        docRef.set({ shapeList: updatedShapeList }).then(() => {
+          resolve({ message: 'success' });
+        }).catch((err) => {
+          reject(err);
+        });
+      }
+    })
+  })
+
+  //return await db.shapeCollection(roomId).doc(`${shapeJSON.id}`).delete();
 }
 
-async function updateShape(roomId, shape) {
-  const shapeJSON = JSON.parse(shape);
-  console.log('update Shape Called', roomId, shape);
-  return await db.shapeCollection(roomId).doc(`${shapeJSON.id}`).update({ ...shapeJSON });
+async function updateShape(roomId, shapeTobeUpdated) {
+  const shapeJSON = JSON.parse(shapeTobeUpdated);
+  console.log('update Shape Called', roomId, shapeTobeUpdated);
+  return new Promise((resolve, reject) => {
+    console.log('Update Shape Called', roomId, shapeJSON);
+    let docRef = db.shapeCollection(roomId).doc('shapeList');
+    docRef.get().then((snapshot) => {
+      if (snapshot.exists) {
+        let { shapeList } = snapshot.data();
+        let updatedShapeList = shapeList.filter(shape => {
+          if (shape.id !== shapeJSON.id) {
+            return { ...shapeJSON }
+          } else {
+            return shape;
+          }
+        });
+        docRef.set({ shapeList: updatedShapeList }).then(() => {
+          resolve({ message: 'success' });
+        }).catch((err) => {
+          reject(err);
+        });
+      }
+    })
+  })
+  //return await db.shapeCollection(roomId).doc(`${shapeJSON.id}`).update({ ...shapeJSON });
 }
 
 async function addCollaborator(roomId, collaborator) {
@@ -77,6 +121,19 @@ async function updateCollaborator(roomId, collaborator) {
 
 function getShapes(roomId) {
   return new Promise((resolve, reject) => {
+    // db.shapeCollection(roomId).get().then((snapshot) => {
+    //   let data = [];
+    //   if (snapshot.empty) {
+    //     data = [];
+    //   } else {
+    //     snapshot.forEach(doc => {
+    //       data.push(doc.data());
+    //     })
+    //   }
+    //   resolve(data);
+    // }).catch(err => {
+    //   reject(err);
+    // })
     db.shapeCollection(roomId).get().then((snapshot) => {
       let data = [];
       if (snapshot.empty) {
@@ -115,7 +172,7 @@ function getUsers(roomId) {
 function getInitialDrawData(roomId) {
   return new Promise((resolve, reject) => {
     Promise.all([getShapes(roomId), getUsers(roomId)]).then(([shapes, users]) => {
-      resolve({ shapes: shapes && shapes.length > 0 ? shapes : [], users: users && users.length > 0 ? users : [] })
+      resolve({ shapes: shapes && shapes.length > 0 ? shapes[0].shapeList : [], users: users && users.length > 0 ? users : [] })
     }).catch((err) => {
       reject({ message: err });
     })
@@ -228,7 +285,7 @@ function getLiveUsers(roomId) {
       }
     }).catch(err => {
       reject(err);
-    })
+    });
   })
 }
 
