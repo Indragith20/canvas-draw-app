@@ -13,6 +13,7 @@ import { onSocketConnect } from './socket';
 
 // eslint-disable-next-line import/first
 import { getServerAuth } from './firebase.server';
+import initRedisConnection, { deleteAllCaches, setDataForCaching } from './redis';
 
 
 const BUILD_DIR = path.join(process.cwd(), "build");
@@ -29,6 +30,8 @@ const io = new Server(httpServer);
 getServerAuth();
 
 
+//Initializing the redis connection
+initRedisConnection();
 
 
 io.on('connection', (socket) => {
@@ -74,8 +77,14 @@ const port = process.env.PORT || 3000;
 httpServer.listen(port, () => {
   // Think of an alternate way 
   //resetAllLiveUsers();
+  deleteAllCaches();
   console.log(`Express server listening on port ${port}`);
 });
+
+
+process.on('beforeExit', () => {
+  deleteAllCaches();
+})
 
 
 function purgeRequireCache() {

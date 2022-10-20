@@ -15,6 +15,7 @@ import {
   deleteShape,
   getInitialDrawData,
   getUser,
+  updateShape,
 } from '../../../server/db';
 import Idb from '~/components/utils/idb';
 import { requireAuth } from '../../../server/auth';
@@ -67,6 +68,9 @@ export const action = async ({ request, params }) => {
   } else if (action === 'delete') {
     console.log('delete action called');
     data = await deleteShape(params.drawId, actionData);
+  } else if (action === 'update') {
+    console.log('update action called');
+    data = await updateShape(params.drawId, actionData);
   }
 
   return json({ data, action });
