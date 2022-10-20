@@ -13,7 +13,7 @@ import MoveTool from './Shapes/MoveTool';
 import Rect from './Shapes/Rectangle';
 import TextTool from './TextTool/TextTool';
 import { drawDiamond, drawText } from './utils/drawShapes';
-import { getElementsAtPosition } from './utils/getElementsAtPosition';
+import { getChalkRectValues, getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
 import UserActivity from './UserActivity/UserActivity';
 
@@ -74,6 +74,7 @@ class MainComponent extends React.PureComponent {
     this.zoomOut = this.zoomOut.bind(this);
     this.addShape = this.addShape.bind(this);
     this.removeShape = this.removeShape.bind(this);
+    this.strokeOuterRect = this.strokeOuterRect.bind(this);
 
     //this.idb = new Idb();
 
@@ -440,6 +441,7 @@ class MainComponent extends React.PureComponent {
   }
 
   redraw() {
+    // TODO: If the shape is outside the scrolling area skip the draw process(Possible Improvementt)
     console.log('redraw')
     let { selectedTheme, shapes, scrollX, scrollY, baseLineHeight, baseFontSize } = this.state;
     this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
@@ -505,6 +507,7 @@ class MainComponent extends React.PureComponent {
 
     // clear the present canvas
     this.mainContext.clearRect(0, 0, this.mainCanvas.current.width, this.mainCanvas.current.height);
+    console.log(this.tempContext.getImageData(0, 0, this.mainCanvas.current.width, this.mainCanvas.current.height))
     this.mainContext.drawImage(this.tempCanvas.current, 0, 0);
     this.tempContext.restore();
     this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
@@ -605,15 +608,11 @@ class MainComponent extends React.PureComponent {
       console.log(selectedElement);
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + scrollY;
-          this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
+          let { x, y, width, height } = this.selectedElement;
+          this.strokeOuterRect(x, y, width, height);
         } else if (this.selectedElement.type === 'line' || this.selectedElement.type === 'arrow') {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + scrollY;
-          this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
+          let { startX, startY, width, height } = this.selectedElement;
+          this.strokeOuterRect(startX, startY, width, height);
         } else if (this.selectedElement.type === 'circle') {
           let x = this.changeFromOneScalingFactor(this.selectedElement.x) + scrollX;
           let y = this.changeFromOneScalingFactor(this.selectedElement.y) + scrollY;
@@ -622,18 +621,26 @@ class MainComponent extends React.PureComponent {
           this.tempContext.arc(x, y, this.changeFromOneScalingFactor(this.selectedElement.radius) + 10, 0, 2 * Math.PI);
           this.tempContext.stroke();
         } else if (this.selectedElement.type === 'diamond') {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.startX) + scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.startY) + scrollY;
-          this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width) + 10, this.changeFromOneScalingFactor(this.selectedElement.height) + 10);
+          let { startX, startY, width, height } = this.selectedElement;
+          this.strokeOuterRect(startX, startY, width, height);
         } else if (this.selectedElement.type === 'text') {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + scrollY;
-          this.tempContext.setLineDash([6]);
-          this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(this.selectedElement.width), this.changeFromOneScalingFactor(this.selectedElement.height));
+          let { x, y, width, height } = this.selectedElement;
+          this.strokeOuterRect(x, y, width, height);
+        } else if (this.selectedElement.type === 'chalk') {
+          let [minX, minY, maxX, maxY] = getChalkRectValues(this.selectedElement.drawPoints);
+          this.strokeOuterRect(minX, minY, maxX - minX, maxY - minY);
         }
       }
     }
+  }
+
+
+  strokeOuterRect(elementX, elementY, width, height) {
+    let { scrollX, scrollY } = this.state;
+    let x = this.changeFromOneScalingFactor(elementX) + scrollX;
+    let y = this.changeFromOneScalingFactor(elementY) + scrollY;
+    this.tempContext.setLineDash([6]);
+    this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(width), this.changeFromOneScalingFactor(height));
   }
 
   onWheelMove(e) {

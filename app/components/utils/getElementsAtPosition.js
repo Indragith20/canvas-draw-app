@@ -108,6 +108,38 @@ function getElementsAtPosition(x, y, shapes) {
         }
       } else if (shape.type === 'chalk') {
         // Implement divide and conquer ??
+        let isMatched = false
+        // shape.drawPoints.reduce((prev, curr) => {
+        //   if ((prev.x < x && x > curr.x) && (prev.y < y && y > curr.y)) {
+        //     isMatched = true;
+        //   }
+        // }, { x: 0, y: 0 });
+        for (let i = 0; i < shape.drawPoints.length - 1; i++) {
+          // let lessX = shape.drawPoints[i].x;
+          // let greatX = shape.drawPoints[i + 1] ? shape.drawPoints[i + 1].x : shape.drawPoints[0]
+          let isIncreasingX = shape.drawPoints[i].x <= shape.drawPoints[i + 1].x;
+          let isIncreasingY = shape.drawPoints[i].y <= shape.drawPoints[i + 1].y;
+          let firstCondition, secondCondition;
+          if (isIncreasingX) {
+            firstCondition = (shape.drawPoints[i].x <= x && x <= shape.drawPoints[i + 1].x);
+          } else {
+            firstCondition = (shape.drawPoints[i].x >= x && x >= shape.drawPoints[i + 1].x)
+          }
+          if (isIncreasingY) {
+            secondCondition = (shape.drawPoints[i].y <= y && y <= shape.drawPoints[i + 1].y);
+          } else {
+            secondCondition = (shape.drawPoints[i].y >= y && y >= shape.drawPoints[i + 1].y);
+          }
+          if (firstCondition && secondCondition) {
+            console.log("Matching coordintes", x, y);
+            console.log("Matched coordintes - x ==>", shape.drawPoints[i].x, shape.drawPoints[i + 1].x);
+            console.log("Matched coordintes - y ==>", shape.drawPoints[i].y, shape.drawPoints[i + 1].y);
+            isMatched = true;
+          }
+        }
+        if (isMatched) {
+          returnElement = shape;
+        }
       }
 
     })
@@ -119,5 +151,21 @@ function getDistance(p1X, p1Y, p2X, p2Y) {
   return Math.sqrt(Math.pow(p1X - p2X, 2) + Math.pow(p1Y - p2Y, 2))
 }
 
+function getChalkRectValues(points) {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
 
-export { getElementsAtPosition, getDistance };
+  for (const { x, y } of points) {
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
+  }
+
+  return [minX, minY, maxX, maxY];
+}
+
+
+export { getElementsAtPosition, getDistance, getChalkRectValues };
