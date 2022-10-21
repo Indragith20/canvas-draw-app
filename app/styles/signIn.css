@@ -1,0 +1,120 @@
+.main-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0.5rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+  gap: 32px;
+}
+
+.logo {
+  flex: 1;
+  width: clamp(100px, 200px, 400px);
+}
+
+.banner {
+  width: clamp(100px, 200px, 400px);
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+a:active {
+  text-decoration: none;
+}
+
+.main-header-link {
+  /* font-size: clamp(.01rem,1rem, 1.25rem); */
+  font-size: 1rem;
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
+  align-self: center;
+}
+
+.signin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 5rem;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  width: clamp(min(10vw, 20rem), 600px, 600px);
+  padding: 10px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+}
+
+.form-header {
+  margin-bottom: 1.75rem;
+  font-size: 1rem;
+  font-size: clamp(1rem, 0.95rem + 0.75vw, 2rem);
+}
+
+.label {
+  font-size: 1rem;
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
+}
+
+.input {
+  width: 100%;
+  padding: 12px 12px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border: 3px solid #ccc;
+  -webkit-transition: 0.5s;
+  transition: 0.5s;
+  outline: none;
+}
+
+.fieldset {
+  padding: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border: none;
+  width: 100%;
+  /* box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px; */
+  /* box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px; */
+  /* box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px; */
+  box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
+}
+
+.input:focus {
+  border: 3px solid #555;
+}
+
+.button {
+  border-radius: 4px;
+  border: none;
+  color: black;
+  width: 100%;
+  text-align: center;
+  font-size: 1rem;
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
+  font-weight: bold;
+  padding: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+p{
+  margin-top: 20px;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.join-link {
+  text-decoration: underline;
+}

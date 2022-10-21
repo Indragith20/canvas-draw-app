@@ -7,9 +7,25 @@ import {
   Scripts,
   ScrollRestoration,
 } from '@remix-run/react';
+import styles from './styles/global.css';
 
+export function links() {
+  return [
+    { rel: 'stylesheet', href: styles },
+    {
+      rel: 'preconnect',
+      href: 'https://fonts.googleapis.com',
+      crossOrgin: true,
+    },
+    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: true },
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Mali:ital,wght@0,200;0,300;0,400;1,200&display=swap',
+    },
+  ];
+}
 export function meta() {
-  return { title: 'New Remix App' };
+  return { title: 'Draw Anything' };
 }
 
 export default function App() {
@@ -18,7 +34,7 @@ export default function App() {
       <head>
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
-        <title>Whiteboard Application</title>
+        <title>Draw Anything</title>
         <Meta />
         <Links />
       </head>

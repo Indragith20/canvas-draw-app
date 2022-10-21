@@ -70,7 +70,7 @@ export default function Login() {
         </button>
       </Form>
       <p>
-        Do you want to <Link to='/login'>login</Link>?
+        Do you want to <Link to='/SignIn'>login</Link>?
       </p>
     </div>
   );

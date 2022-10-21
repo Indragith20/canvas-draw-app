@@ -4,6 +4,10 @@ import { addCollaborator, addRoomToUser } from 'server/db';
 
 import { checkSessionCookie, signIn } from '../../server/auth';
 import { commitSession, getSession } from '../sessions';
+import styles from '../styles/signIn.css';
+import banner from '../assets/drawCrop.webp';
+
+export const links = () => [{ rel: 'stylesheet', href: styles }];
 
 export const loader = async ({ request }) => {
   const session = await getSession(request.headers.get('cookie'));
@@ -80,36 +84,69 @@ export default function Login() {
   const action = useActionData();
 
   return (
-    <div>
-      <h1>Login</h1>
-      {action?.error && <p>{action?.error}</p>}
-      <form method='post'>
-        <fieldset disabled={transition.state === 'submitting'}>
-          <input
-            style={{ display: 'block' }}
-            name='email'
-            placeholder='you@example.com'
-            type='email'
-          />
-          <input
-            style={{ display: 'block' }}
-            name='password'
-            placeholder='password'
-            type='password'
-          />
-          <button style={{ display: 'block' }} type='submit'>
-            {transition.state === 'submitting' ? 'Loginnggg...' : 'Login'}
-          </button>
-        </fieldset>
-      </form>
-      <p>
-        Do you want to <Link to='/SignUp'>join</Link>?
-      </p>
-      <p>
-        <Link to='/draw/freedraw' className='text-xl text-blue-600 underline'>
-          Try without Login
-        </Link>
-      </p>
-    </div>
+    <>
+      <header className='main-header'>
+        <div className='logo'>
+          <img src={banner} alt='' className='banner' />
+        </div>
+
+        <div className='main-header-link'>
+          <Link to='/SignUp'>About</Link>
+        </div>
+        <div className='main-header-link'>
+          <Link to='/SignUp'>SignUp</Link>
+        </div>
+        <div className='main-header-link'>
+          <Link to='/SignUp'>Help</Link>
+        </div>
+      </header>
+      <div className='signin-container'>
+        <div className='form-container'>
+          <h1 className='form-header'>Sign In</h1>
+          {action?.error && <p>{action?.error}</p>}
+          <form method='post'>
+            <fieldset
+              className='fieldset'
+              disabled={transition.state === 'submitting'}
+            >
+              <div className='form-field'>
+                <label className='label'>Email Address</label>
+                <input
+                  className='input'
+                  name='email'
+                  placeholder='you@example.com'
+                  type='email'
+                />
+              </div>
+              <div className='form-field'>
+                <label className='label'>Password</label>
+                <input
+                  className='input'
+                  name='password'
+                  placeholder='password'
+                  type='password'
+                />
+              </div>
+
+              <button className='button' type='submit'>
+                {transition.state === 'submitting' ? 'Loginnggg...' : 'Login'}
+              </button>
+            </fieldset>
+          </form>
+          <p>
+            Do you want to{' '}
+            <Link className='join-link' to='/SignUp'>
+              join
+            </Link>
+            ?
+          </p>
+          <p>
+            <Link to='/draw/freedraw' className='join-link'>
+              Try without Login
+            </Link>
+          </p>
+        </div>
+      </div>
+    </>
   );
 }
