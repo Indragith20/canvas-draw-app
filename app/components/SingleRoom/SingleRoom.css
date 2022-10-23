@@ -1,8 +1,28 @@
 .room {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  border: 1px solid grey;
-  width: 100px;
-  height: 100px;
+  justify-content: space-around;
+  width: clamp(300px, 25%, 800px);
+  margin-left: 0.75em;
+  margin-right: 0.75em;
+  height: 10rem;
+  padding: 1rem;
+  box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
+}
+
+.room-link {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.room-details {
+  text-align: center;
+  color: gray;
+  border-top: 1px solid lightgray;
+  width: 100%;
+  padding-top: 1rem;
 }

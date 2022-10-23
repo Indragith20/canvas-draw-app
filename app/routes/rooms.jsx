@@ -1,8 +1,11 @@
 import { json, redirect } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import React from 'react';
+import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { requireAuth } from '../../server/auth';
 import { getRoomDetails, getUser } from '../../server/db';
+
+export const links = () => [...HeaderStyleLinks()];
 
 export async function loader({ request }) {
   const { displayName, uid } = await requireAuth(request);
@@ -27,18 +30,27 @@ export async function loader({ request }) {
   }
 }
 
+const MainRoomLinks = [
+  {
+    link: '/rooms/createRoom',
+    text: 'Create Room'
+  },
+  {
+    link: '/rooms/enterRoom',
+    text: 'Enter Room'
+  },
+  {
+    link: '/rooms',
+    text: 'Room List'
+  }
+];
+
 function Rooms() {
   const data = useLoaderData();
   console.log('Isndie Rooms', data);
   return (
     <>
-      <p>
-        <Link to='/rooms/createRoom'>Create Room</Link>
-      </p>
-      <p>
-        <Link to='/rooms/enterRoom'>Enter Room</Link>
-      </p>
-      <p>Rooms List</p>
+      <Header headerLinks={MainRoomLinks} />
       <Outlet context={data} />
     </>
   );

@@ -6,6 +6,7 @@ import { checkSessionCookie, signIn } from '../../server/auth';
 import { commitSession, getSession } from '../sessions';
 import styles from '../styles/signIn.css';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
+import { headerLinks } from '~/constants/signInLinks';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -88,7 +89,7 @@ export default function Login() {
 
   return (
     <>
-      <Header />
+      <Header headerLinks={headerLinks} />
       <div className='signin-container'>
         <div className='form-container'>
           <h1 className='form-header'>Sign In</h1>

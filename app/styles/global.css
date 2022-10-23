@@ -11,7 +11,7 @@
 html, body {
   height: 100%;
   font-family: 'Mali', cursive;
-
+  /* background-color: black; */
 }
 
 img, picture, video, canvas, svg {
@@ -32,4 +32,20 @@ p, h1, h2, h3, h4, h5, h6 {
   --icon-container-color: #ffffff;
   --selected-tool-color: #dd98d6;
   --background-color: #ffffff;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+a:active {
+  text-decoration: none;
+}
+
+.activeLink {
+  text-decoration: underline;
 }

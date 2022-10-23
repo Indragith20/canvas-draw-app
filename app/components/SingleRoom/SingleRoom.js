@@ -1,5 +1,6 @@
 import { Link } from '@remix-run/react';
 import React from 'react';
+import { formatDate } from '../utils/formatDate';
 import styles from './SingleRoom.css';
 
 
@@ -7,10 +8,21 @@ export function RoomLinks() {
   return [{ rel: 'stylesheet', href: styles }];
 }
 
-export default function SingleRoom({ roomId, roomName }) {
+export default function SingleRoom({ id, roomName, createdAt, createdBy }) {
   return (
-    <Link to={`/draw/${roomId}`} className="room">
-      {roomName}
-    </Link>
+    <div className='room'>
+      <div>
+        {/* Created At {createdAt} */}
+      </div>
+      <div>
+        <Link to={`/draw/${id}`} className='room-link'>
+          {roomName}
+        </Link>
+      </div>
+
+      <div className='room-details'>
+        Created on {formatDate(createdAt)} By {createdBy}
+      </div>
+    </div>
   )
 }

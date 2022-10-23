@@ -15,9 +15,13 @@ export function links() {
     {
       rel: 'preconnect',
       href: 'https://fonts.googleapis.com',
-      crossOrgin: true,
+      crossorgin: 'true',
     },
-    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: true },
+    {
+      rel: 'preconnect',
+      href: 'https://fonts.gstatic.com',
+      crossorigin: 'true',
+    },
     {
       rel: 'stylesheet',
       href: 'https://fonts.googleapis.com/css2?family=Mali:ital,wght@0,200;0,300;0,400;1,200&display=swap',

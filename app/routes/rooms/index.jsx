@@ -5,23 +5,17 @@ import styles from '~/styles/room.css';
 
 export const links = () => [
   ...RoomLinks(),
-  { rel: 'stylesheet', href: styles },
+  { rel: 'stylesheet', href: styles }
 ];
 
 export default function RoomsList() {
   let userData = useOutletContext();
   return (
-    <div>
-      <span>List of Rooms</span>
+    <div className='main-container'>
+      <span className='room-header'>List of Rooms</span>
       <div className='roomContainer'>
         {userData.rooms.map((room) => {
-          return (
-            <SingleRoom
-              key={room.id}
-              roomId={room.id}
-              roomName={room.roomName}
-            />
-          );
+          return <SingleRoom key={room.id} {...room} />;
         })}
       </div>
     </div>

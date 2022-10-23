@@ -1,6 +1,7 @@
 import { json, redirect } from '@remix-run/node';
 import { Form, Link, useActionData, useTransition } from '@remix-run/react';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
+import { headerLinks } from '~/constants/signInLinks';
 import styles from '~/styles/signIn.css';
 
 import { checkSessionCookie, signUp } from '../../server/auth';
@@ -52,7 +53,7 @@ export default function Login() {
   const transition = useTransition();
   return (
     <>
-      <Header />
+      <Header headerLinks={headerLinks} />
       <div className='signin-container'>
         <div className='form-container'>
           <h1 className='form-header'>Join</h1>

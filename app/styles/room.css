@@ -1,5 +1,51 @@
+.main-container {
+  margin: 2rem;
+}
+
+.room-header {
+  font-size: 1.5rem;
+  font-family: Roboto;
+  border-bottom: 1px solid bisque;
+}
+
 .roomContainer {
   display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
+  justify-content: flex-start;
   gap: 10px;
+  margin-top: 2rem;
+}
+
+/* 
+  ##Device = Tablets, Ipads (landscape)
+  ##Screen = B/w 768px to 1024px
+*/
+
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  .roomContainer {
+    justify-content: flex-start;
+  }
+}
+
+/* 
+  ##Device = Low Resolution Tablets, Mobiles (Landscape)
+  ##Screen = B/w 481px to 767px
+*/
+
+@media (min-width: 481px) and (max-width: 767px) {
+  .roomContainer {
+    justify-content: center;
+  }
+}
+
+/* 
+  ##Device = Most of the Smartphones Mobiles (Portrait)
+  ##Screen = B/w 320px to 479px
+*/
+
+@media (min-width: 320px) and (max-width: 480px) {
+  .roomContainer {
+    justify-content: center;
+  }
 }

@@ -1,4 +1,4 @@
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 const dataPoint = (collectionPath) => {
   return getFirestore().collection(collectionPath)
 };
@@ -28,7 +28,7 @@ async function createRoom(userId, userName, roomName) {
     const newRoomRef = db.rooms().doc(newRoomDetailsRef.id);
     addRoomToUser(userId, newRoomRef.id).then(() => {
       let collaboratorPromise = db.collaborators(newRoomRef.id).doc(userId).set({ name: userName, color: 'blue', isActive: true, id: userId });
-      let roomPromise = newRoomDetailsRef.set({ id: newRoomRef.id, roomName });
+      let roomPromise = newRoomDetailsRef.set({ id: newRoomRef.id, roomName, createdAt: new Date(Timestamp.now().toDate()), createdBy: userName });
       let shapePromise = db.shapeCollection(newRoomRef.id).doc('shapeList').set({ shapeList: [] })
       Promise.all([collaboratorPromise, roomPromise, shapePromise]).then(() => {
         console.log("Resolbve", userId);
@@ -244,7 +244,8 @@ function getRoomDetails(roomId) {
       if (!doc.exists) {
         resolve({ data: {} });
       } else {
-        resolve({ ...doc.data() });
+        let data = doc.data();
+        resolve({ ...data, createdAt: data.createdAt.toDate() });
       }
     }).catch(err => {
       reject({ error: err })
