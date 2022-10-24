@@ -8,10 +8,39 @@
   margin: 0;
 }
 
+:root {
+  --icon-color: #000000;
+  --font-size: 24px;
+  --line-height: 32px;
+  --icon-container-color: #ffffff;
+  --selected-tool-color: #dd98d6;
+  --background-color: #ffffff;
+}
+
 html, body {
   height: 100%;
   font-family: 'Mali', cursive;
-  /* background-color: black; */
+  background-color: var(--primary-background);
+  color: var(--primary-font-color);
+}
+
+.dark-background {
+  --primary-background: hsl(210deg, 30%, 8%);
+  /* --primary-background: #b2e5cb; */
+  --primary-font-color: white;
+  /* --primary-box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px; */
+  --primary-box-shadow: rgba(255, 255, 255, 0.1) 0px 0px 5px 0px, rgba(255, 255, 255, 0.1) 0px 0px 1px 0px;
+  --success-color: #3ea389;
+  --primary-border-color: white;
+}
+
+.light-background {
+  --primary-background: rgb(255, 255, 255);
+  /* --primary-background: #b2e5cb; */
+  --primary-font-color: black;
+  --primary-box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+  --success-color: #3ea389;
+  --primary-border-color: black;
 }
 
 img, picture, video, canvas, svg {
@@ -25,18 +54,11 @@ p, h1, h2, h3, h4, h5, h6 {
   overflow-wrap: break-word;
 }
 
-:root {
-  --icon-color: #000000;
-  --font-size: 24px;
-  --line-height: 32px;
-  --icon-container-color: #ffffff;
-  --selected-tool-color: #dd98d6;
-  --background-color: #ffffff;
-}
+
 
 a {
   text-decoration: none;
-  color: black;
+  color: var(--primary-font-color);
 }
 a:hover {
   text-decoration: underline;

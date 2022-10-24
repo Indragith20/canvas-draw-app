@@ -1,27 +1,15 @@
-.signin-container {
+.create-room-container {
   display: flex;
   justify-content: center;
   align-items: center;
   padding-top: 5rem;
-}
-
-.form-container {
-  display: flex;
-  flex-direction: column;
-  width: clamp(min(10vw, 20rem), 600px, 600px);
-  padding: 10px;
+  color: var(--primary-font-color);
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
   margin-top: 1rem;
-}
-
-.form-header {
-  margin-bottom: 1.75rem;
-  font-size: 1rem;
-  font-size: clamp(1rem, 0.95rem + 0.75vw, 2rem);
 }
 
 .label {
@@ -49,17 +37,19 @@
   /* box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px; */
   /* box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px; */
   /* box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px; */
-  box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
+  /* box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px; */
+  border: 2px solid white;
+  border-radius: 1rem;
 }
 
 .input:focus {
-  border: 3px solid #555;
+  border: 3px solid gray;
 }
 
 .button {
   border-radius: 4px;
   border: none;
-  color: black;
+  color: white;
   width: 100%;
   text-align: center;
   font-size: 1rem;
@@ -68,14 +58,5 @@
   padding: 1rem;
   cursor: pointer;
   margin-top: 1rem;
-}
-
-p{
-  margin-top: 20px;
-  font-size: 1.3rem;
-  text-align: center;
-}
-
-.join-link {
-  text-decoration: underline;
+  background-color: var(--success-color);
 }

@@ -2,11 +2,10 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: 0.5rem;
-  padding-left: 2rem;
-  padding-right: 2rem;
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+  padding: 2rem;
+  box-shadow: var(--primary-box-shadow);
   gap: 32px;
+  color: var(--primary-font-color);
 }
 
 .logo {
@@ -23,4 +22,10 @@
   font-size: 1rem;
   font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
   align-self: center;
+  color: var(--primary-font-color);
+}
+
+.theme-icon {
+  cursor: pointer;
+  transition: all 1s ease-in-out;
 }

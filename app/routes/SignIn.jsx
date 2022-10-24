@@ -4,20 +4,20 @@ import { addCollaborator, addRoomToUser } from 'server/db';
 
 import { checkSessionCookie, signIn } from '../../server/auth';
 import { commitSession, getSession } from '../sessions';
-import styles from '../styles/signIn.css';
+import styles from '../styles/form.css';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { headerLinks } from '~/constants/signInLinks';
 
 export const links = () => [
   ...HeaderStyleLinks(),
-  { rel: 'stylesheet', href: styles },
+  { rel: 'stylesheet', href: styles }
 ];
 
 export const loader = async ({ request }) => {
   const session = await getSession(request.headers.get('cookie'));
   const { uid } = await checkSessionCookie(session);
   const headers = {
-    'Set-Cookie': await commitSession(session),
+    'Set-Cookie': await commitSession(session)
   };
   if (uid) {
     return redirect('/rooms', { headers });
@@ -53,28 +53,28 @@ export const action = async ({ request, params }) => {
           addCollaborator(roomId, {
             name: user.displayName,
             isActive: true,
-            id: user.uid,
+            id: user.uid
           })
         );
         promises.push(addRoomToUser(user.uid, roomId));
         await Promise.all(promises);
         return redirect(redirectUrl, {
           headers: {
-            'Set-Cookie': await commitSession(session),
-          },
+            'Set-Cookie': await commitSession(session)
+          }
         });
       } else {
         return redirect(redirectUrl, {
           headers: {
-            'Set-Cookie': await commitSession(session),
-          },
+            'Set-Cookie': await commitSession(session)
+          }
         });
       }
     } else {
       return redirect('/rooms', {
         headers: {
-          'Set-Cookie': await commitSession(session),
-        },
+          'Set-Cookie': await commitSession(session)
+        }
       });
     }
   } catch (error) {
@@ -90,7 +90,7 @@ export default function Login() {
   return (
     <>
       <Header headerLinks={headerLinks} />
-      <div className='signin-container'>
+      <div className='form-main-container'>
         <div className='form-container'>
           <h1 className='form-header'>Sign In</h1>
           {action?.error && <p>{action?.error}</p>}
