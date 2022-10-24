@@ -1,14 +1,22 @@
 import { json, redirect } from '@remix-run/node';
-import { Form, Link, useActionData } from '@remix-run/react';
+import { Form, Link, useActionData, useTransition } from '@remix-run/react';
+import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
+import { headerLinks } from '~/constants/signInLinks';
+import styles from '~/styles/form.css';
 
 import { checkSessionCookie, signUp } from '../../server/auth';
 import { commitSession, getSession } from '../sessions';
+
+export const links = () => [
+  ...HeaderStyleLinks(),
+  { rel: 'stylesheet', href: styles }
+];
 
 export const loader = async ({ request }) => {
   const session = await getSession(request.headers.get('cookie'));
   const { uid } = await checkSessionCookie(session);
   const headers = {
-    'Set-Cookie': await commitSession(session),
+    'Set-Cookie': await commitSession(session)
   };
   if (uid) {
     return redirect('/rooms', { headers });
@@ -31,8 +39,8 @@ export const action = async ({ request }) => {
     session.set('session', sessionCookie);
     return redirect('/rooms', {
       headers: {
-        'Set-Cookie': await commitSession(session),
-      },
+        'Set-Cookie': await commitSession(session)
+      }
     });
   } catch (error) {
     console.error(error);
@@ -42,36 +50,56 @@ export const action = async ({ request }) => {
 
 export default function Login() {
   const action = useActionData();
+  const transition = useTransition();
   return (
-    <div>
-      <h1>Join</h1>
-      {action?.error && <p>{action.error}</p>}
-      <Form method='post'>
-        <input
-          style={{ display: 'block' }}
-          name='name'
-          placeholder='Peter'
-          type='text'
-        />
-        <input
-          style={{ display: 'block' }}
-          name='email'
-          placeholder='you@example.com'
-          type='email'
-        />
-        <input
-          style={{ display: 'block' }}
-          name='password'
-          placeholder='password'
-          type='password'
-        />
-        <button style={{ display: 'block' }} type='submit'>
-          Join
-        </button>
-      </Form>
-      <p>
-        Do you want to <Link to='/login'>login</Link>?
-      </p>
-    </div>
+    <>
+      <Header headerLinks={headerLinks} />
+      <div className='form-main-container'>
+        <div className='form-container'>
+          <h1 className='form-header'>Join</h1>
+          {action?.error && <p>{action.error}</p>}
+          <Form method='post'>
+            <fieldset
+              className='fieldset'
+              disabled={transition.state === 'submitting'}
+            >
+              <div className='form-field'>
+                <label className='label'>Name</label>
+                <input
+                  className='input'
+                  name='name'
+                  placeholder='Peter'
+                  type='text'
+                />
+              </div>
+              <div className='form-field'>
+                <label className='label'>Email Address</label>
+                <input
+                  className='input'
+                  name='email'
+                  placeholder='you@example.com'
+                  type='email'
+                />
+              </div>
+              <div className='form-field'>
+                <label className='label'>Password</label>
+                <input
+                  className='input'
+                  name='password'
+                  placeholder='password'
+                  type='password'
+                />
+              </div>
+              <button className='button' type='submit'>
+                Join
+              </button>
+            </fieldset>
+          </Form>
+          <p>
+            Do you want to <Link to='/SignIn'>login</Link>?
+          </p>
+        </div>
+      </div>
+    </>
   );
 }

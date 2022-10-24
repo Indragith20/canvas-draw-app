@@ -1,8 +1,47 @@
 .room {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  border: 1px solid grey;
-  width: 100px;
-  height: 100px;
+  justify-content: space-around;
+  width: clamp(300px, 25%, 800px);
+  margin-left: 0.75em;
+  margin-right: 0.75em;
+  height: 10rem;
+  padding: 1rem;
+  /* box-shadow: rgba(33, 215, 36, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px; */
+  
+  border-left: 3px solid hsl(230deg, 100%, 69%);
+  border-radius: 6px 6px 6px 3px;
+  
+}
+
+.dark-background .room {
+  border-color: hsl(230deg, 100%, 69%);
+  background-color: hsl(210deg, 38%, 15%);
+}
+
+.light-background .room {
+  border-color: initial;
+  background-color: white;
+  border: 1px solid black;
+  border-left: 3px solid black;
+}
+
+.room-name {
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+}
+.room-link {
+  font-size: 1.75rem;
+}
+
+.room-details {
+  text-align: center;
+  color: gray;
+  border-top: 1px solid lightgray;
+  width: 100%;
+  padding-top: 1rem;
 }

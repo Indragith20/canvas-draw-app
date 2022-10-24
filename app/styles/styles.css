@@ -1,12 +1,6 @@
 @charset "UTF-8";
 /* CSS Document */
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
   /* background: url(../images/bg.gif) repeat-x #f8f8f8; */
   color: #d7d7d7;
@@ -14,15 +8,7 @@ body {
   font-size: 24px;
   line-height: 32px;
   overscroll-behavior: contain;
-}
-
-:root {
-  --icon-color: #000000;
-  --font-size: 24px;
-  --line-height: 32px;
-  --icon-container-color: #ffffff;
-  --selected-tool-color: #dd98d6;
-  --background-color: #ffffff;
+  -webkit-font-smoothing: antialiased;
 }
 
 

@@ -5,11 +5,13 @@ import {
   useTransition,
   Link,
   useOutletContext,
-  useFetcher,
+  useFetcher
 } from '@remix-run/react';
+import styles from '../../styles/form.css';
 import { createRoom } from '../../../server/db';
 import { json, redirect } from '@remix-run/node';
 import { commitSession, getSession } from '../../sessions';
+import ValidationMessage from '~/components/ValidationMessage/ValidationMessage';
 
 // export async function loader({ request }) {
 //   const session = await getSession(request.headers.get('Cookie'));
@@ -23,6 +25,13 @@ import { commitSession, getSession } from '../../sessions';
 //   return null;
 // }
 
+export const links = () => [
+  {
+    rel: 'stylesheet',
+    href: styles
+  }
+];
+
 export async function action({ request }) {
   const body = await request.formData();
   let name = body.get('roomName');
@@ -34,8 +43,8 @@ export async function action({ request }) {
   console.log(draw);
   return redirect(`/draw/${draw.id}`, {
     headers: {
-      'Set-Cookie': await commitSession(session),
-    },
+      'Set-Cookie': await commitSession(session)
+    }
   });
 }
 
@@ -56,37 +65,42 @@ export default function CreateRoom() {
   }
 
   return (
-    <div>
-      <fieldset disabled={fetcher.state === 'submitting'}>
-        <p>
-          <label>
-            Name:{' '}
-            <input
-              name='name'
-              type='text'
-              value={name}
-              defaultValue={actionData ? actionData.values.name : undefined}
-              style={{
-                borderColor: actionData?.errors.name ? 'red' : '',
-              }}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </label>
-        </p>
+    <div className='form-main-container'>
+      <div className='form-container'>
+        <form>
+          <fieldset
+            disabled={fetcher.state === 'submitting'}
+            className='fieldset'
+          >
+            <div className='form-field'>
+              <label className='label'>Name: </label>
+              <input
+                name='name'
+                type='text'
+                className='input'
+                value={name}
+                defaultValue={actionData ? actionData.values.name : undefined}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
 
-        {actionData?.errors.name ? (
-          <ValidationMessage
-            isSubmitting={fetcher.state === 'submitting'}
-            error={actionData?.errors?.name}
-          />
-        ) : null}
+            {actionData?.errors.name ? (
+              <ValidationMessage
+                isSubmitting={fetcher.state === 'submitting'}
+                error={actionData?.errors?.name}
+              />
+            ) : null}
 
-        <p>
-          <button onClick={onClickSubmit}>
-            {fetcher.state === 'submitting' ? 'Configuring...' : 'Create Room'}
-          </button>
-        </p>
-      </fieldset>
+            <p>
+              <button className='button' onClick={onClickSubmit}>
+                {fetcher.state === 'submitting'
+                  ? 'Configuring...'
+                  : 'Create Room'}
+              </button>
+            </p>
+          </fieldset>
+        </form>
+      </div>
     </div>
   );
 }

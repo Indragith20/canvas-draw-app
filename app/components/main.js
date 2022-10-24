@@ -691,7 +691,7 @@ class MainComponent extends React.PureComponent {
 
   removeShape(shapeTobeDeleted) {
     let updatedShapes = this.state.shapes.filter(shape => shape.id !== shapeTobeDeleted.id);
-    this.setState({ updatedShapes }, () => {
+    this.setState({ shapes: updatedShapes }, () => {
       this.redraw();
     })
   }
