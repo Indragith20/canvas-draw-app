@@ -1,0 +1,13 @@
+.url-field {
+  display: flex;
+  gap: 1rem;
+}
+
+.label {
+  margin-bottom: 2rem;
+}
+
+.origin-url {
+  text-align: center;
+  align-self: center;
+}
