@@ -1,0 +1,62 @@
+.loader {
+  position: fixed; 
+  right: 0;
+  left: 0; 
+  top: 0; 
+  z-index: 50; 
+  height: 0.25rem; 
+
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+
+
+.inner-loader {
+  /* background-image: linear-gradient(to right, var(--tw-gradient-stops)); 
+  background-color: #3B82F6;  */
+  background-image: linear-gradient(
+    45deg,
+    hsl(217deg 91% 60%) 0%,
+    hsl(206deg 100% 48%) 11%,
+    hsl(205deg 100% 48%) 23%,
+    hsl(203deg 100% 48%) 34%,
+    hsl(200deg 100% 47%) 46%,
+    hsl(198deg 100% 46%) 57%,
+    hsl(196deg 100% 45%) 68%,
+    hsl(194deg 100% 44%) 79%,
+    hsl(191deg 100% 43%) 90%,
+    hsl(189deg 94% 43%) 100%
+  );
+
+  transition-property: all; 
+  transition-duration: 500ms; 
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); 
+  height: 100%;
+}
+
+.animationComplete {
+  transition-property: none; 
+  width: 0; 
+  opacity: 0; 
+}
+
+.submitting {
+  width: 33.333333%; 
+}
+
+.loading {
+  width: 83.333333%; 
+}
+
+.idle {
+  width: 100%;
+}

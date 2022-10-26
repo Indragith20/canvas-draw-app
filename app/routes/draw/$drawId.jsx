@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { json, redirect } from '@remix-run/node';
-import { useLoaderData, useFetcher, useActionData } from '@remix-run/react';
+import {
+  useLoaderData,
+  useFetcher,
+  useActionData,
+  useCatch,
+  Link
+} from '@remix-run/react';
 import io from 'socket.io-client';
 
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
@@ -15,20 +21,22 @@ import {
   deleteShape,
   getInitialDrawData,
   getUser,
-  updateShape,
+  updateShape
 } from '../../../server/db';
 import Idb from '~/components/utils/idb';
 import { requireAuth } from '../../../server/auth';
 import { UserActivityLinks } from '~/components/UserActivity/UserActivity';
+import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 
 export const links = () => [
+  ...HeaderStyleLinks(),
   ...MainComponentStyles(),
   ...SelectToolLinks(),
   ...ConfigToolLinks(),
   ...TextToolLinks(),
   ...ZoomContainerLinks(),
   ...UserActivityLinks(),
-  { rel: 'stylesheet', href: styles },
+  { rel: 'stylesheet', href: styles }
 ];
 
 export const loader = async ({ request, params }) => {
@@ -40,21 +48,28 @@ export const loader = async ({ request, params }) => {
   if (userData.error) {
     // Not signed in user
     const searchParams = new URLSearchParams([
-      ['redirectTo', `/draw/${params.drawId}`],
+      ['redirectTo', `/draw/${params.drawId}`]
     ]);
     console.log('Redirectibng to signin');
     return redirect(`/SignUp?${searchParams}`, {
       headers: {
-        referrer: `/draw/${params.drawId}`,
-      },
+        referrer: `/draw/${params.drawId}`
+      }
     });
   } else {
-    let drawData = await getInitialDrawData(params.drawId);
-    return json({
-      ...drawData,
-      currentUser: userData.data,
-      roomId: params.drawId,
-    });
+    try {
+      let drawData = await getInitialDrawData(params.drawId);
+      return json({
+        ...drawData,
+        currentUser: userData.data,
+        roomId: params.drawId
+      });
+    } catch (err) {
+      console.log('Inside Response', err);
+      throw new Response('Not Found', {
+        status: 404
+      });
+    }
   }
 };
 
@@ -76,6 +91,33 @@ export const action = async ({ request, params }) => {
   return json({ data, action });
 };
 
+export function CatchBoundary() {
+  const caught = useCatch();
+  return (
+    <>
+      <Header headerLinks={[]} />
+      <div className='error-container'>
+        <div className='error-page'>
+          <span>Requested Url Not Found</span>
+          <p>
+            Go Back to &nbsp;
+            <Link className='join-link' to='/SignUp'>
+              Home
+            </Link>
+            ?
+          </p>
+          Or
+          <p>
+            <Link to='/draw/freedraw' className='join-link'>
+              Try without Login
+            </Link>
+          </p>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function DrawIndex() {
   const fetcher = useFetcher();
   const { currentUser, shapes, users, roomId } = useLoaderData();
@@ -95,7 +137,7 @@ function DrawIndex() {
     function onConfirm() {
       socket.emit('setliveuser', {
         roomId: roomId,
-        userDetails: { id, name, isActive: true },
+        userDetails: { id, name, isActive: true }
       });
     }
 

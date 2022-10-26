@@ -1,0 +1,21 @@
+.url-field {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+.label {
+  margin-bottom: 2rem;
+}
+
+.origin-url {
+  text-align: center;
+  align-self: center;
+}
+
+.input-with-error {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
