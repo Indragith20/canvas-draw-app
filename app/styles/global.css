@@ -15,6 +15,8 @@
   --icon-container-color: #ffffff;
   --selected-tool-color: #dd98d6;
   --background-color: #ffffff;
+  --text-font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
+  --failure-color: #ff9999;
 }
 
 html, body {
@@ -70,4 +72,8 @@ a:active {
 
 .activeLink {
   text-decoration: underline;
+}
+
+.error-msg {
+  color: var(--failure-color)
 }

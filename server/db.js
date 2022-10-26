@@ -27,10 +27,11 @@ async function createRoom(userId, userName, roomName) {
     const newRoomDetailsRef = db.roomDetails().doc();
     const newRoomRef = db.rooms().doc(newRoomDetailsRef.id);
     addRoomToUser(userId, newRoomRef.id).then(() => {
+      let mainRoomPromise = newRoomRef.set({ isCreated: true });
       let collaboratorPromise = db.collaborators(newRoomRef.id).doc(userId).set({ name: userName, color: 'blue', isActive: true, id: userId });
       let roomPromise = newRoomDetailsRef.set({ id: newRoomRef.id, roomName, createdAt: new Date(Timestamp.now().toDate()), createdBy: userName });
       let shapePromise = db.shapeCollection(newRoomRef.id).doc('shapeList').set({ shapeList: [] })
-      Promise.all([collaboratorPromise, roomPromise, shapePromise]).then(() => {
+      Promise.all([mainRoomPromise, collaboratorPromise, roomPromise, shapePromise]).then(() => {
         console.log("Resolbve", userId);
         resolve({ id: newRoomRef.id, userId: userId });
       }).catch(err => {
@@ -121,19 +122,6 @@ async function updateCollaborator(roomId, collaborator) {
 
 function getShapes(roomId) {
   return new Promise((resolve, reject) => {
-    // db.shapeCollection(roomId).get().then((snapshot) => {
-    //   let data = [];
-    //   if (snapshot.empty) {
-    //     data = [];
-    //   } else {
-    //     snapshot.forEach(doc => {
-    //       data.push(doc.data());
-    //     })
-    //   }
-    //   resolve(data);
-    // }).catch(err => {
-    //   reject(err);
-    // })
     db.shapeCollection(roomId).get().then((snapshot) => {
       let data = [];
       if (snapshot.empty) {
@@ -171,10 +159,27 @@ function getUsers(roomId) {
 
 function getInitialDrawData(roomId) {
   return new Promise((resolve, reject) => {
-    Promise.all([getShapes(roomId), getUsers(roomId)]).then(([shapes, users]) => {
-      resolve({ shapes: shapes && shapes.length > 0 ? shapes[0].shapeList : [], users: users && users.length > 0 ? users : [] })
-    }).catch((err) => {
-      reject({ message: err });
+    isRoomExist(roomId).then(() => {
+      Promise.all([getShapes(roomId), getUsers(roomId)]).then(([shapes, users]) => {
+        resolve({ shapes: shapes && shapes.length > 0 ? shapes[0].shapeList : [], users: users && users.length > 0 ? users : [] })
+      }).catch((err) => {
+        reject({ message: err });
+      })
+    }).catch(() => {
+      reject({ message: 'Room Does not Exist' })
+    });
+  });
+}
+
+function isRoomExist(roomId) {
+  console.log('Room Exist checking', roomId);
+  return new Promise((resolve, reject) => {
+    db.rooms().doc(roomId).get().then((snapshot) => {
+      if (snapshot.exists) {
+        resolve(true)
+      } else {
+        reject(false);
+      }
     })
   });
 }
@@ -351,6 +356,7 @@ function resetAllLiveUsers() {
 }
 
 export {
+  isRoomExist,
   addUser,
   addLiveUsers,
   addRoomToUser,

@@ -58,6 +58,10 @@
   border: 3px solid gray;
 }
 
+.form-error {
+  border: 3px solid var(--failure-color);
+}
+
 .button {
   border-radius: 4px;
   border: none;
