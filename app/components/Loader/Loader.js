@@ -1,3 +1,4 @@
+import React from 'react';
 import { useTransition } from "@remix-run/react";
 import styles from './Loader.css';
 
