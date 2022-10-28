@@ -68,7 +68,6 @@ class MainComponent extends React.PureComponent {
     this.onWheelMove = this.onWheelMove.bind(this);
     this.imgUpdate = this.imgUpdate.bind(this);
     this.drawImage = this.drawImage.bind(this);
-    this.updateTheme = this.updateTheme.bind(this);
     this.onResize = this.onResize.bind(this);
     this.zoomIn = this.zoomIn.bind(this);
     this.zoomOut = this.zoomOut.bind(this);
@@ -103,21 +102,11 @@ class MainComponent extends React.PureComponent {
 
   componentDidMount() {
 
-    // this.idb.getDataFromIdb('app-state-persist').then((data) => {
-    //   if (data && data.length >= 0) {
-    //     this.setState({ shapes: data }, () => {
-    //       this.id = data.length + 1;
-    //       this.redraw();
-    //     })
-    //   }
-    // }).catch(err => {
-    //   console.log(err);
-    // })
-
     this.setState({ canvasWidth: window.innerWidth, canvasHeight: window.innerHeight }, () => {
       this.redraw();
     });
-    let { selectedTheme, selectedTool } = this.state;
+    let { selectedTool } = this.state;
+    let { selectedTheme } = this.props;
     this.mainContext = this.mainCanvas.current.getContext('2d');
     this.tempContext = this.tempCanvas.current.getContext('2d');
     this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';// Default line color. 
@@ -141,6 +130,13 @@ class MainComponent extends React.PureComponent {
     this.addEventListeners();
 
 
+  }
+
+
+  componentDidUpdate(prevprops) {
+    if (prevprops.selectedTheme !== this.props.selectedTheme) {
+      this.redraw();
+    }
   }
 
   componentWillUnmount() {
@@ -217,7 +213,8 @@ class MainComponent extends React.PureComponent {
   updateTool(value, id = null) {
     if (this.tools[value]) {
       this.setState({ selectedTool: value }, () => {
-        let { selectedTool, selectedTheme } = this.state;
+        let { selectedTool } = this.state;
+        let { selectedTheme } = this.props;
         let selectedOne = this.tools[selectedTool];
         if (!selectedOne || selectedOne === 'select') {
           this.tool = null;
@@ -293,7 +290,8 @@ class MainComponent extends React.PureComponent {
           let updatedShapes = shapes.filter(shape => shape.id !== elementSelected.id);
           //redrawig without element selected
           this.setState({ shapes: updatedShapes, selectedTool: 'move' }, () => {
-            let { shapes, scalingFactor, selectedTheme } = this.state;
+            let { shapes, scalingFactor } = this.state;
+            let { selectedTheme } = this.props;
             let { updateDb } = this.props;
             updateDb(shapes, 'app-state-persist');
             this.redraw();
@@ -443,7 +441,8 @@ class MainComponent extends React.PureComponent {
   redraw() {
     // TODO: If the shape is outside the scrolling area skip the draw process(Possible Improvementt)
     console.log('redraw')
-    let { selectedTheme, shapes, scrollX, scrollY, baseLineHeight, baseFontSize } = this.state;
+    let { shapes, scrollX, scrollY, baseLineHeight, baseFontSize } = this.state;
+    let { selectedTheme } = this.props;
     this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
     this.tempContext.restore();
     this.tempContext.setLineDash([]);
@@ -525,7 +524,8 @@ class MainComponent extends React.PureComponent {
     this.resetDraggingValues();
 
     this.setState({ selectedTool: 'text' }, () => {
-      let { scrollX, scrollY, selectedTheme, scalingFactor } = this.state;
+      let { scrollX, scrollY, scalingFactor } = this.state;
+      let { selectedTheme } = this.props;
       this.resetDraggingValues();
 
       let textId = null;
@@ -696,32 +696,12 @@ class MainComponent extends React.PureComponent {
     })
   }
 
-
-  updateTheme(e) {
-    e.stopPropagation();
-    this.setState(
-      (prevstate) => {
-        return {
-          ...prevstate,
-          selectedTheme: prevstate.selectedTheme === 'dark' ? 'light' : 'dark'
-        }
-      }, () => {
-        this.tempContext.strokeStyle = this.state.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';// Default line color. 
-        this.tempContext.lineWidth = 1.0;// Default stroke weight. 
-
-        // Fill transparent canvas with dark grey (So we can use the color to erase). 
-        this.tempContext.fillStyle = this.state.selectedTheme === 'dark' ? "#424242" : '#FFFFFF';
-        this.tempContext.fillRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);//Top, Left, Width, Height of canvas
-        this.redraw();
-      })
-  }
-
   render() {
-    let { baseFontSize, baseLineHeight, selectedTool, selectedTheme, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY } = this.state;
+    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY } = this.state;
     return (
       <div
         style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: `${selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
-        className={`${selectedTheme === 'dark' ? 'dark-mode' : 'light-mode'}`}>
+      >
         <div id="wrapper" >
           <div id="blackboardPlaceholder">
             <canvas id="drawingCanvas" ref={this.mainCanvas} width={canvasWidth} height={canvasHeight}>
@@ -745,7 +725,7 @@ class MainComponent extends React.PureComponent {
 
         </div>
         <SelectTool selectedTool={selectedTool} updateTool={this.onClickTool} />
-        <ConfigTool toggleTheme={this.updateTheme} />
+        <ConfigTool />
         <TextTool />
         <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
       </div>

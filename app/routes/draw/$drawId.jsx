@@ -27,9 +27,14 @@ import Idb from '~/components/utils/idb';
 import { requireAuth } from '../../../server/auth';
 import { UserActivityLinks } from '~/components/UserActivity/UserActivity';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
+import { useTheme } from '~/contexts/themeContext';
+import { LogoLinks } from '~/components/MainHeader/Logo';
+import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 
 export const links = () => [
   ...HeaderStyleLinks(),
+  ...LogoLinks(),
+  ...ThemeSwitcherLinks(),
   ...MainComponentStyles(),
   ...SelectToolLinks(),
   ...ConfigToolLinks(),
@@ -123,6 +128,7 @@ function DrawIndex() {
   const { currentUser, shapes, users, roomId } = useLoaderData();
   let { id, name } = currentUser;
   const actionData = useActionData();
+  const { theme } = useTheme();
 
   console.log(shapes, users, currentUser, roomId);
   console.log(actionData);
@@ -192,6 +198,7 @@ function DrawIndex() {
           mouseMove={onMouseMove}
           updateShape={updateShape}
           updateDb={Idb.updateDb}
+          selectedTheme={theme}
         />
       </SocketProvider>
     </div>

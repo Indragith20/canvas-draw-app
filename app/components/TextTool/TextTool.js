@@ -7,7 +7,7 @@ export function TextToolLinks() {
 
 function TextTool() {
   return (
-    <div style={{ color: 'black' }} className="textTool" id="textBoxContainerId">
+    <div className="textTool" id="textBoxContainerId">
       <div className="textarea" id="textAreaId" role="textbox" contentEditable />
     </div>
   );

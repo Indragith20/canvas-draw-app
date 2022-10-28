@@ -34,6 +34,13 @@ html, body {
   --primary-box-shadow: rgba(255, 255, 255, 0.1) 0px 0px 5px 0px, rgba(255, 255, 255, 0.1) 0px 0px 1px 0px;
   --success-color: #3ea389;
   --primary-border-color: white;
+
+
+  --canvas-font-color: #ffffff;
+  --canvas-background-color: var(--primary-background);
+  --canvas-icon-color: #1d1d1d;
+  --canvas-icon-container-color: #ffffff;
+  --canvas-text-area-background: var(--primary-background);
 }
 
 .light-background {
@@ -43,6 +50,13 @@ html, body {
   --primary-box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
   --success-color: #3ea389;
   --primary-border-color: black;
+
+
+  --canvas-font-color: #000000;
+  --canvas-background-color: var(--primary-background);;
+  --canvas-icon-color: white;
+  --canvas-icon-container-color: #1d1d1d;
+  --canvas-text-area-background: var(--primary-background);;
 }
 
 img, picture, video, canvas, svg {

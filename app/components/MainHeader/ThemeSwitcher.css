@@ -1,0 +1,9 @@
+.theme-switcher {
+  cursor: pointer; 
+  transition: all 1s ease-in-out;
+  padding: .25rem;
+}
+
+.theme-switcher:hover {
+  outline: 2px solid currentColor;
+}

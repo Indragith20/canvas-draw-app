@@ -8,24 +8,10 @@
   color: var(--primary-font-color);
 }
 
-.logo {
-  flex: 1;
-  width: clamp(100px, 200px, 400px);
-}
-
-.banner {
-  width: clamp(100px, 200px, 400px);
-}
-
 .main-header-link {
   /* font-size: clamp(.01rem,1rem, 1.25rem); */
   font-size: 1rem;
   font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
   align-self: center;
   color: var(--primary-font-color);
-}
-
-.theme-icon {
-  cursor: pointer;
-  transition: all 1s ease-in-out;
 }

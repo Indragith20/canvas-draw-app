@@ -2,10 +2,16 @@ import { json, redirect } from '@remix-run/node';
 import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import React from 'react';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
+import { LogoLinks } from '~/components/MainHeader/Logo';
+import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import { requireAuth } from '../../server/auth';
 import { getRoomDetails, getUser } from '../../server/db';
 
-export const links = () => [...HeaderStyleLinks()];
+export const links = () => [
+  ...HeaderStyleLinks(),
+  ...LogoLinks(),
+  ...ThemeSwitcherLinks()
+];
 
 export async function loader({ request }) {
   const { displayName, uid } = await requireAuth(request);

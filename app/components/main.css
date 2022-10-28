@@ -35,7 +35,7 @@
   color: #fff;
   overflow: hidden;
   /* background-color: #424242; */
-  background-color: var(--background-color);
+  background-color: var(--canvas-background-color);
 }
 #tempCanvas {
   position: absolute;

@@ -1,6 +1,8 @@
 import { json, redirect } from '@remix-run/node';
 import { Form, Link, useActionData, useTransition } from '@remix-run/react';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
+import { LogoLinks } from '~/components/MainHeader/Logo';
+import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import { headerLinks } from '~/constants/signInLinks';
 import styles from '~/styles/form.css';
 
@@ -9,6 +11,8 @@ import { commitSession, getSession } from '../sessions';
 
 export const links = () => [
   ...HeaderStyleLinks(),
+  ...LogoLinks(),
+  ...ThemeSwitcherLinks(),
   { rel: 'stylesheet', href: styles }
 ];
 

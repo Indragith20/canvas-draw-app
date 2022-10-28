@@ -3,15 +3,29 @@
   top: 10px;
   left: 0px;
   right: 0px;
-  background-color: var(--icon-container-color);
+  /* background-color: var(--canvas-icon-container-color); */
   width: fit-content;
   margin-left: auto;
   margin-right: auto;
-  color: var(--icon-color);
+  color: var(--primary-font-color);
   padding: 10px;
   display: flex;
   gap: 5px;
   line-height: 0;
+  border-left: 3px solid hsl(230deg, 100%, 69%);
+  border-radius: 6px 6px 6px 3px;
+}
+
+.dark-background .selectTool {
+  border-color: hsl(230deg, 100%, 69%);
+  background-color: hsl(210deg, 38%, 15%);
+}
+
+.light-background .selectTool {
+  border-color: initial;
+  background-color: white;
+  border: 1px solid black;
+  border-left: 3px solid black;
 }
 
 .selectTool .tool-icon {
@@ -19,7 +33,7 @@
 }
 
 .selectTool .tool-icon .icon-class {
-  color: var(--icon-color);
+  color: var(--canvas-icon-color);
   font-size: 24px;
   /* margin: 10px; */
 }

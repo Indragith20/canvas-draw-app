@@ -3,8 +3,8 @@
   top: 100px;
   left: 0px;
   display: block;
-  background-color: var(--text-area-background);
-  color: var(--font-color);
+  background-color: var(--canvas-text-area-background);
+  color: var(--canvas-font-color);
   padding: 0;
   margin: 0;
   /* border: 1px solid red; */
@@ -24,7 +24,7 @@
   margin: 0;
   padding: 0;
   line-height: var(--line-height);
-  background-color: var(--text-area-background);
+  background-color: var(--canvas-text-area-background);
   /* border: 1px solid red; */
   display: block;
   width: 100%;

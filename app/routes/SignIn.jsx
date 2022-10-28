@@ -7,9 +7,13 @@ import { commitSession, getSession } from '../sessions';
 import styles from '../styles/form.css';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { headerLinks } from '~/constants/signInLinks';
+import { LogoLinks } from '~/components/MainHeader/Logo';
+import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 
 export const links = () => [
   ...HeaderStyleLinks(),
+  ...LogoLinks(),
+  ...ThemeSwitcherLinks(),
   { rel: 'stylesheet', href: styles }
 ];
 
