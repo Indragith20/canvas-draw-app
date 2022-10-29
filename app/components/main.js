@@ -74,6 +74,7 @@ class MainComponent extends React.PureComponent {
     this.addShape = this.addShape.bind(this);
     this.removeShape = this.removeShape.bind(this);
     this.strokeOuterRect = this.strokeOuterRect.bind(this);
+    this.downloadAsImage = this.downloadAsImage.bind(this);
 
     //this.idb = new Idb();
 
@@ -97,6 +98,36 @@ class MainComponent extends React.PureComponent {
     // this.state.scrollX = 0;
     // this.state.scrollY = 0;
 
+    // for generating image
+
+  }
+
+
+  downloadAsImage() {
+    let dataURL = this.mainCanvas.current.toDataURL('image/png', 1.0);
+    const newImg = document.createElement('img');
+    newImg.src = dataURL;
+    // newImg.onload = () => {
+    //   // no longer need to read the blob so it's revoked
+    //   URL.revokeObjectURL(url);
+    // };
+    document.body.appendChild(newImg);
+    // let newTab = window.open('about:blank', 'image from canvas');
+    // newTab.document.write("<img src='" + dataURL + "' alt='from canvas'/>");
+
+    // console.log(data);
+    // this.tempCanvas.current.toBlob((blob) => {
+    //   const newImg = document.createElement('img');
+    //   const url = URL.createObjectURL(blob);
+
+    //   newImg.onload = () => {
+    //     // no longer need to read the blob so it's revoked
+    //     URL.revokeObjectURL(url);
+    //   };
+
+    //   newImg.src = url;
+    //   document.body.appendChild(newImg);
+    // })
   }
 
 
@@ -725,7 +756,7 @@ class MainComponent extends React.PureComponent {
 
         </div>
         <SelectTool selectedTool={selectedTool} updateTool={this.onClickTool} />
-        <ConfigTool />
+        <ConfigTool downloadImage={this.downloadAsImage} />
         <TextTool />
         <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
       </div>
