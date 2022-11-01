@@ -85,21 +85,23 @@ async function deleteShape(roomId, shapeTobeDeleted) {
 
 async function updateShape(roomId, shapeTobeUpdated) {
   const shapeJSON = JSON.parse(shapeTobeUpdated);
-  console.log('update Shape Called', roomId, shapeTobeUpdated);
   return new Promise((resolve, reject) => {
     console.log('Update Shape Called', roomId, shapeJSON);
     let docRef = db.shapeCollection(roomId).doc('shapeList');
     docRef.get().then((snapshot) => {
       if (snapshot.exists) {
         let { shapeList } = snapshot.data();
-        let updatedShapeList = shapeList.filter(shape => {
-          if (shape.id !== shapeJSON.id) {
+        let updatedShapeList = shapeList.map(shape => {
+          console.log('Inside', shape.id, shapeJSON.id);
+          if (shape.id === shapeJSON.id) {
+            console.log('Shape matched', shape.id);
             return { ...shapeJSON }
           } else {
             return shape;
           }
         });
-        docRef.set({ shapeList: updatedShapeList }).then(() => {
+        console.log(updatedShapeList[0]);
+        docRef.set({ shapeList: [...updatedShapeList] }).then(() => {
           resolve({ message: 'success' });
         }).catch((err) => {
           reject(err);

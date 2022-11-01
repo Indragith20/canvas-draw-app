@@ -173,6 +173,7 @@ function DrawIndex() {
 
   const updateShape = useCallback(
     (shape, action = 'add') => {
+      console.log('update shape called', shape, action);
       let formData = new FormData();
       formData.set('data', JSON.stringify({ ...shape }));
       formData.set('action', action);
