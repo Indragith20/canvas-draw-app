@@ -16,6 +16,7 @@ import { drawDiamond, drawText, getBufferedCoords } from './utils/drawShapes';
 import { getChalkRectValues, getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
 import UserActivity from './UserActivity/UserActivity';
+import Modal from './Modal/Modal';
 
 export function MainComponentStyles() {
   return [{ rel: 'stylesheet', href: styles }];
@@ -52,6 +53,7 @@ class MainComponent extends React.PureComponent {
       canvasHeight: 0,
       selectedTheme: 'light',
       selectedTool: 'select',
+      showModal: false,
       shapes: props.shapes,
       ...baseConfig
     };
@@ -75,6 +77,8 @@ class MainComponent extends React.PureComponent {
     this.removeShape = this.removeShape.bind(this);
     this.strokeOuterRect = this.strokeOuterRect.bind(this);
     this.downloadAsImage = this.downloadAsImage.bind(this);
+    this.onDeleteCanvas = this.onDeleteCanvas.bind(this);
+    this.onModalClose = this.onModalClose.bind(this);
 
     //this.idb = new Idb();
 
@@ -820,8 +824,16 @@ class MainComponent extends React.PureComponent {
     })
   }
 
+  onDeleteCanvas() {
+    this.setState({ showModal: true })
+  }
+
+  onModalClose() {
+    this.setState({ showModal: false })
+  }
+
   render() {
-    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY } = this.state;
+    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal } = this.state;
     return (
       <div
         style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: `${selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
@@ -849,9 +861,12 @@ class MainComponent extends React.PureComponent {
 
         </div>
         <SelectTool selectedTool={selectedTool} updateTool={this.onClickTool} />
-        <ConfigTool downloadImage={this.downloadAsImage} />
+        <ConfigTool downloadImage={this.downloadAsImage} deleteCanvas={this.onDeleteCanvas} />
         <TextTool />
         <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
+        <Modal show={showModal} title={'sampel'} close={this.onModalClose}>
+          Sample Content
+        </Modal>
       </div>
     )
   }

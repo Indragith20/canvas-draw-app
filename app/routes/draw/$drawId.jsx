@@ -30,6 +30,7 @@ import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { useTheme } from '~/contexts/themeContext';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
+import { ModalLinks } from '~/components/Modal/Modal';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -41,6 +42,7 @@ export const links = () => [
   ...TextToolLinks(),
   ...ZoomContainerLinks(),
   ...UserActivityLinks(),
+  ...ModalLinks(),
   { rel: 'stylesheet', href: styles }
 ];
 
