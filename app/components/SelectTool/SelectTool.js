@@ -159,4 +159,4 @@ function SelectTool({ selectedTool, updateTool }) {
   );
 }
 
-export default SelectTool;
+export default React.memo(SelectTool);

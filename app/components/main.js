@@ -12,14 +12,14 @@ import Line from './Shapes/Line';
 import MoveTool from './Shapes/MoveTool';
 import Rect from './Shapes/Rectangle';
 import TextTool from './TextTool/TextTool';
-import { drawDiamond, drawText, getBufferedCoords } from './utils/drawShapes';
+import { drawDiamond, drawText } from './utils/drawShapes';
 import { getChalkRectValues, getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
 import UserActivity from './UserActivity/UserActivity';
-import Modal from './Modal/Modal';
+import PrintPreview, { PrintPreviewLinks } from './PrintPreview/PrintPreview';
 
 export function MainComponentStyles() {
-  return [{ rel: 'stylesheet', href: styles }];
+  return [...PrintPreviewLinks(), { rel: 'stylesheet', href: styles }];
 }
 
 
@@ -109,121 +109,7 @@ class MainComponent extends React.PureComponent {
 
   downloadAsImage(e) {
     e.stopPropagation();
-    // let dataURL = this.mainCanvas.current.toDataURL('image/png', 1.0);
-    // const newImg = document.createElement('img');
-    // newImg.src = dataURL;
-    // newImg.onload = () => {
-    //   // no longer need to read the blob so it's revoked
-    //   URL.revokeObjectURL(url);
-    // };
-    this.setState({ showModal: true, disableScroll: true }, () => {
-      let { bufferX, bufferY, canvasHeight, canvasWidth } = getBufferedCoords(this.state.shapes);
-      let { selectedTheme } = this.props;
-      let { shapes, baseLineHeight, baseFontSize } = this.state;
-      let canvas = document.createElement('canvas');
-      canvas.id = 'drawTempCanvas';
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-
-      var body = document.getElementsByTagName("body")[0];
-      body.appendChild(canvas);
-
-      let tempCanvas = document.getElementById('drawTempCanvas');
-      let tempContext = tempCanvas.getContext('2d');
-
-      tempContext.strokeStyle = this.props.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';// Default line color. 
-      tempContext.lineWidth = 1.0;// Default stroke weight. 
-
-
-      // Fill transparent canvas with dark grey (So we can use the color to erase). 
-      tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#FFFFFF';
-      tempContext.fillRect(0, 0, canvasWidth, canvasHeight);
-
-      shapes.forEach(shape => {
-        if (shape.type === 'rectangle') {
-          console.log('Rect');
-          tempContext.strokeRect(shape.x + bufferX, shape.y + bufferY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height));
-        } else if (shape.type === 'arrow') {
-          let headlen = 10;
-          let x = shape.x + bufferX;
-          let y = shape.y + bufferY;
-          let endX = shape.endX + bufferX;
-          let endY = shape.endY + bufferY;
-          let dx = endX - x;
-          let dy = endY - y;
-          let angle = Math.atan2(dy, dx);
-          tempContext.beginPath();
-          tempContext.moveTo(x, y)
-          tempContext.lineTo(endX, endY);
-          tempContext.lineTo(endX - headlen * Math.cos(angle - Math.PI / 6), endY - headlen * Math.sin(angle - Math.PI / 6));
-          tempContext.moveTo(endX, endY);
-          tempContext.lineTo(endX - headlen * Math.cos(angle + Math.PI / 6), endY - headlen * Math.sin(angle + Math.PI / 6));
-          tempContext.stroke();
-          tempContext.closePath();
-        } else if (shape.type === 'line') {
-          tempContext.beginPath();
-          tempContext.moveTo(shape.x + bufferX, shape.y + bufferY);
-          tempContext.lineTo(shape.endX + bufferX, shape.endY + bufferY);
-          tempContext.stroke();
-          tempContext.closePath();
-        } else if (shape.type === 'text') {
-          let color = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
-          drawText(shape.textContent, tempContext, shape.x + bufferX, shape.y + bufferY, this.changeFromOneScalingFactor(shape.width), baseLineHeight, color, baseFontSize);
-        } else if (shape.type === 'circle') {
-          let x = shape.x + bufferX;
-          let y = shape.y + bufferY;
-          tempContext.beginPath();
-          tempContext.arc(x, y, this.changeFromOneScalingFactor(shape.radius), 0, 2 * Math.PI);
-          tempContext.stroke();
-        } else if (shape.type === 'diamond') {
-          console.log('Diamon');
-          let xCenter = shape.x + bufferX;
-          let yCenter = shape.y + bufferY;
-          let size = this.changeFromOneScalingFactor((shape.x) - (shape.endX));
-          drawDiamond(xCenter, yCenter, size, tempContext);
-        } else if (shape.type === 'chalk') {
-          let x = shape.x + bufferX;
-          let y = shape.y + bufferY;
-          tempContext.beginPath();
-          tempContext.moveTo(x, y);
-          shape.drawPoints.forEach(point => {
-            tempContext.lineTo(point.x + bufferX, point.y + bufferY)
-          });
-          tempContext.stroke();
-          tempContext.closePath();
-        }
-      });
-
-      let dataURL = tempCanvas.toDataURL('image/png', 1.0);
-      const newImg = document.createElement('img');
-      newImg.src = dataURL;
-      // newImg.onload = () => {
-      //   // no longer need to read the blob so it's revoked
-      //   URL.revokeObjectURL(url);
-      // };
-
-
-      document.getElementById('print-preview').appendChild(newImg);
-      document.getElementById('drawTempCanvas').remove();
-      //document.body.removeChild(document.getElementById('drawTempCanvas'));
-      // let newTab = window.open('about:blank', 'image from canvas');
-      // newTab.document.write("<img src='" + dataURL + "' alt='from canvas'/>");
-
-      // console.log(data);
-      // this.tempCanvas.current.toBlob((blob) => {
-      //   const newImg = document.createElement('img');
-      //   const url = URL.createObjectURL(blob);
-
-      //   newImg.onload = () => {
-      //     // no longer need to read the blob so it's revoked
-      //     URL.revokeObjectURL(url);
-      //   };
-
-      //   newImg.src = url;
-      //   document.body.appendChild(newImg);
-      // })
-    })
-
+    this.setState({ showModal: true, disableScroll: true })
   }
 
 
@@ -779,6 +665,9 @@ class MainComponent extends React.PureComponent {
   }
 
   onWheelMove(e) {
+    if (this.state.disableScroll) {
+      return;
+    }
     if (this.state.selectedTool === 'text') {
       // Drawing text on canvas before scroll move
       this.tool['onBlur']();
@@ -840,7 +729,7 @@ class MainComponent extends React.PureComponent {
   }
 
   render() {
-    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal } = this.state;
+    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes } = this.state;
     return (
       <div
         style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: `${selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
@@ -871,9 +760,13 @@ class MainComponent extends React.PureComponent {
         <ConfigTool downloadImage={this.downloadAsImage} deleteCanvas={this.onDeleteCanvas} />
         <TextTool />
         <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
-        <Modal show={showModal} title={'sampel'} close={this.onModalClose}>
-          <div id='print-preview'></div>
-        </Modal>
+        <PrintPreview
+          onCancel={this.onModalClose}
+          showPreview={showModal}
+          baseFontSize={baseFontSize}
+          baseLineHeight={baseLineHeight}
+          scalingFactor={scalingFactor}
+          shapes={shapes} />
       </div>
     )
   }

@@ -58,7 +58,7 @@
 
 .modal-content {
   border-bottom: 1px solid #dddddd;
-  padding: 2rem 0;
+  padding: 2rem 1rem;
   max-height: 400px;
   overflow: scroll;
 }
@@ -70,26 +70,6 @@
   flex-direction: row;
   max-width: 600px;
   margin: auto;
-}
-
-.modal-footer button {
-  border-radius: 4px;
-  border: none;
-  color: white;
-  width: 100%;
-  text-align: center;
-  font-size: 1rem;
-  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
-  font-weight: bold;
-  padding: 1rem;
-  cursor: pointer;
-  margin-top: 1rem;
-  background-color: var(--success-color);
-}
-
-.modal-footer .modal-close {
-  background-color: transparent;
-  font-weight: 600;
 }
 
 .modal-close:hover {
