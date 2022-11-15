@@ -16,9 +16,10 @@ import { drawDiamond, drawText } from './utils/drawShapes';
 import { getChalkRectValues, getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
 import UserActivity from './UserActivity/UserActivity';
+import PrintPreview, { PrintPreviewLinks } from './PrintPreview/PrintPreview';
 
 export function MainComponentStyles() {
-  return [{ rel: 'stylesheet', href: styles }];
+  return [...PrintPreviewLinks(), { rel: 'stylesheet', href: styles }];
 }
 
 
@@ -52,6 +53,7 @@ class MainComponent extends React.PureComponent {
       canvasHeight: 0,
       selectedTheme: 'light',
       selectedTool: 'select',
+      showModal: false,
       shapes: props.shapes,
       ...baseConfig
     };
@@ -75,6 +77,8 @@ class MainComponent extends React.PureComponent {
     this.removeShape = this.removeShape.bind(this);
     this.strokeOuterRect = this.strokeOuterRect.bind(this);
     this.downloadAsImage = this.downloadAsImage.bind(this);
+    this.onDeleteCanvas = this.onDeleteCanvas.bind(this);
+    this.onModalClose = this.onModalClose.bind(this);
 
     //this.idb = new Idb();
 
@@ -103,31 +107,9 @@ class MainComponent extends React.PureComponent {
   }
 
 
-  downloadAsImage() {
-    let dataURL = this.mainCanvas.current.toDataURL('image/png', 1.0);
-    const newImg = document.createElement('img');
-    newImg.src = dataURL;
-    // newImg.onload = () => {
-    //   // no longer need to read the blob so it's revoked
-    //   URL.revokeObjectURL(url);
-    // };
-    document.body.appendChild(newImg);
-    // let newTab = window.open('about:blank', 'image from canvas');
-    // newTab.document.write("<img src='" + dataURL + "' alt='from canvas'/>");
-
-    // console.log(data);
-    // this.tempCanvas.current.toBlob((blob) => {
-    //   const newImg = document.createElement('img');
-    //   const url = URL.createObjectURL(blob);
-
-    //   newImg.onload = () => {
-    //     // no longer need to read the blob so it's revoked
-    //     URL.revokeObjectURL(url);
-    //   };
-
-    //   newImg.src = url;
-    //   document.body.appendChild(newImg);
-    // })
+  downloadAsImage(e) {
+    e.stopPropagation();
+    this.setState({ showModal: true, disableScroll: true })
   }
 
 
@@ -445,17 +427,23 @@ class MainComponent extends React.PureComponent {
 
       let isExistingShape = false;
       let filteredShapes = shapes.filter(shape => {
+        console.log(shape.id, modifiedImage.id)
         if (shape.id === modifiedImage.id) {
           isExistingShape = true;
           return null;
         } else {
           return shape;
         }
-      })
+      });
+
+      // While dragging we are resetting the shape. so needed to check this here
+      if (this.draggingElement) {
+        isExistingShape = this.draggingElement.id === modifiedImage.id ? true : false;
+      }
 
       //let filteredShapes = shapes.filter(shape => shape.id !== drawenImage.id);
 
-
+      console.log("isExistingShape", isExistingShape);
       this.setState({ shapes: [...filteredShapes, modifiedImage] }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
@@ -472,7 +460,10 @@ class MainComponent extends React.PureComponent {
   redraw() {
     // TODO: If the shape is outside the scrolling area skip the draw process(Possible Improvementt)
     console.log('redraw')
-    let { shapes, scrollX, scrollY, baseLineHeight, baseFontSize } = this.state;
+    let { shapes, scrollX, scrollY, baseLineHeight, baseFontSize, disableScroll } = this.state;
+    if (disableScroll) {
+      return;
+    }
     let { selectedTheme } = this.props;
     this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
     this.tempContext.restore();
@@ -537,7 +528,6 @@ class MainComponent extends React.PureComponent {
 
     // clear the present canvas
     this.mainContext.clearRect(0, 0, this.mainCanvas.current.width, this.mainCanvas.current.height);
-    console.log(this.tempContext.getImageData(0, 0, this.mainCanvas.current.width, this.mainCanvas.current.height))
     this.mainContext.drawImage(this.tempCanvas.current, 0, 0);
     this.tempContext.restore();
     this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
@@ -675,6 +665,9 @@ class MainComponent extends React.PureComponent {
   }
 
   onWheelMove(e) {
+    if (this.state.disableScroll) {
+      return;
+    }
     if (this.state.selectedTool === 'text') {
       // Drawing text on canvas before scroll move
       this.tool['onBlur']();
@@ -727,8 +720,16 @@ class MainComponent extends React.PureComponent {
     })
   }
 
+  onDeleteCanvas() {
+    this.setState({ showModal: true, disableScroll: true })
+  }
+
+  onModalClose() {
+    this.setState({ showModal: false, disableScroll: false })
+  }
+
   render() {
-    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY } = this.state;
+    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes } = this.state;
     return (
       <div
         style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: `${selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
@@ -756,9 +757,16 @@ class MainComponent extends React.PureComponent {
 
         </div>
         <SelectTool selectedTool={selectedTool} updateTool={this.onClickTool} />
-        <ConfigTool downloadImage={this.downloadAsImage} />
+        <ConfigTool downloadImage={this.downloadAsImage} deleteCanvas={this.onDeleteCanvas} />
         <TextTool />
         <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
+        <PrintPreview
+          onCancel={this.onModalClose}
+          showPreview={showModal}
+          baseFontSize={baseFontSize}
+          baseLineHeight={baseLineHeight}
+          scalingFactor={scalingFactor}
+          shapes={shapes} />
       </div>
     )
   }

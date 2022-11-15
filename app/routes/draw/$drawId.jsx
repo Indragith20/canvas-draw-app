@@ -30,6 +30,7 @@ import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { useTheme } from '~/contexts/themeContext';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
+import { ModalLinks } from '~/components/Modal/Modal';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -41,6 +42,7 @@ export const links = () => [
   ...TextToolLinks(),
   ...ZoomContainerLinks(),
   ...UserActivityLinks(),
+  ...ModalLinks(),
   { rel: 'stylesheet', href: styles }
 ];
 
@@ -173,6 +175,7 @@ function DrawIndex() {
 
   const updateShape = useCallback(
     (shape, action = 'add') => {
+      console.log('update shape called', shape, action);
       let formData = new FormData();
       formData.set('data', JSON.stringify({ ...shape }));
       formData.set('action', action);

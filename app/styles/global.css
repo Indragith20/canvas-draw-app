@@ -41,6 +41,8 @@ html, body {
   --canvas-icon-color: #1d1d1d;
   --canvas-icon-container-color: #ffffff;
   --canvas-text-area-background: var(--primary-background);
+
+  --secondary-color: hsl(210deg, 38%, 15%);
 }
 
 .light-background {
@@ -56,7 +58,9 @@ html, body {
   --canvas-background-color: var(--primary-background);;
   --canvas-icon-color: white;
   --canvas-icon-container-color: #1d1d1d;
-  --canvas-text-area-background: var(--primary-background);;
+  --canvas-text-area-background: var(--primary-background);
+
+  --secondary-color: lightgrey;
 }
 
 img, picture, video, canvas, svg {

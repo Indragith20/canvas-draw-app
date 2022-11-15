@@ -60,6 +60,7 @@ export default function App() {
                 <ScrollRestoration />
                 <Scripts />
                 <LiveReload />
+                <div id='modal-root'></div>
               </body>
             );
           }}
