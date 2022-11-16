@@ -1,0 +1,19 @@
+.main-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.link-container {
+  display: flex;
+  flex-direction: row;
+  padding: .25rem;
+  font-size: large;
+  background-color: lightgray;
+  color: black;
+  cursor: pointer;
+}
+
+.main-container svg {
+  cursor: pointer;
+}

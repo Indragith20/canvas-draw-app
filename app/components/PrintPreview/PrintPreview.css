@@ -3,6 +3,7 @@
   height: 100%;
   padding: 1rem;
   border: 1px solid var(--primary-border-color);
+  background-color: transparent;
 }
 
 #print-preview img {
@@ -17,25 +18,39 @@
   flex-direction: row;
   justify-content: center;
   gap: 20px;
+  font-weight: 200;
+  font-size: 1.25rem;
 }
 
 .cancel-btn {
   background-color: transparent;
   border: none;
   cursor: pointer;
-  color: #d67a7c;
-  border: 1px solid #d67a7c;
+  border: 2px solid lightgray;
+  border-radius: 10px;
   padding: .5rem;
+  color: currentColor;
 }
 
 .download-btn {
   padding: .5rem;
+  padding-left: .75rem;
+  padding-right: .75rem;
   text-align: center;
-  color: var(--success-color);
-  border: 1px solid var(--success-color);
+  background-color: var(--border-color);
+  color: white;
+  border-radius: 10px;
   text-decoration: none;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  text-align: center;
 }
 
 .download-btn:hover {
   text-decoration: none;
+}
+
+.download-btn svg {
+  margin-top: 5px;
 }
