@@ -1,5 +1,6 @@
 import React from 'react';
 import Modal from '../Modal/Modal';
+import { useToast } from '../Toast/ToastContext';
 import styles from './ShareLink.css';
 
 export const ShareLinks = () => (
@@ -9,6 +10,7 @@ export const ShareLinks = () => (
 )
 
 function ShareLink({ showShareLink, onCancel }) {
+  let { addToast } = useToast();
   if (typeof window === "undefined") {
     return null;
   }
@@ -17,6 +19,8 @@ function ShareLink({ showShareLink, onCancel }) {
 
   function copyLink() {
     navigator.clipboard.writeText(link);
+    addToast({ message: 'Link Copied', timeout: 5000 })
+    onCancel();
   }
 
   return (

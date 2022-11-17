@@ -10,7 +10,9 @@ import {
 import styles from './styles/global.css';
 import { ThemeContext, ThemeProvider, useTheme } from './contexts/themeContext';
 import { GlobalLoading, LoaderLinks } from './components/Loader/Loader';
-import Toast, { ToastStyleLinks } from './components/Toast/Toast';
+import Toast, { ToastStyleLinks } from './components/Toast/SingleToast';
+import ToastProvider from './components/Toast/ToastContext';
+import ToastContainer from './components/Toast/ToastContainer';
 
 export function links() {
   return [
@@ -57,13 +59,14 @@ export default function App() {
                   theme === 'dark' ? 'dark-background' : 'light-background'
                 }
               >
-                <GlobalLoading />
-                <Outlet />
-                <ScrollRestoration />
-                <Scripts />
-                <LiveReload />
-                <div id='modal-root'></div>
-                <Toast />
+                <ToastProvider>
+                  <GlobalLoading />
+                  <Outlet />
+                  <ScrollRestoration />
+                  <Scripts />
+                  <LiveReload />
+                  <div id='modal-root'></div>
+                </ToastProvider>
               </body>
             );
           }}

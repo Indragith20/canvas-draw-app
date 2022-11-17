@@ -31,6 +31,7 @@ import { useTheme } from '~/contexts/themeContext';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import { ModalLinks } from '~/components/Modal/Modal';
+import { useToast } from '~/components/Toast/ToastContext';
 
 export const links = () => [
   ...HeaderStyleLinks(),
