@@ -1,0 +1,61 @@
+.toast-container {
+  position: fixed;
+  top: 32px;
+  right: 32px;
+  width: 300px;
+  max-width: 50%;
+}
+
+.single-toast {
+  position: relative;
+  font-size: large;
+  margin-top: 10px;
+  background-color: green;
+  color: white;
+  padding: 1rem;
+  width: 100%;
+}
+
+.enter-animation {
+  animation: fadeIn 500ms ease-out;
+}
+
+.exit-animation {
+  opacity: 0;
+  animation: fadeOut 500ms ease-out;
+}
+
+.main-toast {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.main-toast svg {
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+}

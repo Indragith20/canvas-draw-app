@@ -43,6 +43,7 @@ html, body {
   --canvas-text-area-background: var(--primary-background);
 
   --secondary-color: hsl(210deg, 38%, 15%);
+  --border-color: hsl(230deg, 100%, 69%);
 }
 
 .light-background {
@@ -61,6 +62,7 @@ html, body {
   --canvas-text-area-background: var(--primary-background);
 
   --secondary-color: lightgrey;
+  --border-color: black;
 }
 
 img, picture, video, canvas, svg {

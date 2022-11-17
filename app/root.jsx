@@ -10,6 +10,9 @@ import {
 import styles from './styles/global.css';
 import { ThemeContext, ThemeProvider, useTheme } from './contexts/themeContext';
 import { GlobalLoading, LoaderLinks } from './components/Loader/Loader';
+import Toast, { ToastStyleLinks } from './components/Toast/SingleToast';
+import ToastProvider from './components/Toast/ToastContext';
+import ToastContainer from './components/Toast/ToastContainer';
 
 export function links() {
   return [
@@ -28,7 +31,8 @@ export function links() {
       rel: 'stylesheet',
       href: 'https://fonts.googleapis.com/css2?family=Mali:ital,wght@0,200;0,300;0,400;1,200&display=swap'
     },
-    ...LoaderLinks()
+    ...LoaderLinks(),
+    ...ToastStyleLinks()
   ];
 }
 export function meta() {
@@ -55,12 +59,14 @@ export default function App() {
                   theme === 'dark' ? 'dark-background' : 'light-background'
                 }
               >
-                <GlobalLoading />
-                <Outlet />
-                <ScrollRestoration />
-                <Scripts />
-                <LiveReload />
-                <div id='modal-root'></div>
+                <ToastProvider>
+                  <GlobalLoading />
+                  <Outlet />
+                  <ScrollRestoration />
+                  <Scripts />
+                  <LiveReload />
+                  <div id='modal-root'></div>
+                </ToastProvider>
               </body>
             );
           }}

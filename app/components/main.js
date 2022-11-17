@@ -17,9 +17,10 @@ import { getChalkRectValues, getElementsAtPosition } from './utils/getElementsAt
 import ZoomContainer from './ZoomContainer/ZoomContainer';
 import UserActivity from './UserActivity/UserActivity';
 import PrintPreview, { PrintPreviewLinks } from './PrintPreview/PrintPreview';
+import ShareLink, { ShareLinks } from './ShareLink/ShareLink';
 
 export function MainComponentStyles() {
-  return [...PrintPreviewLinks(), { rel: 'stylesheet', href: styles }];
+  return [...PrintPreviewLinks(), ...ShareLinks(), { rel: 'stylesheet', href: styles }];
 }
 
 
@@ -53,7 +54,7 @@ class MainComponent extends React.PureComponent {
       canvasHeight: 0,
       selectedTheme: 'light',
       selectedTool: 'select',
-      showModal: false,
+      showModal: null,
       shapes: props.shapes,
       ...baseConfig
     };
@@ -79,6 +80,7 @@ class MainComponent extends React.PureComponent {
     this.downloadAsImage = this.downloadAsImage.bind(this);
     this.onDeleteCanvas = this.onDeleteCanvas.bind(this);
     this.onModalClose = this.onModalClose.bind(this);
+    this.onShareLink = this.onShareLink.bind(this);
 
     //this.idb = new Idb();
 
@@ -109,7 +111,7 @@ class MainComponent extends React.PureComponent {
 
   downloadAsImage(e) {
     e.stopPropagation();
-    this.setState({ showModal: true, disableScroll: true })
+    this.setState({ showModal: 'downloadImage', disableScroll: true })
   }
 
 
@@ -721,11 +723,15 @@ class MainComponent extends React.PureComponent {
   }
 
   onDeleteCanvas() {
-    this.setState({ showModal: true, disableScroll: true })
+    this.setState({ showModal: 'showAlert', disableScroll: true })
   }
 
   onModalClose() {
-    this.setState({ showModal: false, disableScroll: false })
+    this.setState({ showModal: null, disableScroll: false })
+  }
+
+  onShareLink() {
+    this.setState({ showModal: 'shareLink', disableScroll: true })
   }
 
   render() {
@@ -757,16 +763,17 @@ class MainComponent extends React.PureComponent {
 
         </div>
         <SelectTool selectedTool={selectedTool} updateTool={this.onClickTool} />
-        <ConfigTool downloadImage={this.downloadAsImage} deleteCanvas={this.onDeleteCanvas} />
+        <ConfigTool downloadImage={this.downloadAsImage} deleteCanvas={this.onDeleteCanvas} shareLink={this.onShareLink} />
         <TextTool />
         <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
         <PrintPreview
           onCancel={this.onModalClose}
-          showPreview={showModal}
+          showPreview={showModal === 'downloadImage'}
           baseFontSize={baseFontSize}
           baseLineHeight={baseLineHeight}
           scalingFactor={scalingFactor}
           shapes={shapes} />
+        <ShareLink showShareLink={showModal === 'shareLink'} onCancel={this.onModalClose} />
       </div>
     )
   }
