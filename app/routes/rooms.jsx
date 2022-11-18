@@ -4,7 +4,7 @@ import React from 'react';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
-import { ModalLinks } from '~/components/Modal/Modal';
+import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { requireAuth } from '../../server/auth';
 import { getRoomDetails, getUser } from '../../server/db';
 

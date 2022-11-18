@@ -9,10 +9,10 @@ import {
 } from '@remix-run/react';
 import styles from './styles/global.css';
 import { ThemeContext, ThemeProvider, useTheme } from './contexts/themeContext';
-import { GlobalLoading, LoaderLinks } from './components/Loader/Loader';
-import Toast, { ToastStyleLinks } from './components/Toast/SingleToast';
-import ToastProvider from './components/Toast/ToastContext';
-import ToastContainer from './components/Toast/ToastContainer';
+import { GlobalLoading, LoaderLinks } from './components/Common/Loader/Loader';
+import Toast, { ToastStyleLinks } from './components/Common/Toast/SingleToast';
+import ToastProvider from './components/Common/Toast/ToastContext';
+import ToastContainer from './components/Common/Toast/ToastContainer';
 
 export function links() {
   return [

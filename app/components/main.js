@@ -18,9 +18,10 @@ import ZoomContainer from './ZoomContainer/ZoomContainer';
 import UserActivity from './UserActivity/UserActivity';
 import PrintPreview, { PrintPreviewLinks } from './PrintPreview/PrintPreview';
 import ShareLink, { ShareLinks } from './ShareLink/ShareLink';
+import DeletePopup, { DeletePopupLinks } from './DeleteCanvasPopup/DeletePopup';
 
 export function MainComponentStyles() {
-  return [...PrintPreviewLinks(), ...ShareLinks(), { rel: 'stylesheet', href: styles }];
+  return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), { rel: 'stylesheet', href: styles }];
 }
 
 
@@ -81,6 +82,7 @@ class MainComponent extends React.PureComponent {
     this.onDeleteCanvas = this.onDeleteCanvas.bind(this);
     this.onModalClose = this.onModalClose.bind(this);
     this.onShareLink = this.onShareLink.bind(this);
+    this.onEmptyCanvas = this.onEmptyCanvas.bind(this);
 
     //this.idb = new Idb();
 
@@ -723,7 +725,7 @@ class MainComponent extends React.PureComponent {
   }
 
   onDeleteCanvas() {
-    this.setState({ showModal: 'showAlert', disableScroll: true })
+    this.setState({ showModal: 'deleteCanvas', disableScroll: true })
   }
 
   onModalClose() {
@@ -732,6 +734,14 @@ class MainComponent extends React.PureComponent {
 
   onShareLink() {
     this.setState({ showModal: 'shareLink', disableScroll: true })
+  }
+
+  onEmptyCanvas() {
+    this.setState({ shapes: [], showModal: null, disableScroll: false }, () => {
+      let { updateDb } = this.props;
+      updateDb([], 'app-state-persist');
+      this.redraw();
+    })
   }
 
   render() {
@@ -758,6 +768,7 @@ class MainComponent extends React.PureComponent {
               scalingFactor={scalingFactor}
               addShape={this.addShape}
               removeShape={this.removeShape}
+              deleteAllShapes={this.onEmptyCanvas}
             />
           </div>
 
@@ -774,6 +785,7 @@ class MainComponent extends React.PureComponent {
           scalingFactor={scalingFactor}
           shapes={shapes} />
         <ShareLink showShareLink={showModal === 'shareLink'} onCancel={this.onModalClose} />
+        <DeletePopup showDeletePopup={showModal === 'deleteCanvas'} onCancel={this.onModalClose} deleteCanvas={this.onEmptyCanvas} />
       </div>
     )
   }
