@@ -1,6 +1,6 @@
 import React from 'react';
-import Modal from '../Modal/Modal';
-import { useToast } from '../Toast/ToastContext';
+import Modal from '../Common/Modal/Modal';
+import { useToast } from '../Common/Toast/ToastContext';
 import styles from './ShareLink.css';
 
 export const ShareLinks = () => (

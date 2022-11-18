@@ -7,7 +7,7 @@ export function UserActivityLinks() {
   return [{ rel: 'stylesheet', href: styles }]
 }
 
-function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape, removeShape }) {
+function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape, removeShape, deleteAllShapes }) {
   const userActivityCanvasRef = useRef(null);
   const [users, setUsers] = useState([]);
   const socket = useSocket();
@@ -35,14 +35,18 @@ function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape
       }
     }
 
+
+
     socket.on('mousemove', onMouseMove);
     socket.on('updateshape', onUpdateShape);
+    socket.on('deleteAllShapes', deleteAllShapes);
 
     return () => {
       socket.off('mousemove', onMouseMove);
       socket.off('updateshape', onUpdateShape);
+      socket.off('deleteAllShapes', deleteAllShapes);
     };
-  }, [socket, addShape, removeShape]);
+  }, [socket, addShape, removeShape, deleteAllShapes]);
 
   return (
     <canvas id="userActivityCanvas" ref={userActivityCanvasRef} width={width} height={height}></canvas>

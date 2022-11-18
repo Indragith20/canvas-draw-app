@@ -18,6 +18,7 @@ import styles from '../../styles/styles.css';
 import { SocketProvider } from '~/contexts/socketContext';
 import {
   addShape,
+  deleteAllShapes,
   deleteShape,
   getInitialDrawData,
   getUser,
@@ -30,8 +31,8 @@ import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { useTheme } from '~/contexts/themeContext';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
-import { ModalLinks } from '~/components/Modal/Modal';
-import { useToast } from '~/components/Toast/ToastContext';
+import { ModalLinks } from '~/components/Common/Modal/Modal';
+import { useToast } from '~/components/Common/Toast/ToastContext';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -94,9 +95,11 @@ export const action = async ({ request, params }) => {
   } else if (action === 'update') {
     console.log('update action called');
     data = await updateShape(params.drawId, actionData);
+  } else if (action === 'deleteAll') {
+    data = await deleteAllShapes(params.drawId);
   }
 
-  return json({ data, action });
+  return json({ actionData: data, action });
 };
 
 export function CatchBoundary() {
@@ -127,7 +130,7 @@ export function CatchBoundary() {
 }
 
 function DrawIndex() {
-  const fetcher = useFetcher();
+  const { submit } = useFetcher();
   const { currentUser, shapes, users, roomId } = useLoaderData();
   let { id, name } = currentUser;
   const actionData = useActionData();
@@ -180,11 +183,11 @@ function DrawIndex() {
       let formData = new FormData();
       formData.set('data', JSON.stringify({ ...shape }));
       formData.set('action', action);
-      const data = fetcher.submit(formData, { method: 'post' });
+      const data = submit(formData, { method: 'post' });
       console.log('fetcher data', data);
       socket.emit('updateshape', { user: currentUser, roomId, shape, action });
     },
-    [fetcher, socket, currentUser, roomId]
+    [submit, socket, currentUser, roomId]
   );
 
   const onMouseMove = useCallback(

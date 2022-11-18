@@ -83,6 +83,17 @@ async function deleteShape(roomId, shapeTobeDeleted) {
   //return await db.shapeCollection(roomId).doc(`${shapeJSON.id}`).delete();
 }
 
+function deleteAllShapes(roomId) {
+  return new Promise((resolve, reject) => {
+    let docRef = db.shapeCollection(roomId).doc('shapeList');
+    docRef.set({ shapeList: [] }).then(() => {
+      resolve({ message: 'success' });
+    }).catch(err => {
+      reject(err);
+    })
+  })
+}
+
 async function updateShape(roomId, shapeTobeUpdated) {
   const shapeJSON = JSON.parse(shapeTobeUpdated);
   return new Promise((resolve, reject) => {
@@ -369,6 +380,7 @@ export {
   updateShape,
   addCollaborator,
   deleteCollaborator,
+  deleteAllShapes,
   getUser,
   getRoomDetails,
   getUsers,

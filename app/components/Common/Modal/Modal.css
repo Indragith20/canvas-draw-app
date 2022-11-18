@@ -28,8 +28,8 @@
 
 .modal-header {
   position: relative;
-  border-bottom: 1px solid #e6dfdf;
   padding: 1rem;
+  border-bottom: 1px solid #e6dfdf;
 }
 
 .modal-header-title {

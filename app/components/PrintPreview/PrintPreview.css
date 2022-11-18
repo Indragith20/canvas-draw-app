@@ -22,6 +22,11 @@
   font-size: 1.25rem;
 }
 
+.btn {
+  cursor: pointer;
+  font-size: medium;
+}
+
 .cancel-btn {
   background-color: transparent;
   border: none;
