@@ -21,13 +21,17 @@ function DeletePopup({ showDeletePopup, onCancel, deleteCanvas }) {
     submit(formData, { method: 'post' });
   }
 
-  if (data && data.action === 'deleteAll') {
-    let { actionData } = data;
-    if (actionData && actionData.message === 'success') {
-      addToast({ message: 'Canvas Deleted Successfully', timeout: 5000 })
-      deleteCanvas();
+
+
+  useEffect(() => {
+    if (data && data.action === 'deleteAll') {
+      let { actionData } = data;
+      if (actionData && actionData.message === 'success') {
+        addToast({ message: 'Canvas Deleted Successfully', timeout: 5000 })
+        deleteCanvas();
+      }
     }
-  }
+  }, [data, addToast, deleteCanvas])
   return (
     <Modal show={showDeletePopup}>
       <Modal.Header needCloseIcon={true} close={onCancel}>
