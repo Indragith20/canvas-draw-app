@@ -39,8 +39,8 @@ function PrintPreview({ shapes, showPreview, onCancel, baseLineHeight, baseFontS
 
 
   return (
-    <Modal show={showPreview}>
-      <Modal.Header needCloseIcon={true} close={onClose}>
+    <Modal show={showPreview} close={onClose}>
+      <Modal.Header needCloseIcon={true}>
         <div>Export Image</div>
       </Modal.Header>
       <Modal.Content>

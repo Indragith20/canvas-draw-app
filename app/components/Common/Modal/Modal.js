@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import ReactDOM from 'react-dom';
+import afterTransition from "~/components/utils/transitionElement";
 import styles from './Modal.css';
 
 
@@ -8,10 +9,27 @@ export const ModalLinks = () => ([
     rel: 'stylesheet',
     href: styles
   }
-])
+]);
+
+const ModalContext = React.createContext();
 
 
-const Modal = ({ show, close, title, children }) => {
+const Modal = ({ show, close, title, children, onClickOutsideClose = true }) => {
+  let modalRef = useRef(null);
+  function closeModal() {
+    // if (onClickOutsideClose) {
+    //   modalRef.current.classList.add('exit-animation');
+    //   requestAnimationFrame(() => {
+    //     afterTransition(modalRef.current).then(() => {
+    //       console.log('on close calle');
+    //       modalRef.current = null;
+    //       close();
+    //     })
+    //   })
+
+    // }
+    close();
+  }
   if (typeof window === "undefined") {
     return null;
   } else {
@@ -19,15 +37,17 @@ const Modal = ({ show, close, title, children }) => {
       <>
         {
           show ?
-
-            <div
-              className="modalContainer"
-              onClick={() => close()}
-            >
-              <div className="modal" onClick={(e) => e.stopPropagation()}>
-                {children}
+            <ModalContext.Provider value={{ close: closeModal }}>
+              <div
+                className="modalContainer"
+                onClick={() => close()}
+              >
+                <div className="modal-background" onClick={closeModal}></div>
+                <div className="modal enter-animation" ref={modalRef} onClick={(e) => e.stopPropagation()}>
+                  {children}
+                </div>
               </div>
-            </div>
+            </ModalContext.Provider>
             : null
         }
 
@@ -44,7 +64,8 @@ function Footer({ children }) {
   )
 }
 
-function Header({ children, needCloseIcon, close }) {
+function Header({ children, needCloseIcon }) {
+  const { close } = useContext(ModalContext)
   return (
     <header className="modal-header">
       {children}

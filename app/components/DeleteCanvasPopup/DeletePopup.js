@@ -33,8 +33,8 @@ function DeletePopup({ showDeletePopup, onCancel, deleteCanvas }) {
     }
   }, [data, addToast, deleteCanvas])
   return (
-    <Modal show={showDeletePopup}>
-      <Modal.Header needCloseIcon={true} close={onCancel}>
+    <Modal show={showDeletePopup} close={onCancel}>
+      <Modal.Header needCloseIcon={true}>
         Confirmation
       </Modal.Header>
       <Modal.Content>

@@ -16,7 +16,7 @@ export default function SingleRoom({ id, roomName, createdAt, createdBy }) {
         {/* Created At {createdAt} */}
       </div>
       <div className='room-name'>
-        <Link to={`/draw/${id}`} className='room-link'>
+        <Link to={`/draw/${id}`} className='room-link' replace={true}>
           {roomName}
         </Link>
       </div>
