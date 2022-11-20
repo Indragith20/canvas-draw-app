@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import afterTransition from '~/components/utils/transitionElement';
 import styles from './Toast.css';
 
 
@@ -10,37 +11,14 @@ function Toast({ message = 'Sucess Message', timeout = 5000, type, onDismiss, id
   let timer = useRef(null);
   let toastRef = useRef(null);
 
-  function afterTransition(element) {
-    return new Promise(resolve => {
-      console.log(element)
-      console.log(getComputedStyle(element)
-        .animationDuration);
-      const duration = Number(
-        getComputedStyle(element)
-          .animationDuration
-          .replace('s', '')
-          .replace('m', '')
-      ) * 1000;
-
-      console.log('Duration ', duration);
-
-      setTimeout(() => {
-        resolve();
-      }, duration);
-    });
-  }
-
   useEffect(() => {
     if (timeout !== Infinity) {
       timer.current = setTimeout(() => {
         toastRef.current.classList.add('exit-animation');
-        requestAnimationFrame(() => {
-          afterTransition(toastRef.current).then(() => {
-            onDismiss(id)
-          })
+        afterTransition(toastRef.current).then(() => {
+          toastRef.current = null;
+          onDismiss(id)
         })
-
-
       }, timeout);
     }
 
@@ -52,13 +30,18 @@ function Toast({ message = 'Sucess Message', timeout = 5000, type, onDismiss, id
   function onClose() {
     clearTimeout(timer.current);
     toastRef.current.classList.add('exit-animation');
-    requestAnimationFrame(() => {
-      afterTransition(toastRef.current).then(() => {
-        onDismiss(id)
-      })
+    afterTransition(toastRef.current).then(() => {
+      toastRef.current = null;
+      onDismiss(id)
     })
 
   }
+
+  useEffect(() => {
+    return () => {
+      toastRef.current = null;
+    }
+  }, [])
 
   return (
     <div className={`single-toast enter-animation`} ref={toastRef}>

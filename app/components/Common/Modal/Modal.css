@@ -4,12 +4,19 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  
    /* background-color: var(--primary-background); */
   display: flex;
   justify-content: center;
   align-items: center;
   color: var(--primary-font-color);
+}
+
+.modal-background {
+  background-color: rgba(0, 0, 0, 0.75);
+  height: 100%;
+  width: 100%;
+  position: absolute;
 }
 
 .modal {
@@ -87,4 +94,39 @@
 
 .submit:hover {
   background-color: rgba(54, 67, 72, 0.8);
+}
+
+.enter-animation {
+  animation: fadeIn 250ms ease-in;
+}
+
+.exit-animation {
+  opacity: 0;
+  animation: fadeOut 250ms ease-in;
+}
+
+
+
+@keyframes fadeIn {
+  from {
+    transform: translateY(-200px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(-200px);
+    opacity: 0;
+  }
 }

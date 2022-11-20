@@ -24,8 +24,8 @@ function ShareLink({ showShareLink, onCancel }) {
   }
 
   return (
-    <Modal show={showShareLink}>
-      <Modal.Header needCloseIcon={true} close={onCancel}>
+    <Modal show={showShareLink} close={onCancel}>
+      <Modal.Header needCloseIcon={true} >
         Sharable Link
       </Modal.Header>
       <Modal.Content>
