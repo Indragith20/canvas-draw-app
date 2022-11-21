@@ -7,16 +7,17 @@
   color: var(--canvas-font-color);
   padding: 0;
   margin: 0;
+  border: none;
   /* border: 1px solid red; */
 }
 
 .textarea {
   border: none;
   outline: none;
-  font-family: "Comic Sans MS";
+  font-family: "Mali";
   font-style: normal;
   font-size: var(--font-size);
-  overflow: scroll;
+  overflow: auto;
   color: inherit;
   resize: none;
   width: 100%;

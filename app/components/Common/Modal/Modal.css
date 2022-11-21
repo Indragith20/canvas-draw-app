@@ -69,7 +69,7 @@
 .modal-content {
   padding: 2rem 1rem;
   max-height: 400px;
-  overflow: scroll;
+  overflow: auto;
   scrollbar-color: currentcolor;
 }
 

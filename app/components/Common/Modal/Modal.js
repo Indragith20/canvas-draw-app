@@ -17,18 +17,17 @@ const ModalContext = React.createContext();
 const Modal = ({ show, close, title, children, onClickOutsideClose = true }) => {
   let modalRef = useRef(null);
   function closeModal() {
-    // if (onClickOutsideClose) {
-    //   modalRef.current.classList.add('exit-animation');
-    //   requestAnimationFrame(() => {
-    //     afterTransition(modalRef.current).then(() => {
-    //       console.log('on close calle');
-    //       modalRef.current = null;
-    //       close();
-    //     })
-    //   })
+    if (onClickOutsideClose) {
+      modalRef.current.classList.add('exit-animation');
+      requestAnimationFrame(() => {
+        afterTransition(modalRef.current).then(() => {
+          console.log('on close calle');
+          modalRef.current = null;
+          close();
+        })
+      })
 
-    // }
-    close();
+    }
   }
   if (typeof window === "undefined") {
     return null;
