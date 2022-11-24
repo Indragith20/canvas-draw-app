@@ -167,8 +167,8 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.addEventListener('mouseup', this.onEvent, false);
     this.tempCanvas.current.addEventListener('dblclick', this.changeToTextTool, false);
     document.addEventListener('keydown', this.onKeyDown, false);
-    document.addEventListener('click', this.onDocumentClick, false);
-    document.addEventListener('wheel', this.onWheelMove, false);
+    this.tempCanvas.current.addEventListener('click', this.onDocumentClick, false);
+    this.tempCanvas.current.addEventListener('wheel', this.onWheelMove, false);
 
     window.addEventListener('resize', this.onResize);
   }
@@ -179,8 +179,8 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.removeEventListener('mouseup', this.onEvent, false);
     this.tempCanvas.current.removeEventListener('dblclick', this.changeToTextTool, false);
     document.removeEventListener('keydown', this.onKeyDown, false);
-    document.removeEventListener('click', this.onDocumentClick, false);
-    document.removeEventListener('wheel', this.onWheelMove, false);
+    this.tempCanvas.current.removeEventListener('click', this.onDocumentClick, false);
+    this.tempCanvas.current.removeEventListener('wheel', this.onWheelMove, false);
     window.removeEventListener('resize', this.onResize);
   }
 
