@@ -64,7 +64,7 @@ class DrawText {
         id: this.id,
         type: 'text',
         x: tetxtareaClientStyle.left,
-        y: tetxtareaClientStyle.top,
+        y: tetxtareaClientStyle.top + 10,
         textContent: text,
         innerHtml: this.textBox.innerHTML,
         endX: this.startX + width,
@@ -80,8 +80,8 @@ class DrawText {
       this.textBoxContainer.style.top = '0px';
       this.textBoxContainer.style.left = '0px';
       this.textBoxContainer.style.display = 'none';
-      this.textBoxContainer.style.minWidth = '1px';
-      this.textBoxContainer.style.minHeight = '42px';
+      // this.textBoxContainer.style.minWidth = '1px';
+      // this.textBoxContainer.style.minHeight = '42px';
       this.textBox.innerHTML = '';
       this.textBoxContainer = null;
       this.textBox = null;

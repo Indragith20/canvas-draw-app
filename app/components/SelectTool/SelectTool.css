@@ -51,3 +51,10 @@
   color: white;
   border-radius: 5px;;
 }
+
+
+@media (min-width: 320px) and (max-width: 767px) {
+  .selectTool .tool-icon {
+    padding: 5px;
+  }
+}

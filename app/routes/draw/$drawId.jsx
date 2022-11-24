@@ -33,6 +33,7 @@ import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { useToast } from '~/components/Common/Toast/ToastContext';
+import BackIcon from '~/components/BackIcon/BackIcon';
 
 export const links = () => [
   ...HeaderStyleLinks(),
