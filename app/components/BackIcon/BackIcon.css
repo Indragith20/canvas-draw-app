@@ -1,0 +1,31 @@
+.back-icon-container {
+  position: fixed;
+  top: 10px;
+  left: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  flex-direction: row;
+  font-size: small;
+  padding: 8px;
+  border-radius: 5px;
+  color: var(--primary-font-color);
+}
+
+.dark-background .back-icon-container:hover {
+  background-color: var(--border-color);
+}
+
+.light-background .back-icon-container:hover {
+  background-color: var(--border-color);
+  color: white;
+}
+
+/* TODO instead of display none show different UI for back Icon */
+@media (min-width: 320px) and (max-width: 767px) {
+  .back-icon-container {
+    display: none;
+  }
+}
+

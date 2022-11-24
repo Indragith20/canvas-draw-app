@@ -19,9 +19,10 @@ import UserActivity from './UserActivity/UserActivity';
 import PrintPreview, { PrintPreviewLinks } from './PrintPreview/PrintPreview';
 import ShareLink, { ShareLinks } from './ShareLink/ShareLink';
 import DeletePopup, { DeletePopupLinks } from './DeleteCanvasPopup/DeletePopup';
+import BackIcon, { BackIconStyles } from './BackIcon/BackIcon';
 
 export function MainComponentStyles() {
-  return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), { rel: 'stylesheet', href: styles }];
+  return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...BackIconStyles(), { rel: 'stylesheet', href: styles }];
 }
 
 
@@ -786,6 +787,7 @@ class MainComponent extends React.PureComponent {
           shapes={shapes} />
         <ShareLink showShareLink={showModal === 'shareLink'} onCancel={this.onModalClose} />
         <DeletePopup showDeletePopup={showModal === 'deleteCanvas'} onCancel={this.onModalClose} deleteCanvas={this.onEmptyCanvas} />
+        <BackIcon />
       </div>
     )
   }

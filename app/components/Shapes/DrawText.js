@@ -64,7 +64,7 @@ class DrawText {
         id: this.id,
         type: 'text',
         x: tetxtareaClientStyle.left,
-        y: tetxtareaClientStyle.top,
+        y: tetxtareaClientStyle.top + 10,
         textContent: text,
         innerHtml: this.textBox.innerHTML,
         endX: this.startX + width,
