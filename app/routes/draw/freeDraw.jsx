@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useMatchMedia } from '~/components/Common/hooks/useMatchMedia';
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
 import MainComponent, { MainComponentStyles } from '~/components/main';
 import { HeaderStyleLinks } from '~/components/MainHeader/Header';
@@ -27,6 +28,7 @@ export default function FreeDrawIndex() {
   const [loading, setLoading] = useState(true);
   const [shapes, setShapes] = useState([]);
   const { theme } = useTheme();
+  const isMobile = useMatchMedia('(min-width: 320px) and (max-width: 767px)');
 
   useEffect(() => {
     Idb.getDataFromIdb('app-state-persist')
@@ -50,6 +52,7 @@ export default function FreeDrawIndex() {
         updateShape={() => {}}
         updateDb={Idb.updateDb}
         selectedTheme={theme}
+        isMobile={isMobile}
       />
     </div>
   );

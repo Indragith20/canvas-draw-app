@@ -34,6 +34,7 @@ import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { useToast } from '~/components/Common/Toast/ToastContext';
 import BackIcon from '~/components/BackIcon/BackIcon';
+import { isTouchDevice } from '~/components/utils/common';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -132,6 +133,7 @@ export function CatchBoundary() {
 
 function DrawIndex() {
   const { submit } = useFetcher();
+  const isMobile = isTouchDevice();
   const { currentUser, shapes, users, roomId } = useLoaderData();
   let { id, name } = currentUser;
   const actionData = useActionData();
@@ -207,6 +209,7 @@ function DrawIndex() {
           updateShape={updateShape}
           updateDb={Idb.updateDb}
           selectedTheme={theme}
+          isMobile={isMobile}
         />
       </SocketProvider>
     </div>
