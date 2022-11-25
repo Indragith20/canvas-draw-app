@@ -20,6 +20,7 @@ import PrintPreview, { PrintPreviewLinks } from './PrintPreview/PrintPreview';
 import ShareLink, { ShareLinks } from './ShareLink/ShareLink';
 import DeletePopup, { DeletePopupLinks } from './DeleteCanvasPopup/DeletePopup';
 import BackIcon, { BackIconStyles } from './BackIcon/BackIcon';
+import { isTouchDevice } from './utils/common';
 
 export function MainComponentStyles() {
   return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...BackIconStyles(), { rel: 'stylesheet', href: styles }];
@@ -37,6 +38,16 @@ let tools = {
   diamond: Diamond,
   select: 'select'
 };
+
+let eventTypeMapping = {
+  'mouseup': 'mouseup',
+  'mousedown': 'mousedown',
+  'mousemove': 'mousemove',
+  'dblclick': 'dblclick',
+  'touchstart': 'mousedown',
+  'touchmove': 'mousemove',
+  'touchend': 'mouseup'
+}
 
 let baseConfig = {
   scalingFactor: 1,
@@ -71,6 +82,8 @@ class MainComponent extends React.PureComponent {
     this.onDocumentClick = this.onDocumentClick.bind(this);
     this.resetDraggingValues = this.resetDraggingValues.bind(this);
     this.onWheelMove = this.onWheelMove.bind(this);
+    this.onTouchStart = this.onTouchStart.bind(this);
+    this.onTouchMove = this.onTouchMove.bind(this);
     this.imgUpdate = this.imgUpdate.bind(this);
     this.drawImage = this.drawImage.bind(this);
     this.onResize = this.onResize.bind(this);
@@ -162,9 +175,16 @@ class MainComponent extends React.PureComponent {
   }
 
   addEventListeners() {
-    this.tempCanvas.current.addEventListener('mousedown', this.onEvent, false);
-    this.tempCanvas.current.addEventListener('mousemove', this.onEvent, false);
-    this.tempCanvas.current.addEventListener('mouseup', this.onEvent, false);
+    if (isTouchDevice()) {
+      this.tempCanvas.current.addEventListener('touchstart', this.onTouchStart, false);
+      this.tempCanvas.current.addEventListener('touchmove', this.onTouchMove, false);
+      this.tempCanvas.current.addEventListener('touchend', this.onEvent, false);
+    } else {
+      this.tempCanvas.current.addEventListener('mousedown', this.onEvent, false);
+      this.tempCanvas.current.addEventListener('mousemove', this.onEvent, false);
+      this.tempCanvas.current.addEventListener('mouseup', this.onEvent, false);
+    }
+
     this.tempCanvas.current.addEventListener('dblclick', this.changeToTextTool, false);
     document.addEventListener('keydown', this.onKeyDown, false);
     this.tempCanvas.current.addEventListener('click', this.onDocumentClick, false);
@@ -177,6 +197,9 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.removeEventListener('mousedown', this.onEvent, false);
     this.tempCanvas.current.removeEventListener('mousemove', this.onEvent, false);
     this.tempCanvas.current.removeEventListener('mouseup', this.onEvent, false);
+    this.tempCanvas.current.removeEventListener('touchstart', this.onTouchStart, false);
+    this.tempCanvas.current.removeEventListener('touchmove', this.onTouchMove, false);
+    this.tempCanvas.current.removeEventListener('touchend', this.onEvent, false);
     this.tempCanvas.current.removeEventListener('dblclick', this.changeToTextTool, false);
     document.removeEventListener('keydown', this.onKeyDown, false);
     this.tempCanvas.current.removeEventListener('click', this.onDocumentClick, false);
@@ -255,9 +278,39 @@ class MainComponent extends React.PureComponent {
     })
   }
 
+  onTouchStart(ev) {
+    let { selectedTool } = this.state;
+    if (selectedTool === 'select' || ev.touches.length > 0) {
+      this.touchStartX = ev.touches[0].clientX;
+      this.touchStartY = ev.touches[0].clientY;
+    } else {
+      this.onEvent(ev);
+    }
+  }
+
+  onTouchMove(ev) {
+    let { selectedTool } = this.state;
+    if (selectedTool === 'select' || ev.touches.length > 0) {
+      let deltaX = this.touchStartX - ev.touches[0].clientX;
+      let deltaY = this.touchStartY - ev.touches[0].clientY;
+      ev.deltaX = deltaX;
+      ev.deltaY = deltaY;
+      this.onWheelMove(ev);
+    } else {
+      this.onEvent(ev);
+    }
+  }
+
   onEvent(ev) {
-    ev._x = ev.x;
-    ev._y = ev.y;
+    console.log(ev);
+    if (ev.type === 'touchend') {
+      ev._x = ev.changedTouches[0].clientX;
+      ev._y = ev.changedTouches[0].clientY;
+    } else {
+      ev._x = ev.x || ev.touches[0].clientX;
+      ev._y = ev.y || ev.touches[0].clientY;
+    }
+
     let { mouseMove } = this.props;
     let { selectedTool, scrollX, scrollY, shapes } = this.state;
     mouseMove({ x: this.changeToOneScalingFactor(ev.x - scrollX), y: this.changeToOneScalingFactor(ev.y - scrollY) })
@@ -331,7 +384,7 @@ class MainComponent extends React.PureComponent {
             }
             this.tool = new MoveTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, selectedElement, selectedTheme);
             // element is present. we need to call movetool
-            this.tool['mousedown'](ev);
+            this.tool[eventTypeMapping['mousedown']](ev);
           })
         }
 
@@ -341,7 +394,7 @@ class MainComponent extends React.PureComponent {
         if (ev.type === 'mousemove' || ev.type === 'mouseup') {
           // movetool instace should already by present
           if (this.tool) {
-            this.tool[ev.type](ev);
+            this.tool[eventTypeMapping[ev.type]](ev);
             if (ev.type === 'mouseup') {
               this.isUserDragging = false;
               this.mouseXPosition = null;
@@ -352,7 +405,7 @@ class MainComponent extends React.PureComponent {
         }
       }
     } else if (this.tool) {
-      let func = this.tool[ev.type];
+      let func = this.tool[eventTypeMapping[ev.type]];
       if (func) {
         func(ev);
       }
@@ -574,7 +627,7 @@ class MainComponent extends React.PureComponent {
       //   });
       // }
 
-      let func = this.tool[ev.type];
+      let func = this.tool[eventTypeMapping[ev.type]];
       if (func) {
         this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
         // func will be dbclick in drawtext
