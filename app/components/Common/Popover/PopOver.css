@@ -1,0 +1,25 @@
+.popover {
+  position: relative;
+}
+
+.popover-trigger {
+  cursor: pointer;
+}
+
+.popover-content {
+  position: absolute;
+  z-index: 1000;
+  background-color: white;
+  color: black;
+  width: max-content;
+  right: 0px;
+  top: 30px;
+  border-radius: 12px;
+}
+
+.light-background .popover-content {
+  border: 1px solid black;
+  background-color: white;
+  color: black;
+  border-radius: 5px;
+}
