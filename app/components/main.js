@@ -21,9 +21,10 @@ import ShareLink, { ShareLinks } from './ShareLink/ShareLink';
 import DeletePopup, { DeletePopupLinks } from './DeleteCanvasPopup/DeletePopup';
 import BackIcon, { BackIconStyles } from './BackIcon/BackIcon';
 import { isTouchDevice } from './utils/common';
+import { CollaboratorsLinks } from './Collaborators/Collaborators';
 
 export function MainComponentStyles() {
-  return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...BackIconStyles(), { rel: 'stylesheet', href: styles }];
+  return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), { rel: 'stylesheet', href: styles }];
 }
 
 
@@ -302,14 +303,15 @@ class MainComponent extends React.PureComponent {
   }
 
   onEvent(ev) {
-    console.log(ev);
-    if (ev.type === 'touchend') {
-      ev._x = ev.changedTouches[0].clientX;
-      ev._y = ev.changedTouches[0].clientY;
-    } else {
-      ev._x = ev.x || ev.touches[0].clientX;
-      ev._y = ev.y || ev.touches[0].clientY;
-    }
+    // if (ev.type === 'touchend') {
+    //   ev._x = ev.changedTouches[0].clientX;
+    //   ev._y = ev.changedTouches[0].clientY;
+    // } else {
+    //   ev._x = ev.x || ev.touches[0].clientX;
+    //   ev._y = ev.y || ev.touches[0].clientY;
+    // }
+    ev._x = ev.x;
+    ev._y = ev.y;
 
     let { mouseMove } = this.props;
     let { selectedTool, scrollX, scrollY, shapes } = this.state;

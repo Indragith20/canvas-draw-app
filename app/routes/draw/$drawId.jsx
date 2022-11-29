@@ -35,6 +35,7 @@ import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { useToast } from '~/components/Common/Toast/ToastContext';
 import BackIcon from '~/components/BackIcon/BackIcon';
 import { isTouchDevice } from '~/components/utils/common';
+import { PopOverLinks } from '~/components/Common/Popover/PopOver';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -47,6 +48,7 @@ export const links = () => [
   ...ZoomContainerLinks(),
   ...UserActivityLinks(),
   ...ModalLinks(),
+  ...PopOverLinks(),
   { rel: 'stylesheet', href: styles }
 ];
 

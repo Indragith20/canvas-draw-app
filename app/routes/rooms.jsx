@@ -7,11 +7,13 @@ import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { requireAuth } from '../../server/auth';
 import { getRoomDetails, getUser } from '../../server/db';
+import { PopOverLinks } from '~/components/Common/Popover/PopOver';
 
 export const links = () => [
   ...HeaderStyleLinks(),
   ...LogoLinks(),
   ...ModalLinks(),
+  ...PopOverLinks(),
   ...ThemeSwitcherLinks()
 ];
 

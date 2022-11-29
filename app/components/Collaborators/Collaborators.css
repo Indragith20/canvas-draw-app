@@ -1,0 +1,38 @@
+.actions-list {
+  list-style-type: none;
+  padding: 10px;
+  margin: 0px;
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
+}
+
+
+.actions-list-item {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.actions-list-item:hover {
+  background-color: antiquewhite;
+}
+
+.actions-list-item:not(:last-child) {
+  border-bottom: 1px solid darkgray;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid black;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
