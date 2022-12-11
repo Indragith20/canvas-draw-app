@@ -1,3 +1,4 @@
+import { json } from '@remix-run/node';
 import React, { useEffect, useState } from 'react';
 import { useMatchMedia } from '~/components/Common/hooks/useMatchMedia';
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
@@ -23,6 +24,10 @@ export const links = () => [
   ...ZoomContainerLinks(),
   { rel: 'stylesheet', href: styles }
 ];
+
+export const loader = async ({ request, params }) => {
+  return json({ currentUser: null });
+};
 
 export default function FreeDrawIndex() {
   const [loading, setLoading] = useState(true);
