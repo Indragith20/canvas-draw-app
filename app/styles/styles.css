@@ -3,7 +3,7 @@
 
 body {
   /* background: url(../images/bg.gif) repeat-x #f8f8f8; */
-  color: #d7d7d7;
+  /* color: #d7d7d7; */
   font-family: "Comic Sans MS", "Arial", cursive;
   font-size: 24px;
   line-height: 32px;
@@ -58,6 +58,146 @@ body {
   background-color: white;
   border: 1px solid black;
   border-left: 3px solid black;
+}
+
+.home-page {
+  position: relative;
+}
+
+.background-image-container {
+  margin-left: 5vw;
+  margin-right: 5vw;
+  max-height: 40rem;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  padding-bottom: 50px;
+  border-bottom: 1px solid lightgrey;
+}
+
+.main-content {
+  font-size: 1.75rem;
+  font-family: 'Inter';
+  line-height: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.content-actions {
+  font-size: large;
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.btn-home {
+  border-radius: 3rem;
+  cursor: pointer;
+}
+
+.text-content {
+  font-size: 4rem;
+  line-height: 5rem;
+}
+
+.sign-up-home {
+  background-color: var(--selected-tool-color);
+  border: 1px solid var(--selected-tool-color);
+  padding-bottom: 1.5rem;
+  padding-top: 1.5rem;
+  padding-left: 2.75rem;
+  padding-right: 2.75rem;
+  min-width: 250px;
+}
+
+.without-login {
+  background-color: white;
+  border-color: 1px solid black;
+  padding-bottom: 1.5rem;
+  padding-top: 1.5rem;
+  padding-left: 2.75rem;
+  padding-right: 2.75rem;
+}
+
+.login-action {
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.image-container {
+  width: 50%;
+  height: 50%;
+}
+
+.features-section {
+  margin-left: 5vw;
+  margin-right: 5vw;
+  font-size: 1.75rem;
+  font-family: 'Inter';
+  line-height: 3rem;
+  border-bottom: 1px solid lightgrey;
+}
+
+.highlight-text {
+  text-decoration: underline;
+}
+
+.features-header {
+  margin-bottom: 30px;
+  font-size: 3rem;
+  text-align: center;
+}
+
+.secondary-features-content {
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+  text-align: center;
+}
+
+.main-features {
+  margin: 10rem;
+  margin-top: 5rem;
+  margin-bottom: 5rem;
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
+
+.features-row {
+  display: flex;
+  flex-direction: row;
+  gap: 50px;
+}
+
+.features-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.feature-img {
+  width: 150px;
+  height: 150px;
+}
+
+.feature-header {
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+}
+
+.feature-section {
+  font-size: 1rem;
+  color: gray;
+}
+
+.footer {
+  font-size: 1rem;
+  text-align: center;
+  margin: 1rem;
 }
 
 
