@@ -29,7 +29,7 @@ export function links() {
     },
     {
       rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Mali:ital,wght@0,200;0,300;0,400;1,200&display=swap'
+      href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Mali:ital,wght@0,200;0,300;0,400;0,700;1,200;1,400&display=swap'
     },
     ...LoaderLinks(),
     ...ToastStyleLinks()

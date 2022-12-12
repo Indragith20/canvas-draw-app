@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
-export const ThemeContext = createContext(null);
+export const ThemeContext = createContext('dark');
 
 export function useTheme() {
   return useContext(ThemeContext);
