@@ -75,7 +75,7 @@ body {
 }
 
 .main-content {
-  font-size: 1.75rem;
+  font-size: clamp(0.5rem, 1.75rem, 2rem);
   font-family: 'Inter';
   line-height: 3rem;
   display: flex;
@@ -191,13 +191,162 @@ body {
 
 .feature-section {
   font-size: 1rem;
+  line-height: 2rem;
   color: gray;
+  text-align: center;
 }
 
 .footer {
   font-size: 1rem;
   text-align: center;
+  padding: 2rem;
+}
+
+.footer-icons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
   margin: 1rem;
+}
+
+@media screen and (min-width: 1700px) {
+  .background-image-container {
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .features-section {
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .background-image-container {
+    max-height: fit-content;
+  }
+  .main-content {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  .image-container {
+    width: 100%;
+  }
+  .text-content {
+    font-size: 2rem;
+    line-height: 3rem;
+  }
+  .sign-up-home {
+    padding-bottom: 1rem;
+    padding-top: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    min-width: 150px;
+  }
+  
+  .without-login {
+    background-color: white;
+    border-color: 1px solid black;
+    padding-bottom: 1rem;
+    padding-top: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .main-features {
+    margin: 2rem;
+  }
+
+  .features-row {
+    flex-direction: column;
+  }
+}
+
+/* 
+  ##Device = Low Resolution Tablets, Mobiles (Landscape)
+  ##Screen = B/w 481px to 767px
+*/
+
+@media (min-width: 481px) and (max-width: 767px) {
+  .background-image-container {
+    max-height: fit-content;
+  }
+  .main-content {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  .text-content {
+    font-size: 2rem;
+    line-height: 3rem;
+  }
+  .image-container {
+    width: 100%;
+  }
+  .sign-up-home {
+    padding: .75rem 1rem;
+    min-width: 150px;
+  }
+  
+  .without-login {
+    background-color: white;
+    border-color: 1px solid black;
+    padding: .75rem 1rem;
+  }
+
+  .main-features {
+    margin: 2rem;
+  }
+
+  .features-row {
+    flex-direction: column;
+  }
+}
+
+/* 
+  ##Device = Most of the Smartphones Mobiles (Portrait)
+  ##Screen = B/w 320px to 479px
+*/
+
+@media (min-width: 320px) and (max-width: 480px) {
+  .background-image-container {
+    max-height: fit-content;
+  }
+  .main-content {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  .text-content {
+    font-size: 2rem;
+    line-height: 3rem;
+  }
+  .image-container {
+    width: 100%;
+  }
+  .sign-up-home {
+    padding: .5rem .75rem;
+  }
+
+  .content-actions {
+    flex-direction: column;
+  }
+  
+  .without-login {
+    background-color: white;
+    border-color: 1px solid black;
+    padding: .5rem .75rem;
+  }
+
+  .main-features {
+    margin: 2rem;
+  }
+
+  .features-row {
+    flex-direction: column;
+  }
 }
 
 
