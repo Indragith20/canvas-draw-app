@@ -1,59 +1,45 @@
-# Welcome to Remix!
+![Logo](./app/assets/draw-light.webp)
 
-- [Remix Docs](https://remix.run/docs)
+![](https://img.shields.io/badge/react-17.0.2-blue)
+![](https://img.shields.io/badge/remix-1.7.6-blue)
+![](https://img.shields.io/badge/firebase-9.6.10-orange)
+![](https://img.shields.io/badge/socket.io-4.4.1-brightgreen)
 
-## Development
+Welcome to the [drawanything](https://canvas-draw-app.up.railway.app/) Application.
 
-You'll need to run two terminals (or bring in a process manager like concurrently/pm2-dev if you like):
+## Contents
 
-Start the Remix development asset server
+This repository is a [remix](https://remix.run/) based application:
 
-```sh
-npm run dev
-```
+- [**app/**](https://github.com/Indragith20/canvas-draw-app/tree/remix-setup/app) contains the source for the UI side.
 
-In a new tab start your express app:
+  - [**app/assets**](https://github.com/Indragith20/canvas-draw-app/tree/remix-setup/app/assets) contains the images required for the application
+  - [**app/components**](https://github.com/Indragith20/canvas-draw-app/tree/remix-setup/app/components) - Common UI Components
+  - [**app/routes**](https://github.com/Indragith20/canvas-draw-app/tree/remix-setup/app/routes) - Paths supported in the application
+  - [**app/styles**](https://github.com/Indragith20/canvas-draw-app/tree/remix-setup/app/styles) - Common styles used across the application
 
-```sh
-npm run start:dev
-```
+- [**server/**](https://github.com/Indragith20/canvas-draw-app/tree/remix-setup/server) contains the source for the Server Side.
 
-This starts your app in development mode, which will purge the server require cache when Remix rebuilds assets so you don't need a process manager restarting the express server.
+## Setup
 
-## Deployment
+For setting up the project locally, you need to create an .env in the root path. Application backend is hosted on firebase. You need to create a project in firebase.
 
-First, build your app for production:
+.env file should contain three variables
 
-```sh
-npm run build
-```
+- SERVICE_ACCOUNT
+- CLIENT_CONFIG
+- REDIS_URL
 
-Then run the app in production mode:
+## Contribution
 
-```sh
-npm start
-```
+Interested in contributing? Please do feel free to open a PR.
 
-Now you'll need to pick a host to deploy it to.
+## Issues
 
-### DIY
+Found any issues do [open an issue](https://github.com/Indragith20/canvas-draw-app/issues/new)
 
-If you're familiar with deploying express applications you should be right at home just make sure to deploy the output of `remix build`
+🙌 Questions? start a [discussion](https://github.com/Indragith20/canvas-draw-app/discussions/new).
 
-- `server/build/`
-- `public/build/`
+## Author
 
-### Using a Template
-
-When you ran `npx create-remix@latest` there were a few choices for hosting. You can run that again to create a new project, then copy over your `app/` folder to the new project that's pre-configured for your target server.
-
-```sh
-cd ..
-# create a new project, and pick a pre-configured host
-npx create-remix@latest
-cd my-new-remix-app
-# remove the new project's app (not the old one!)
-rm -rf app
-# copy your app over
-cp -R ../my-old-remix-app/app app
-```
+- [@indragith](https://www.linkedin.com/in/indragith-manimaran/)
