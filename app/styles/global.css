@@ -24,6 +24,7 @@ html, body {
   font-family: 'Mali', cursive;
   background-color: var(--primary-background);
   color: var(--primary-font-color);
+  text-underline-offset: 5px;
 }
 
 .dark-background {

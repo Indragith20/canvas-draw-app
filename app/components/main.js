@@ -802,6 +802,7 @@ class MainComponent extends React.PureComponent {
 
   render() {
     let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes } = this.state;
+    let { backLink } = this.props;
     return (
       <div
         style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: `${selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
@@ -842,7 +843,7 @@ class MainComponent extends React.PureComponent {
           shapes={shapes} />
         <ShareLink showShareLink={showModal === 'shareLink'} onCancel={this.onModalClose} />
         <DeletePopup showDeletePopup={showModal === 'deleteCanvas'} onCancel={this.onModalClose} deleteCanvas={this.onEmptyCanvas} />
-        <BackIcon />
+        <BackIcon backLink={backLink} />
       </div>
     )
   }

@@ -3,17 +3,21 @@ import styles from './Logo.css';
 import { useTheme } from '~/contexts/themeContext';
 import darkBanner from '../../assets/draw-dark.webp';
 import lightBanner from '../../assets/draw-light.webp';
+import { Link } from '@remix-run/react';
 
 export const LogoLinks = () => [{
   rel: 'stylesheet',
   href: styles
 }]
 
-function Logo() {
+function Logo({ onLogoClick }) {
   const { theme } = useTheme();
   return (
+
     <div className='logo'>
-      <img src={theme === 'dark' ? darkBanner : lightBanner} alt='' className='banner' />
+      <Link to='/'>
+        <img src={theme === 'dark' ? darkBanner : lightBanner} alt='' className='banner' />
+      </Link>
     </div>
   )
 }

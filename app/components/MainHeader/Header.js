@@ -10,6 +10,7 @@ export const HeaderStyleLinks = () => [{ rel: 'stylesheet', href: styles }];
 function Header({ headerLinks }) {
   const { pathname } = useLocation();
   console.log(pathname);
+
   return (
     <header className='main-header'>
       <Logo />

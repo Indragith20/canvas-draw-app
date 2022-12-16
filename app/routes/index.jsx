@@ -1,7 +1,7 @@
 import React from 'react';
 import { useActionData, Form, useTransition, Link } from '@remix-run/react';
 import { createRoom } from '../../server/db';
-import { redirect } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
 import { commitSession, getSession } from '../sessions';
 import ValidationMessage from '~/components/ValidationMessage/ValidationMessage';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
@@ -17,6 +17,7 @@ import collaborationDark from '../assets/collaboration-dark.png';
 import collaborationLight from '../assets/collaboration-light.png';
 import styles from '../styles/styles.css';
 import { useTheme } from '~/contexts/themeContext';
+import { checkSessionCookie } from 'server/auth';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -26,14 +27,14 @@ export const links = () => [
 
 export async function loader({ request }) {
   const session = await getSession(request.headers.get('Cookie'));
-  console.log(session.has('__session'));
-  if (session.has('__session')) {
-    console.log('Isnndie UserId');
-    // Redirect to the home page if they are already signed in.
-    return redirect('/rooms');
+  const { uid } = await checkSessionCookie(session);
+  const headers = {
+    'Set-Cookie': await commitSession(session)
+  };
+  if (uid) {
+    return redirect('/rooms', { headers });
   }
-
-  return null;
+  return json({}, { headers });
 }
 
 export async function action({ request }) {
@@ -74,13 +75,20 @@ export default function Index() {
                 Online with our tool
               </div>
               <div className='content-actions'>
-                <button className='btn-home sign-up-home'>Sign Up</button>
-                <button className='btn-home without-login'>
-                  Try Without Login
-                </button>
+                <Link to='/signup'>
+                  <button className='btn-home sign-up-home'>Sign Up</button>
+                </Link>
+                <Link to='/draw/freedraw'>
+                  <button className='btn-home without-login'>
+                    Try Without Login
+                  </button>
+                </Link>
               </div>
               <div className='login-action'>
-                Already have an account ? Login
+                Already have an account?{' '}
+                <Link to='/signin' className='login-link-home'>
+                  Login
+                </Link>
               </div>
             </div>
             <div className='image-container'>
