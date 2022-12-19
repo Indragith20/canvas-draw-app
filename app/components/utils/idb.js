@@ -28,7 +28,7 @@ class LocalIdb {
 
 
   // transaction data will be key in readonly mode and value to be stored in case of update
-  performTransaction(mode, { key = null, transactionData = null }) {
+  performTransaction(mode, { key = null, transactionData = null, clearDb = false }) {
     return new Promise((resolve, reject) => {
       const promises = [];
       if (!this.db || !this.db.transaction) {
@@ -37,7 +37,10 @@ class LocalIdb {
       Promise.all(promises).then(() => {
         const transaction = this.db.transaction(['redux-persistance'], mode);
         const reduxState = transaction.objectStore('redux-persistance');
-        if (mode === 'readonly') {
+        if (clearDb) {
+          console.log('Clearing Db');
+          this.transactionReq = reduxState.clear();
+        } else if (mode === 'readonly') {
           this.transactionReq = reduxState.get(key);
         } else {
           this.transactionReq = reduxState.put(transactionData, key);
@@ -62,6 +65,10 @@ class LocalIdb {
     this.performTransaction('readwrite', { transactionData: data, key }).then((transactionDet) => {
       console.log('Performed transaction', transactionDet);
     });
+  }
+
+  clearDb() {
+    return this.performTransaction('readwrite', { clearDb: true });
   }
 }
 

@@ -19,7 +19,7 @@ export const links = () => [
 
 export async function loader({ request }) {
   const { displayName, uid } = await requireAuth(request);
-  console.log('uid', uid);
+  console.log('Rooms Loader Called', uid);
   const userData = await getUser(uid);
   console.log('Error', userData.error);
   if (userData.error) {
@@ -52,6 +52,10 @@ const MainRoomLinks = [
   {
     link: '/rooms',
     text: 'Room List'
+  },
+  {
+    link: '/rooms/userProfile',
+    text: 'Profile'
   }
 ];
 
@@ -60,7 +64,7 @@ function Rooms() {
   console.log('Isndie Rooms', data);
   return (
     <>
-      <Header headerLinks={MainRoomLinks} />
+      <Header headerLinks={MainRoomLinks} isLoggedInUser={true} />
       <Outlet context={data} />
     </>
   );
