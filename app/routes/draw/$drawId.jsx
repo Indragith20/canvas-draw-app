@@ -212,6 +212,7 @@ function DrawIndex() {
           updateDb={Idb.updateDb}
           selectedTheme={theme}
           isMobile={isMobile}
+          backLink={'/rooms'}
         />
       </SocketProvider>
     </div>

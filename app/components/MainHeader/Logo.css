@@ -1,6 +1,7 @@
 .logo {
   flex: 1;
   width: clamp(100px, 200px, 400px);
+  align-self: center;
 }
 
 .banner {

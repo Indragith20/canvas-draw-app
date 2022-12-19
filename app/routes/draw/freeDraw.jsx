@@ -58,6 +58,7 @@ export default function FreeDrawIndex() {
         updateDb={Idb.updateDb}
         selectedTheme={theme}
         isMobile={isMobile}
+        backLink={'/'}
       />
     </div>
   );

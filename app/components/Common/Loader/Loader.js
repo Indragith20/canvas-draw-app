@@ -27,21 +27,31 @@ function GlobalLoading() {
   let animationCompleted = transition.state === "idle" && animationComplete;
 
   return (
-    <>
+    <div id="loader">
       {!animationCompleted && (
-        <div
-          role="progressbar"
-          aria-hidden={!active}
-          aria-valuetext={active ? "Loading" : undefined}
-          className="loader"
-        >
+        <>
           <div
-            ref={ref}
-            className={`inner-loader ${animationCompleted ? "animationComplete" : ''} ${transition.state === "submitting" ? "submitting" : ''} ${transition.state === "loading" ? "loading" : ''} ${transition.state === "idle" && !animationComplete ? "idle" : ''}`}
-          />
-        </div>
+            role="progressbar"
+            aria-hidden={!active}
+            aria-valuetext={active ? "Loading" : undefined}
+            className="loader"
+          >
+            <div
+              ref={ref}
+              className={`inner-loader ${animationCompleted ? "animationComplete" : ''} ${transition.state === "submitting" ? "submitting" : ''} ${transition.state === "loading" ? "loading" : ''} ${transition.state === "idle" && !animationComplete ? "idle" : ''}`}
+            />
+          </div>
+          <div className='circle-loader-container'>
+            <div className='loader-2'>
+              <span></span>
+            </div>
+          </div>
+
+        </>
       )}
-    </>
+
+
+    </div>
 
   );
 }

@@ -6,9 +6,9 @@ export const BackIconStyles = () => ([
   { href: styles, rel: 'stylesheet' }
 ])
 
-function BackIcon() {
+function BackIcon({ backLink }) {
   return (
-    <Link to={`/rooms`} className='room-link' replace={true}>
+    <Link to={backLink} className='room-link' replace={true}>
       <div
         className='back-icon-container'
       >

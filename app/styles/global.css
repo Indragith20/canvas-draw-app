@@ -16,7 +16,7 @@
   --selected-tool-color: #dd98d6;
   --background-color: #ffffff;
   --text-font-size: clamp(1rem, 0.95rem + 0.25vw, 1.25rem);
-  --failure-color: #ff9999;
+  --failure-color: rgb(255, 92, 136);
 }
 
 html, body {
@@ -24,6 +24,7 @@ html, body {
   font-family: 'Mali', cursive;
   background-color: var(--primary-background);
   color: var(--primary-font-color);
+  text-underline-offset: 5px;
 }
 
 .dark-background {
@@ -96,4 +97,10 @@ a:active {
 
 .error-msg {
   color: var(--failure-color)
+}
+
+@media (min-width: 320px) and (max-width: 1024px) {
+  .activeLink {
+    text-decoration: none;
+  }
 }

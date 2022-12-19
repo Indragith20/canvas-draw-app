@@ -1,0 +1,82 @@
+.card {
+  /* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); */
+  width: 90%;
+  max-width: 800px;
+  margin: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  outline: 2px solid lightgray;
+  border-radius: 10px;
+}
+
+.card-heading {
+  padding: 10px;
+  border-bottom: 1px solid grey;
+  font-size: 2.25rem;
+  font-weight: bold;
+}
+
+.card-content {
+  padding: 20px;
+  width: 100%;
+}
+
+.card-footer {
+  padding: 20px;
+  border-top: 1px solid grey;
+  font-size: 2.25rem;
+  font-weight: bold;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+}
+
+.row {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+  margin: 20px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.label {
+  margin-right: 20px;
+  font-size: 1rem;
+  color: gray;
+  align-self: center;
+}
+
+.main-text {
+  font-size: 1.5rem;
+}
+
+.title {
+  color: grey;
+  font-size: 18px;
+}
+
+.btn {
+  cursor: pointer;
+  /* border: 2px solid lightgray; */
+  border-radius: 10px;
+  padding: 1rem 2rem;
+  color: currentColor;
+  font-size: 1rem;
+  font-weight: normal;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.success-btn {
+  background-color: white;
+  color: black;
+}
+
+.delete-btn {
+  background-color: var(--failure-color);
+  color: white;
+  
+}
