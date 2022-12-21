@@ -69,6 +69,11 @@
   justify-content: flex-start;
   align-items: center;
   padding: 5px;
+  cursor: pointer;
+}
+
+.actions-list-item:hover {
+  background-color: lightgray;
 }
 
 .actions-list-item:not(:last-child) {

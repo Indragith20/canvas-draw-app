@@ -1,6 +1,6 @@
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 const dataPoint = (collectionPath) => {
-  return getFirestore().collection(collectionPath)
+  return getFirestore().collection(collectionPath);
 };
 
 
@@ -38,6 +38,41 @@ async function createRoom(userId, userName, roomName) {
         reject({ message: err });
       })
     })
+  })
+}
+
+function deleteRoom(userId, roomId) {
+  console.log('Deleting Room');
+  return new Promise((resolve, reject) => {
+    // delete room requires delete from three collection and two subcollection. Check whether there is an alternative way
+    let userRef = db.users().doc(userId);
+    userRef.get().then((snapshot) => {
+      if (snapshot.exists) {
+        let { rooms } = snapshot.data();
+        let updatedRooms = rooms.filter(room => room !== roomId);
+        userRef.update({ rooms: updatedRooms }).then(() => {
+          let promises = [];
+          let roomRef = db.rooms().doc(roomId);
+          promises.push(db.roomDetails().doc(roomId).delete());
+          promises.push(roomRef.collection('collaborators').get().then((snapshot) => {
+            let collectionDeletePromise = [];
+            snapshot.docs.forEach(doc => {
+              collectionDeletePromise.push(doc.ref.delete());
+            });
+            return collectionDeletePromise;
+          }))
+          promises.push(roomRef.collection('shapes').doc('shapeList').delete());
+          promises.push(roomRef.delete());
+          Promise.all(promises).then(() => {
+            resolve({ message: 'Room Deleted Successfully' })
+          }).catch(err => {
+            reject({ message: err })
+          })
+        }).catch(err => {
+          reject({ message: err });
+        })
+      }
+    });
   })
 }
 
@@ -228,6 +263,17 @@ async function addUser(name, userId, email) {
   })
 }
 
+async function updateUser(name, userId) {
+  return new Promise((resolve, reject) => {
+    let newUserRef = db.users().doc(userId);
+    newUserRef.update({ name, id: userId }).then(() => {
+      resolve({ userId: newUserRef.id });
+    }).catch(err => {
+      reject(err);
+    })
+  })
+}
+
 function addRoomToUser(userId, roomId) {
   return new Promise((resolve, reject) => {
     let userRef = db.users().doc(userId);
@@ -371,9 +417,11 @@ function resetAllLiveUsers() {
 export {
   isRoomExist,
   addUser,
+  updateUser,
   addLiveUsers,
   addRoomToUser,
   createRoom,
+  deleteRoom,
   getInitialDrawData,
   addShape,
   deleteShape,
@@ -386,5 +434,6 @@ export {
   getUsers,
   getLiveUsers,
   removeLiveUsers,
-  resetAllLiveUsers
+  resetAllLiveUsers,
+  addBulkShapes
 }
