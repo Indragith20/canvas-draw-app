@@ -168,6 +168,24 @@ async function updateCollaborator(roomId, collaborator) {
   return await db.collaborators(roomId).doc(collaborator.id).update({ ...collaborator })
 }
 
+function getCollaboratorsList(roomId) {
+  return new Promise((resolve, reject) => {
+    db.collaborators(roomId).get().then((snapshot) => {
+      let collaboratorsList = [];
+      if (snapshot.empty) {
+        resolve({ collaborators: collaboratorsList });
+      } else {
+        snapshot.docs.forEach(doc => {
+          collaboratorsList.push(doc.data());
+        });
+        resolve({ collaborators: collaboratorsList });
+      }
+    }).catch(err => {
+      reject({ message: err });
+    })
+  })
+}
+
 function getShapes(roomId) {
   return new Promise((resolve, reject) => {
     db.shapeCollection(roomId).get().then((snapshot) => {
@@ -435,5 +453,6 @@ export {
   getLiveUsers,
   removeLiveUsers,
   resetAllLiveUsers,
-  addBulkShapes
+  addBulkShapes,
+  getCollaboratorsList
 }

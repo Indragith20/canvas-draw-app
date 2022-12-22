@@ -1,18 +1,42 @@
 import React, { useEffect, useState } from 'react';
-import { useActionData, useFetcher, useOutletContext } from '@remix-run/react';
+import {
+  useActionData,
+  useFetcher,
+  useLoaderData,
+  useOutletContext
+} from '@remix-run/react';
 
 import SingleRoom, { RoomLinks } from '../../components/SingleRoom/SingleRoom';
 import styles from '~/styles/room.css';
-import { deleteRoom } from 'server/db';
+import { deleteRoom, getCollaboratorsList } from 'server/db';
 import { json } from '@remix-run/node';
 import Modal, { ModalLinks } from '~/components/Common/Modal/Modal';
 import { useToast } from '~/components/Common/Toast/ToastContext';
+import DeleteRoom, {
+  DeleteRoomLinks
+} from '~/components/DeleteRoom/DeleteRoom';
+import CollaboratorListPopup, {
+  CollaboratorsListPopupLinks
+} from '~/components/CollaboratorListPopup/CollaboratorListPopup';
 
 export const links = () => [
   ...RoomLinks(),
   ...ModalLinks(),
+  ...DeleteRoomLinks(),
+  ...CollaboratorsListPopupLinks(),
   { rel: 'stylesheet', href: styles }
 ];
+
+export async function loader({ request, params }) {
+  const url = new URL(request.url);
+  const roomId = url.searchParams.get('roomId');
+  const getApiAction = url.searchParams.get('action');
+  if (roomId && getApiAction === 'getCollaborator') {
+    let data = await getCollaboratorsList(roomId);
+    return json({ ...data, action: 'getCollaborator' });
+  }
+  return json({ message: 'Success' });
+}
 
 export async function action({ request }) {
   const body = await request.formData();
@@ -41,11 +65,12 @@ export default function RoomsList() {
     roomId: null,
     showConfirmPopup: false
   });
-  let { submit, data, state } = useFetcher();
-  let action = useActionData();
-
-  console.log('ActionResult', action);
-
+  let [collaborators, setCollaborators] = useState({
+    showPopup: false,
+    list: []
+  });
+  let { submit, data, state, load } = useFetcher();
+  console.log(data);
   function onDeleteRoom() {
     if (deleteRoom.roomId) {
       let formData = new FormData();
@@ -62,6 +87,7 @@ export default function RoomsList() {
   }
 
   useEffect(() => {
+    console.log('action data changes', data);
     if (data && data.action === 'deleteRoom') {
       let { actionData } = data;
       if (actionData && actionData.message === 'success') {
@@ -74,34 +100,49 @@ export default function RoomsList() {
   function onCancel() {
     setDeleteRoom({ roomId: null, showConfirmPopup: false });
   }
+
+  function showCollaborators(roomId) {
+    setCollaborators({ showPopup: true, list: [] });
+    // let formData = new FormData();
+
+    // formData.set('roomId', roomId);
+    // formData.set('userId', userData.id);
+    // formData.set('action', 'getCollaborator');
+    // submit(formData, { method: 'post' });
+    let data = load(`/rooms?roomId=${roomId}&action=getCollaborator&index`);
+  }
+
+  function hideCollaborators() {
+    setCollaborators({ showPopup: false, list: [] });
+  }
+
   return (
     <div className='main-container'>
       <span className='room-header'>List of Rooms</span>
       <div className='roomContainer'>
         {userData.rooms.map((room) => {
           return (
-            <SingleRoom key={room.id} {...room} onDeleteRoom={showPopUp} />
+            <SingleRoom
+              key={room.id}
+              {...room}
+              onDeleteRoom={showPopUp}
+              showCollaborators={showCollaborators}
+            />
           );
         })}
       </div>
-      <Modal show={deleteRoom.showConfirmPopup} close={onCancel}>
-        <Modal.Header needCloseIcon={true}>Confirmation</Modal.Header>
-        <Modal.Content>
-          <span className='delete-msg'>
-            Are You sure you want to delete this Room ?
-          </span>
-        </Modal.Content>
-        <Modal.Footer>
-          <div className='delete-footer'>
-            <button className='btn cancel-delete-btn' onClick={onCancel}>
-              Cancel
-            </button>
-            <button className='btn delete-btn' onClick={onDeleteRoom}>
-              {state === 'submitting' ? 'Deleting...' : 'Delete Room'}
-            </button>
-          </div>
-        </Modal.Footer>
-      </Modal>
+      <DeleteRoom
+        onCancel={onCancel}
+        transitionState={state}
+        onDeleteRoom={onDeleteRoom}
+        showPopup={deleteRoom.showConfirmPopup}
+      />
+      <CollaboratorListPopup
+        showPopup={collaborators.showPopup}
+        onCancel={hideCollaborators}
+        transitionState={state}
+        collaboratorList={data && data.collaborators ? data.collaborators : []}
+      />
     </div>
   );
 }
