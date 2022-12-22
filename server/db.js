@@ -64,7 +64,7 @@ function deleteRoom(userId, roomId) {
           promises.push(roomRef.collection('shapes').doc('shapeList').delete());
           promises.push(roomRef.delete());
           Promise.all(promises).then(() => {
-            resolve({ message: 'Room Deleted Successfully' })
+            resolve({ message: 'success' })
           }).catch(err => {
             reject({ message: err })
           })
