@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { Link, useActionData, useTransition } from '@remix-run/react';
+import { Form, Link, useActionData, useTransition } from '@remix-run/react';
 import { addCollaborator, addRoomToUser } from 'server/db';
 
 import { checkSessionCookie, signIn } from '../../server/auth';
@@ -98,7 +98,7 @@ export default function Login() {
         <div className='form-container'>
           <h1 className='form-header'>Sign In</h1>
           {action?.error && <p>{action?.error}</p>}
-          <form method='post'>
+          <Form method='post'>
             <fieldset
               className='fieldset'
               disabled={transition.state === 'submitting'}
@@ -126,7 +126,7 @@ export default function Login() {
                 {transition.state === 'submitting' ? 'Loginnggg...' : 'Login'}
               </button>
             </fieldset>
-          </form>
+          </Form>
           <p>
             Do you want to{' '}
             <Link className='join-link' to='/SignUp'>

@@ -4,6 +4,8 @@ import styles from '../../styles/form.css';
 import userProfileStyles from '../../styles/userProfile.css';
 import UserImage from '../../assets/user.png';
 import ValidationMessage from '~/components/ValidationMessage/ValidationMessage';
+import { updateUser } from 'server/db';
+import { json } from '@remix-run/node';
 
 export const links = () => [
   {
@@ -15,6 +17,16 @@ export const links = () => [
     href: userProfileStyles
   }
 ];
+
+export async function action({ request }) {
+  const body = await request.formData();
+  let userId = body.get('userId');
+  let name = body.get('userName');
+  const draw = await updateUser(name, userId);
+
+  return json({ draw });
+}
+
 export default function Profile() {
   const userData = useOutletContext();
   const actionData = useActionData();
@@ -26,10 +38,10 @@ export default function Profile() {
 
   function onClickSubmit() {
     let formData = new FormData();
-    formData.set('userName', userData.name);
+    formData.set('userName', name);
     formData.set('userId', userData.id);
-    formData.set('roomName', name);
     fetcher.submit(formData, { method: 'post' });
+    toggleEditMode();
   }
 
   function toggleEditMode() {
@@ -67,9 +79,14 @@ export default function Profile() {
         </div>
         <div className='card-footer'>
           {editMode ? (
-            <button className='btn success-btn' onClick={toggleEditMode}>
-              Save Changes
-            </button>
+            <>
+              <button className='btn success-btn' onClick={onClickSubmit}>
+                Save Changes
+              </button>
+              <button className='btn success-btn' onClick={toggleEditMode}>
+                Cancel
+              </button>
+            </>
           ) : (
             <button className='btn success-btn' onClick={toggleEditMode}>
               Edit

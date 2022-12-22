@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
-import ReactDOM from 'react-dom';
 import styles from './PopOver.css';
 
 export const PopOverLinks = () => ([

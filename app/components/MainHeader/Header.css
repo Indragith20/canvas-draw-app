@@ -1,5 +1,5 @@
 .header {
-  z-index: 100;
+  /* z-index: 100; */
   position: relative;
 }
 .main-header {
@@ -49,7 +49,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top: 8px;
   }
   
 

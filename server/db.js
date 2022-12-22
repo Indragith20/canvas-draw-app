@@ -1,6 +1,6 @@
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 const dataPoint = (collectionPath) => {
-  return getFirestore().collection(collectionPath)
+  return getFirestore().collection(collectionPath);
 };
 
 
@@ -38,6 +38,41 @@ async function createRoom(userId, userName, roomName) {
         reject({ message: err });
       })
     })
+  })
+}
+
+function deleteRoom(userId, roomId) {
+  console.log('Deleting Room');
+  return new Promise((resolve, reject) => {
+    // delete room requires delete from three collection and two subcollection. Check whether there is an alternative way
+    let userRef = db.users().doc(userId);
+    userRef.get().then((snapshot) => {
+      if (snapshot.exists) {
+        let { rooms } = snapshot.data();
+        let updatedRooms = rooms.filter(room => room !== roomId);
+        userRef.update({ rooms: updatedRooms }).then(() => {
+          let promises = [];
+          let roomRef = db.rooms().doc(roomId);
+          promises.push(db.roomDetails().doc(roomId).delete());
+          promises.push(roomRef.collection('collaborators').get().then((snapshot) => {
+            let collectionDeletePromise = [];
+            snapshot.docs.forEach(doc => {
+              collectionDeletePromise.push(doc.ref.delete());
+            });
+            return collectionDeletePromise;
+          }))
+          promises.push(roomRef.collection('shapes').doc('shapeList').delete());
+          promises.push(roomRef.delete());
+          Promise.all(promises).then(() => {
+            resolve({ message: 'success' })
+          }).catch(err => {
+            reject({ message: err })
+          })
+        }).catch(err => {
+          reject({ message: err });
+        })
+      }
+    });
   })
 }
 
@@ -133,6 +168,24 @@ async function updateCollaborator(roomId, collaborator) {
   return await db.collaborators(roomId).doc(collaborator.id).update({ ...collaborator })
 }
 
+function getCollaboratorsList(roomId) {
+  return new Promise((resolve, reject) => {
+    db.collaborators(roomId).get().then((snapshot) => {
+      let collaboratorsList = [];
+      if (snapshot.empty) {
+        resolve({ collaborators: collaboratorsList });
+      } else {
+        snapshot.docs.forEach(doc => {
+          collaboratorsList.push(doc.data());
+        });
+        resolve({ collaborators: collaboratorsList });
+      }
+    }).catch(err => {
+      reject({ message: err });
+    })
+  })
+}
+
 function getShapes(roomId) {
   return new Promise((resolve, reject) => {
     db.shapeCollection(roomId).get().then((snapshot) => {
@@ -221,6 +274,17 @@ async function addUser(name, userId, email) {
   return new Promise((resolve, reject) => {
     let newUserRef = db.users().doc(userId);
     newUserRef.set({ name, id: userId, rooms: [], email }).then(() => {
+      resolve({ userId: newUserRef.id });
+    }).catch(err => {
+      reject(err);
+    })
+  })
+}
+
+async function updateUser(name, userId) {
+  return new Promise((resolve, reject) => {
+    let newUserRef = db.users().doc(userId);
+    newUserRef.update({ name, id: userId }).then(() => {
       resolve({ userId: newUserRef.id });
     }).catch(err => {
       reject(err);
@@ -371,9 +435,11 @@ function resetAllLiveUsers() {
 export {
   isRoomExist,
   addUser,
+  updateUser,
   addLiveUsers,
   addRoomToUser,
   createRoom,
+  deleteRoom,
   getInitialDrawData,
   addShape,
   deleteShape,
@@ -386,5 +452,7 @@ export {
   getUsers,
   getLiveUsers,
   removeLiveUsers,
-  resetAllLiveUsers
+  resetAllLiveUsers,
+  addBulkShapes,
+  getCollaboratorsList
 }
