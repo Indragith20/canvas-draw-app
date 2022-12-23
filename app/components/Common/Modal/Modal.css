@@ -10,6 +10,7 @@
   justify-content: center;
   align-items: center;
   color: var(--primary-font-color);
+  z-index: 5;
 }
 
 .modal-background {
@@ -17,6 +18,8 @@
   height: 100%;
   width: 100%;
   position: absolute;
+  top: 0px;
+  left: 0px;
 }
 
 .modal {
@@ -30,6 +33,7 @@
   max-height: 90%;
   opacity: 1;
   border-left: 3px solid var(--border-color);
+  z-index: 1;
 }
 
 

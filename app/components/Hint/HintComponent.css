@@ -1,0 +1,13 @@
+.hint-container {
+  position: fixed;
+  top: 85px;
+  left: 0px;
+  right: 0px;
+  /* background-color: var(--canvas-icon-container-color); */
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: small;
+  color: grey;
+  transition: all 1s ease-in-out;
+}

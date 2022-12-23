@@ -31,5 +31,7 @@
   width: 100%;
   resize: none;
   min-height: 40px;
+  caret-color: currentColor;
+  padding: .05px;
 }
 
