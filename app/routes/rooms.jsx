@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
+import { Link, Outlet, useCatch, useLoaderData } from '@remix-run/react';
 import React from 'react';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
@@ -9,12 +9,15 @@ import { requireAuth } from '../../server/auth';
 import { getRoomDetails, getUser } from '../../server/db';
 import { PopOverLinks } from '~/components/Common/Popover/PopOver';
 
+import styles from '../styles/styles.css';
+
 export const links = () => [
   ...HeaderStyleLinks(),
   ...LogoLinks(),
   ...ModalLinks(),
   ...PopOverLinks(),
-  ...ThemeSwitcherLinks()
+  ...ThemeSwitcherLinks(),
+  { rel: 'stylesheet', href: styles }
 ];
 
 export async function loader({ request }) {
@@ -66,6 +69,27 @@ function Rooms() {
     <>
       <Header headerLinks={MainRoomLinks} isLoggedInUser={true} />
       <Outlet context={data} />
+    </>
+  );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+  return (
+    <>
+      <Header headerLinks={[]} />
+      <div className='error-container'>
+        <div className='error-page'>
+          <span>Something Bad Happened</span>
+          <p>
+            Go Back to &nbsp;
+            <Link className='join-link' to='/'>
+              Home
+            </Link>
+            ?
+          </p>
+        </div>
+      </div>
     </>
   );
 }

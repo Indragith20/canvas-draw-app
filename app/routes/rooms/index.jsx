@@ -120,16 +120,18 @@ export default function RoomsList() {
     <div className='main-container'>
       <span className='room-header'>List of Rooms</span>
       <div className='roomContainer'>
-        {userData.rooms.map((room) => {
-          return (
-            <SingleRoom
-              key={room.id}
-              {...room}
-              onDeleteRoom={showPopUp}
-              showCollaborators={showCollaborators}
-            />
-          );
-        })}
+        {userData.rooms && userData.rooms.length > 0
+          ? userData.rooms.map((room) => {
+              return (
+                <SingleRoom
+                  key={room.id}
+                  {...room}
+                  onDeleteRoom={showPopUp}
+                  showCollaborators={showCollaborators}
+                />
+              );
+            })
+          : null}
       </div>
       <DeleteRoom
         onCancel={onCancel}
