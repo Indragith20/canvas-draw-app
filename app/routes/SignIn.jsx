@@ -9,11 +9,16 @@ import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { headerLinks } from '~/constants/signInLinks';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
+import { handleException } from '~/components/utils/AuthException';
+import ValidationMessage, {
+  ValidationMessageLinks
+} from '~/components/ValidationMessage/ValidationMessage';
 
 export const links = () => [
   ...HeaderStyleLinks(),
   ...LogoLinks(),
   ...ThemeSwitcherLinks(),
+  ...ValidationMessageLinks(),
   { rel: 'stylesheet', href: styles }
 ];
 
@@ -82,22 +87,21 @@ export const action = async ({ request, params }) => {
       });
     }
   } catch (error) {
-    console.error(error);
-    return json({ error: String(error) }, { status: 401 });
+    return json({ error: String(handleException(error)) }, { status: 401 });
   }
 };
 
 export default function Login() {
   const transition = useTransition();
   const action = useActionData();
-
+  console.log('Action Result', action, action?.error);
   return (
     <>
       <Header headerLinks={headerLinks} />
       <div className='form-main-container'>
         <div className='form-container'>
           <h1 className='form-header'>Sign In</h1>
-          {action?.error && <p>{action?.error}</p>}
+          {action?.error && <ValidationMessage error={action?.error} />}
           <Form method='post'>
             <fieldset
               className='fieldset'

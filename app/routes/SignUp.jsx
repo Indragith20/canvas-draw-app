@@ -3,6 +3,10 @@ import { Form, Link, useActionData, useTransition } from '@remix-run/react';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
+import { handleException } from '~/components/utils/AuthException';
+import ValidationMessage, {
+  ValidationMessageLinks
+} from '~/components/ValidationMessage/ValidationMessage';
 import { headerLinks } from '~/constants/signInLinks';
 import styles from '~/styles/form.css';
 
@@ -13,6 +17,7 @@ export const links = () => [
   ...HeaderStyleLinks(),
   ...LogoLinks(),
   ...ThemeSwitcherLinks(),
+  ...ValidationMessageLinks(),
   { rel: 'stylesheet', href: styles }
 ];
 
@@ -48,7 +53,7 @@ export const action = async ({ request }) => {
     });
   } catch (error) {
     console.error(error);
-    return json({ error: String(error) }, { status: 401 });
+    return json({ error: String(handleException(error)) }, { status: 401 });
   }
 };
 
@@ -61,7 +66,7 @@ export default function Login() {
       <div className='form-main-container'>
         <div className='form-container'>
           <h1 className='form-header'>Join</h1>
-          {action?.error && <p>{action.error}</p>}
+          {action?.error && <ValidationMessage error={action?.error} />}
           <Form method='post'>
             <fieldset
               className='fieldset'

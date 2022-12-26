@@ -4,6 +4,7 @@
   right: 32px;
   width: 300px;
   max-width: 50%;
+  z-index: 5;
 }
 
 .single-toast {

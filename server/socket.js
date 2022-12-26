@@ -7,22 +7,31 @@ function emitData(io, socket, key, data) {
     getAllCachedDataByKey(data.roomId).then((value) => {
       if (value.liveUserFetchNeeded === 'true') {
         getLiveUsers(data.roomId).then((clients) => {
-          setDataForCaching(data.roomId, 'liveUsers', JSON.stringify(clients));
-          setDataForCaching(data.roomId, 'liveUserFetchNeeded', 'false');
-          clients.forEach((client) => {
-            if (client.id !== socket.id) {
-              io.to(client.id).emit(key, data);
-            }
-          })
+          if (clients && clients.length > 0) {
+            setDataForCaching(data.roomId, 'liveUsers', JSON.stringify(clients));
+            setDataForCaching(data.roomId, 'liveUserFetchNeeded', 'false');
+            clients.forEach((client) => {
+              if (client.id !== socket.id) {
+                io.to(client.id).emit(key, data);
+              }
+            })
+          } else {
+            setDataForCaching(data.roomId, 'liveUsers', JSON.stringify([]));
+            setDataForCaching(data.roomId, 'liveUserFetchNeeded', 'false');
+          }
         })
       } else {
         getCachedData(data.roomId, 'liveUsers').then((clients) => {
-          let parsedClients = JSON.parse(clients);
-          parsedClients.forEach((client) => {
-            if (client.id !== socket.id) {
-              io.to(client.id).emit(key, data);
+          if (clients) {
+            let parsedClients = JSON.parse(clients);
+            if (parsedClients && parsedClients.length > 0) {
+              parsedClients.forEach((client) => {
+                if (client.id !== socket.id) {
+                  io.to(client.id).emit(key, data);
+                }
+              })
             }
-          })
+          }
         })
       }
     })

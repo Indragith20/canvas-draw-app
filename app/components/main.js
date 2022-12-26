@@ -22,9 +22,10 @@ import DeletePopup, { DeletePopupLinks } from './DeleteCanvasPopup/DeletePopup';
 import BackIcon, { BackIconStyles } from './BackIcon/BackIcon';
 import { isTouchDevice } from './utils/common';
 import { CollaboratorsLinks } from './Collaborators/Collaborators';
+import HintComponent, { HintComponentLinks } from './Hint/HintComponent';
 
 export function MainComponentStyles() {
-  return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), { rel: 'stylesheet', href: styles }];
+  return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), ...HintComponentLinks(), { rel: 'stylesheet', href: styles }];
 }
 
 
@@ -831,6 +832,7 @@ class MainComponent extends React.PureComponent {
 
         </div>
         <SelectTool selectedTool={selectedTool} updateTool={this.onClickTool} />
+        <HintComponent />
         <ConfigTool downloadImage={this.downloadAsImage} deleteCanvas={this.onDeleteCanvas} shareLink={this.onShareLink} />
         <TextTool />
         <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
