@@ -9,15 +9,12 @@ import { requireAuth } from '../../server/auth';
 import { getRoomDetails, getUser } from '../../server/db';
 import { PopOverLinks } from '~/components/Common/Popover/PopOver';
 
-import styles from '../styles/styles.css';
-
 export const links = () => [
   ...HeaderStyleLinks(),
   ...LogoLinks(),
   ...ModalLinks(),
   ...PopOverLinks(),
-  ...ThemeSwitcherLinks(),
-  { rel: 'stylesheet', href: styles }
+  ...ThemeSwitcherLinks()
 ];
 
 export async function loader({ request }) {
