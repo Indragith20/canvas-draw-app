@@ -1,5 +1,5 @@
 import { redirect } from '@remix-run/node';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { confirmPasswordReset, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 
 import { destroySession, getSession } from '~/sessions';
 import { addUser } from './db';
@@ -53,3 +53,13 @@ export const signUp = async (name, email, password) => {
   await addUser(name, uid, email);
   return await signIn(email, password);
 };
+
+export const generatePasswordResetLink = async (email) => {
+  console.log('Resetting password', email);
+  return await getServerAuth().generatePasswordResetLink(email);
+  // return await sendPasswordResetEmail(getClientAuth(), email);
+}
+
+export const confirmResetpassword = async (code, newPassword) => {
+  await confirmPasswordReset(getClientAuth(), code, newPassword);
+}

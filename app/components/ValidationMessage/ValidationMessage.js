@@ -5,10 +5,23 @@ export const ValidationMessageLinks = () => ([
   { rel: 'stylesheet', href: styles }
 ])
 
-function ValidationMessage({ isSubmitting, error }) {
+function ValidationMessage({ isSubmitting, error, success }) {
   return (
-    <div className='error-container'>{error}</div>
+    <>
+      {
+        error ? (<div className='error-container'>{error}</div>) : null
+      }
+      {
+        success ? (<div className='success-container'>{success}</div>) : null
+      }
+    </>
+
   )
+}
+
+ValidationMessage.defaultProps = {
+  error: null,
+  success: null
 }
 
 export default ValidationMessage;
