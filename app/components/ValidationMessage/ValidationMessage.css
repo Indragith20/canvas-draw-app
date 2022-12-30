@@ -7,3 +7,13 @@
   font-weight: bold;
   font-size: large;
 }
+
+.success-container {
+  padding: 20px 10px;
+  background-color: #4dcf54;
+  border-left: 5px solid #00f70c;
+  margin: 10px;
+  color: currentColor;
+  font-weight: bold;
+  font-size: large;
+}
