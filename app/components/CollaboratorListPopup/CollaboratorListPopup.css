@@ -3,7 +3,7 @@
 }
 
 .content {
-  width: 600px;
+  width: min(600px, 100%);
 }
 
 .avatar {

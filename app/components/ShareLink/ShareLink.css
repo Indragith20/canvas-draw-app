@@ -17,3 +17,36 @@
 .main-container svg {
   cursor: pointer;
 }
+
+.link-text {
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.share-btn {
+  display: none;
+}
+
+@media (min-width: 320px) and (max-width: 767px) {
+  .main-container {
+    flex-direction: column;
+  }
+  .link-container {
+    width: 100%;
+  }
+  .icon-container svg {
+    display: none;
+  }
+  .share-btn {
+    border: 2px solid lightgray;
+    border-radius: 10px;
+    padding: .25rem .5rem;
+    font-size: small;
+    display: flex;
+    background-color: #82dd87;
+    color: black;
+  }
+}

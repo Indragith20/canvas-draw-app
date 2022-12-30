@@ -134,3 +134,32 @@
     opacity: 0;
   }
 }
+
+
+@media (min-width: 481px) and (max-width: 800px) {
+  .modal {
+    width: 100%;
+    height: auto;
+    margin: 0px;
+    border: none;
+    border-top: 3px solid var(--border-color);
+    padding: 1rem;
+  }
+  .modal-content {
+    max-height: 300px;
+  }
+}
+
+@media (min-width: 320px) and (max-width: 480px) {
+  .modal {
+    width: 100%;
+    height: auto;
+    margin: 0px;
+    border: none;
+    border-top: 3px solid var(--border-color);
+    padding: .75rem;
+  }
+  .modal-content {
+    max-height: 300px;
+  }
+}

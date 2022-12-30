@@ -1,7 +1,7 @@
 .card {
   /* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); */
   width: 90%;
-  max-width: 800px;
+  max-width: min(800px, 100%);
   margin: auto;
   padding: 10px;
   display: flex;
@@ -25,7 +25,7 @@
 .card-footer {
   padding: 20px;
   border-top: 1px solid grey;
-  font-size: 2.25rem;
+  font-size: 1rem;
   font-weight: bold;
   display: flex;
   flex-direction: row;
@@ -51,7 +51,12 @@
 }
 
 .main-text {
-  font-size: 1.5rem;
+  font-size: 1rem;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .title {
@@ -78,5 +83,11 @@
 .delete-btn {
   background-color: var(--failure-color);
   color: white;
-  
+}
+
+@media (min-width: 320px) and (max-width: 767px) {
+ .row {
+  flex-direction: column;
+  gap: 5px;
+ }
 }

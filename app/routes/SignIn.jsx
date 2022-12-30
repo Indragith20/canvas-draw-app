@@ -126,7 +126,11 @@ export default function Login() {
                 />
               </div>
 
-              <button className='button' type='submit'>
+              <button
+                className='button'
+                type='submit'
+                disabled={transition.state === 'submitting'}
+              >
                 {transition.state === 'submitting' ? 'Loginnggg...' : 'Login'}
               </button>
             </fieldset>

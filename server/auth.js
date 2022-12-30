@@ -61,5 +61,5 @@ export const generatePasswordResetLink = async (email) => {
 }
 
 export const confirmResetpassword = async (code, newPassword) => {
-  await confirmPasswordReset(getClientAuth(), code, newPassword);
+  return await confirmPasswordReset(getClientAuth(), code, newPassword);
 }
