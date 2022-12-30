@@ -40,6 +40,12 @@ Found any issues do [open an issue](https://github.com/Indragith20/canvas-draw-a
 
 🙌 Questions? start a [discussion](https://github.com/Indragith20/canvas-draw-app/discussions/new).
 
+## Credits
+
+- [Excalidraw](https://excalidraw.com/) - Design Inspiration
+- [Lucide.dev](https://lucide.dev/) - Design Icons
+- [Kent C Dodds](https://kentcdodds.com/) - Github workflow setup
+
 ## Author
 
 - [@indragith](https://www.linkedin.com/in/indragith-manimaran/)

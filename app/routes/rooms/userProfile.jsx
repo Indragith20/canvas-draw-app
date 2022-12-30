@@ -92,7 +92,7 @@ export default function Profile() {
               Edit
             </button>
           )}
-          <button className='btn delete-btn'>Delete Account</button>
+          {/* <button className='btn delete-btn'>Delete Account</button> */}
         </div>
       </div>
     </div>

@@ -11,8 +11,8 @@
   position: relative;
   font-size: large;
   margin-top: 10px;
-  background-color: green;
-  color: white;
+  background-color: #82dd87;
+  color: black;
   padding: 1rem;
   width: 100%;
 }
@@ -58,5 +58,17 @@
   to {
     transform: translateY(-100px);
     opacity: 0;
+  }
+}
+
+
+@media (min-width: 320px) and (max-width: 767px) {
+  .toast-container {
+    top: 32px;
+    margin: auto;
+    right: 0px;
+    left: 0px;
+    width: 100%;
+    max-width: 100%;
   }
 }

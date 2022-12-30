@@ -99,8 +99,12 @@ export default function Login() {
                   type='password'
                 />
               </div>
-              <button className='button' type='submit'>
-                Join
+              <button
+                className='button'
+                type='submit'
+                disabled={transition.state === 'submitting'}
+              >
+                {transition.state === 'submitting' ? 'Setting Up' : 'Join'}
               </button>
             </fieldset>
           </Form>

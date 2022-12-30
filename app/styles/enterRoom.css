@@ -19,3 +19,22 @@
   display: flex;
   flex-direction: column;
 }
+
+@media (min-width: 481px) and (max-width: 800px) {
+  .url-field {
+    flex-direction: column;
+  }
+
+  .origin-url {
+    align-self: flex-start;
+  }
+}
+
+@media (min-width: 320px) and (max-width: 480px) {
+  .url-field {
+    flex-direction: column;
+  }
+  .origin-url {
+    align-self: flex-start;
+  }
+}

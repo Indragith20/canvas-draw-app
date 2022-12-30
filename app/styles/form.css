@@ -77,6 +77,12 @@
   background-color: var(--success-color);
 }
 
+.button:disabled {
+  cursor: initial;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
 p{
   margin-top: 20px;
   font-size: 1.3rem;

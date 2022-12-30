@@ -7,6 +7,7 @@ const AuthResultStatus = {
   operationNotAllowed: "Signing in with Email and Password is not enabled.",
   emailAlreadyExists: "The email has already been registered. Please login or reset your password.",
   emailNotRegistered: "User with this email not found. Please register first",
+  invalidActionCode: 'Link got expired',
   default: "An undefined Error happened.",
   undefined: "Something bad Happened. Please Try again"
 }
@@ -42,6 +43,12 @@ export function handleException(e) {
       break;
     case "already-exists":
       status = AuthResultStatus.emailAlreadyExists;
+      break;
+    case "auth/email-already-exists":
+      status = AuthResultStatus.emailAlreadyExists;
+      break;
+    case "auth/invalid-action-code":
+      status = AuthResultStatus.invalidActionCode;
       break;
     default:
       status = AuthResultStatus.undefined;
