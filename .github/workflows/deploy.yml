@@ -97,4 +97,8 @@ jobs:
       - name: 🚀 Deploy Production
         if: ${{ github.ref == 'refs/heads/remix-setup' }}
         uses: superfly/flyctl-actions/setup-flyctl@master
-        run: flyctl deploy --remote-only
+        with:
+          args: 'deploy --image registry.fly.io/${{ steps.app_name.outputs.value
+            }}:${{ github.ref_name }}-${{ github.sha }}'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
