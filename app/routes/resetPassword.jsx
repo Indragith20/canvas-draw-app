@@ -21,10 +21,6 @@ export const links = () => [
 ];
 
 export const loader = async ({ request, params }) => {
-  console.log(
-    'params.oobCode',
-    new URL(request.url).searchParams.get('oobCode')
-  );
   const session = await getSession(request.headers.get('Cookie'));
   const { uid } = await checkSessionCookie(session);
   const headers = {
@@ -38,12 +34,7 @@ export const loader = async ({ request, params }) => {
 
 export const action = async ({ request, params }) => {
   const form = await request.formData();
-  //const idToken = form.get('idToken');
-  console.log(
-    'params.oobCode',
-    params.oobCode,
-    new URL(request.url).searchParams.get('oobCode')
-  );
+
   let oobCode = new URL(request.url).searchParams.get('oobCode');
   try {
     const password = form.get('password');

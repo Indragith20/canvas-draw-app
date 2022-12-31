@@ -15,7 +15,6 @@ export function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedThe
   tempContext.lineWidth = 1.0;
   shapes.forEach(shape => {
     if (shape.type === 'rectangle') {
-      console.log('Rect');
       tempContext.strokeRect(shape.x + bufferX, shape.y + bufferY, changeFromOneScalingFactor(shape.width, scalingFactor), changeFromOneScalingFactor(shape.height, scalingFactor));
     } else if (shape.type === 'arrow') {
       let headlen = 10;
@@ -50,7 +49,6 @@ export function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedThe
       tempContext.arc(x, y, changeFromOneScalingFactor(shape.radius, scalingFactor), 0, 2 * Math.PI);
       tempContext.stroke();
     } else if (shape.type === 'diamond') {
-      console.log('Diamon');
       let xCenter = shape.x + bufferX;
       let yCenter = shape.y + bufferY;
       let size = changeFromOneScalingFactor((shape.x) - (shape.endX), scalingFactor);

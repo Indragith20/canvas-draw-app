@@ -41,13 +41,11 @@ function emitData(io, socket, key, data) {
 
 function onSocketConnect(socket, io) {
 
-  console.log(socket.id, 'connected');
 
 
   socket.emit('confirmation', 'connected!');
 
   socket.on('event', (data) => {
-    console.log(socket.id, data);
     //clients.push(socket.id);
     socket.emit('event', 'pong');
   });
@@ -58,12 +56,10 @@ function onSocketConnect(socket, io) {
   })
 
   socket.on('updateshape', (data) => {
-    console.log('Updating shape');
     emitData(io, socket, 'updateshape', data);
   });
 
   socket.on('setliveuser', (data) => {
-    console.log(data.userDetails);
     if (data.roomId) {
       setDataForCaching(data.roomId, 'liveUserFetchNeeded', 'true');
       addLiveUsers(data.roomId, socket.id, data.userDetails);
@@ -71,7 +67,6 @@ function onSocketConnect(socket, io) {
   });
 
   socket.on('disconnect', (data) => {
-    console.log('socket disconnected');
     removeLiveUsers(socket.id);
   })
 }

@@ -22,7 +22,6 @@ const db = {
 
 
 async function createRoom(userId, userName, roomName) {
-  console.log('Creating Room');
   return new Promise((resolve, reject) => {
     const newRoomDetailsRef = db.roomDetails().doc();
     const newRoomRef = db.rooms().doc(newRoomDetailsRef.id);
@@ -32,7 +31,6 @@ async function createRoom(userId, userName, roomName) {
       let roomPromise = newRoomDetailsRef.set({ id: newRoomRef.id, roomName, createdAt: new Date(Timestamp.now().toDate()), createdBy: userName });
       let shapePromise = db.shapeCollection(newRoomRef.id).doc('shapeList').set({ shapeList: [] })
       Promise.all([mainRoomPromise, collaboratorPromise, roomPromise, shapePromise]).then(() => {
-        console.log("Resolbve", userId);
         resolve({ id: newRoomRef.id, userId: userId });
       }).catch(err => {
         reject({ message: err });
@@ -42,7 +40,6 @@ async function createRoom(userId, userName, roomName) {
 }
 
 function deleteRoom(userId, roomId) {
-  console.log('Deleting Room');
   return new Promise((resolve, reject) => {
     // delete room requires delete from three collection and two subcollection. Check whether there is an alternative way
     let userRef = db.users().doc(userId);
@@ -78,7 +75,6 @@ function deleteRoom(userId, roomId) {
 
 function addShape(roomId, shape) {
   const shapeJSON = JSON.parse(shape);
-  console.log('Addding Shape Called', roomId);
   //const newShapeRef = db.shapeCollection(roomId).doc(`${shape.id}`);
   return new Promise((resolve, reject) => {
     db.shapeCollection(roomId).doc('shapeList').update({
@@ -88,19 +84,12 @@ function addShape(roomId, shape) {
     }).catch(err => {
       reject({ error: err })
     })
-    // db.shapeCollection(roomId).doc(`${shapeJSON.id}`).set({ ...shapeJSON }).then((doc) => {
-    //   console.log('Inside THen');
-    //   resolve({ id: shapeJSON.id });
-    // }).catch(err => {
-    //   reject({ error: err });
-    // });
   });
 }
 
 async function deleteShape(roomId, shapeTobeDeleted) {
   return new Promise((resolve, reject) => {
     const shapeJSON = JSON.parse(shapeTobeDeleted);
-    console.log('Delete Shape Called', roomId, shapeJSON);
     let docRef = db.shapeCollection(roomId).doc('shapeList');
     docRef.get().then((snapshot) => {
       if (snapshot.exists) {
@@ -132,21 +121,17 @@ function deleteAllShapes(roomId) {
 async function updateShape(roomId, shapeTobeUpdated) {
   const shapeJSON = JSON.parse(shapeTobeUpdated);
   return new Promise((resolve, reject) => {
-    console.log('Update Shape Called', roomId, shapeJSON);
     let docRef = db.shapeCollection(roomId).doc('shapeList');
     docRef.get().then((snapshot) => {
       if (snapshot.exists) {
         let { shapeList } = snapshot.data();
         let updatedShapeList = shapeList.map(shape => {
-          console.log('Inside', shape.id, shapeJSON.id);
           if (shape.id === shapeJSON.id) {
-            console.log('Shape matched', shape.id);
             return { ...shapeJSON }
           } else {
             return shape;
           }
         });
-        console.log(updatedShapeList[0]);
         docRef.set({ shapeList: [...updatedShapeList] }).then(() => {
           resolve({ message: 'success' });
         }).catch((err) => {
@@ -159,7 +144,6 @@ async function updateShape(roomId, shapeTobeUpdated) {
 }
 
 async function addCollaborator(roomId, collaborator) {
-  console.log(roomId, collaborator);
   const newCollaboratorRef = db.collaborators(roomId).doc(collaborator.id);
   return await newCollaboratorRef.set({ ...collaborator });
 }
@@ -238,7 +222,6 @@ function getInitialDrawData(roomId) {
 }
 
 function isRoomExist(roomId) {
-  console.log('Room Exist checking', roomId);
   return new Promise((resolve, reject) => {
     db.rooms().doc(roomId).get().then((snapshot) => {
       if (snapshot.exists) {
@@ -336,7 +319,6 @@ function getRoomDetails(roomId) {
 }
 
 function addLiveUsers(roomId, socketId, userDetails) {
-  console.log('Adding Live Users')
   // TODO: cache in redis
   return new Promise((resolve, reject) => {
 
@@ -353,7 +335,6 @@ function addLiveUsers(roomId, socketId, userDetails) {
 
 function getLiveUsers(roomId) {
   // TODO: cache in redis
-  console.log('Getting Live USers');
   return new Promise((resolve, reject) => {
     db.activeUsers().where('roomId', '==', roomId).get().then((snapshot) => {
       if (snapshot.empty) {
@@ -363,7 +344,6 @@ function getLiveUsers(roomId) {
         snapshot.forEach(doc => {
           users.push(doc.data());
         });
-        console.log('Users')
         resolve(users);
       }
     }).catch(err => {
@@ -374,7 +354,6 @@ function getLiveUsers(roomId) {
 
 function removeLiveUsers(socketId) {
   // TODO: cache in redis
-  console.log('Removing Live users');
   return new Promise((resolve, reject) => {
     let docRef = db.activeUsers().doc(socketId);
     docRef.get().then((snapshot) => {

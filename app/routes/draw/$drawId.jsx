@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { json, redirect } from '@remix-run/node';
-import {
-  useLoaderData,
-  useFetcher,
-  useActionData,
-  Link
-} from '@remix-run/react';
+import { useLoaderData, useFetcher, Link } from '@remix-run/react';
 import io from 'socket.io-client';
 
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
@@ -51,17 +46,14 @@ export const links = () => [
 ];
 
 export const loader = async ({ request, params }) => {
-  console.log(params);
   const { uid } = await requireAuth(request);
-  console.log('uid', uid);
+
   const userData = await getUser(uid);
-  console.log('Errorsssssssss', userData.error);
   if (userData.error) {
     // Not signed in user
     const searchParams = new URLSearchParams([
       ['redirectTo', `/draw/${params.drawId}`]
     ]);
-    console.log('Redirectibng to signin');
     return redirect(`/SignUp?${searchParams}`, {
       headers: {
         referrer: `/draw/${params.drawId}`
@@ -76,7 +68,6 @@ export const loader = async ({ request, params }) => {
         roomId: params.drawId
       });
     } catch (err) {
-      console.log('Inside Response', err);
       throw new Response('Not Found', {
         status: 404
       });
@@ -92,10 +83,8 @@ export const action = async ({ request, params }) => {
   if (action === 'add') {
     data = await addShape(params.drawId, actionData);
   } else if (action === 'delete') {
-    console.log('delete action called');
     data = await deleteShape(params.drawId, actionData);
   } else if (action === 'update') {
-    console.log('update action called');
     data = await updateShape(params.drawId, actionData);
   } else if (action === 'deleteAll') {
     data = await deleteAllShapes(params.drawId);
@@ -133,13 +122,9 @@ export function CatchBoundary() {
 function DrawIndex() {
   const { submit } = useFetcher();
   const isMobile = isTouchDevice();
-  const { currentUser, shapes, users, roomId } = useLoaderData();
+  const { currentUser, shapes, roomId } = useLoaderData();
   let { id, name } = currentUser;
-  const actionData = useActionData();
   const { theme } = useTheme();
-
-  console.log(shapes, users, currentUser, roomId);
-  console.log(actionData);
 
   const [socket, setSocket] = useState();
 
@@ -181,12 +166,10 @@ function DrawIndex() {
 
   const updateShape = useCallback(
     (shape, action = 'add') => {
-      console.log('update shape called', shape, action);
       let formData = new FormData();
       formData.set('data', JSON.stringify({ ...shape }));
       formData.set('action', action);
-      const data = submit(formData, { method: 'post' });
-      console.log('fetcher data', data);
+      submit(formData, { method: 'post' });
       socket.emit('updateshape', { user: currentUser, roomId, shape, action });
     },
     [submit, socket, currentUser, roomId]

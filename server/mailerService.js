@@ -31,13 +31,10 @@ export function sendPasswordResetMail(email, content) {
       html: content, // plain text body
       priority: 'high'
     };
-    console.log('Sending mail using nodemailer', process.env.FROM_MAIL_ADDRESS, process.env.FROM_MAIL_PASSWORD);
     transporter.sendMail(mailOptions, (err, info) => {
       if (err) {
-        console.log('err', err);
         reject(err);
       } else {
-        console.log('info', info);
         resolve({ message: 'Mail Sent Successfully', info: info })
       }
     })

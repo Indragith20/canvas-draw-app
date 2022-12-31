@@ -62,7 +62,6 @@ app.all(
   process.env.NODE_ENV === "development"
     ? (req, res, next) => {
       purgeRequireCache();
-      console.log(require(BUILD_DIR));
       return createRequestHandler({
         build: require(BUILD_DIR),
         mode: process.env.NODE_ENV,

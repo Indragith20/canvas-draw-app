@@ -29,7 +29,6 @@ class Chalk {
   }
 
   mouseUp(e) {
-    console.log(this.tempContext);
     if (this.started) {
       this.mousemove(e);
       this.started = false;

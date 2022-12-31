@@ -2,7 +2,7 @@ import { useLoaderData } from '@remix-run/react';
 import React, { useState } from 'react';
 import Collaborators from '../Collaborators/Collaborators';
 import DisabledDiv from '../Common/DisabledDiv/DisabledDiv';
-import { useMatchMedia } from '../Common/hooks/useMatchMedia';
+//import { useMatchMedia } from '../Common/hooks/useMatchMedia';
 import ThemeSwitcher from '../MainHeader/ThemeSwitcher';
 import styles from './ConfigTool.css';
 
@@ -12,10 +12,9 @@ export function ConfigToolLinks() {
 
 
 function ConfigTool({ downloadImage, deleteCanvas, shareLink }) {
-  const isMobile = useMatchMedia('(min-width: 320px) and (max-width: 767px)');
+  //const isMobile = useMatchMedia('(min-width: 320px) and (max-width: 767px)');
   const { currentUser } = useLoaderData();
   const [hide, togglehide] = useState(true);
-  console.log(isMobile);
 
   function showAdditionTools(e) {
     togglehide(!hide);

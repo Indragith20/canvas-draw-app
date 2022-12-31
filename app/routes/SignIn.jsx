@@ -94,7 +94,6 @@ export const action = async ({ request, params }) => {
 export default function Login() {
   const transition = useTransition();
   const action = useActionData();
-  console.log('Action Result', action, action?.error);
   return (
     <>
       <Header headerLinks={headerLinks} />

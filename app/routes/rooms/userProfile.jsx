@@ -32,8 +32,6 @@ export default function Profile() {
   const [editMode, setEditMode] = useState(false);
   const fetcher = useFetcher();
 
-  console.log('user', userData);
-
   function onClickSubmit() {
     let formData = new FormData();
     formData.set('userName', name);

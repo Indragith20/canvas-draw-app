@@ -10,7 +10,6 @@ function initRedisConnection() {
   return new Promise((resolve, reject) => {
     let promise;
     // eslint-disable-next-line no-undef
-    console.log('process.env', process.env.REDIS_URL)
     redisClient = createClient({
       // eslint-disable-next-line no-undef
       url: process.env.REDIS_URL
@@ -71,7 +70,6 @@ export function getAllCachedDataByKey(key) {
 
 
 export function deleteAllCaches() {
-  console.log('Deleting caches');
   if (redisClient) {
     return redisClient.flushDb();
   } else {

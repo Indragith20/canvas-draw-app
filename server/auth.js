@@ -49,13 +49,11 @@ export const signUp = async (name, email, password) => {
     password,
     displayName: name,
   });
-  console.log("added user success", uid);
   await addUser(name, uid, email);
   return await signIn(email, password);
 };
 
 export const generatePasswordResetLink = async (email) => {
-  console.log('Resetting password', email);
   return await getServerAuth().generatePasswordResetLink(email);
   // return await sendPasswordResetEmail(getClientAuth(), email);
 }

@@ -131,9 +131,7 @@ function getElementsAtPosition(x, y, shapes) {
             secondCondition = (shape.drawPoints[i].y >= y && y >= shape.drawPoints[i + 1].y);
           }
           if (firstCondition && secondCondition) {
-            console.log("Matching coordintes", x, y);
-            console.log("Matched coordintes - x ==>", shape.drawPoints[i].x, shape.drawPoints[i + 1].x);
-            console.log("Matched coordintes - y ==>", shape.drawPoints[i].y, shape.drawPoints[i + 1].y);
+
             isMatched = true;
           }
         }

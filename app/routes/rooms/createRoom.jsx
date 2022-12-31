@@ -33,7 +33,6 @@ export async function action({ request }) {
   const draw = await createRoom(userId, userName, name);
   const session = await getSession(request.headers.get('Cookie'));
 
-  console.log(draw);
   return redirect(`/draw/${draw.id}`, {
     headers: {
       'Set-Cookie': await commitSession(session)
@@ -46,8 +45,6 @@ export default function CreateRoom() {
   const userData = useOutletContext();
   const [name, setName] = useState('');
   const fetcher = useFetcher();
-
-  console.log('user', userData);
 
   function onClickSubmit() {
     let formData = new FormData();
