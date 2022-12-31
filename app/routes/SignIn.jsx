@@ -134,12 +134,17 @@ export default function Login() {
               </button>
             </fieldset>
           </Form>
-          <p>
-            Do you want to{' '}
-            <Link className='join-link' to='/SignUp'>
-              join
+          <p className='link-container'>
+            <span>
+              {/* Do you want to{' '} */}
+              <Link className='join-link' to='/SignUp'>
+                Join ?
+              </Link>
+            </span>
+            <span>or</span>
+            <Link className='join-link' to='/forgotpassword'>
+              Forgot Password ?
             </Link>
-            ?
           </p>
           <p>
             <Link to='/draw/freedraw' className='join-link'>

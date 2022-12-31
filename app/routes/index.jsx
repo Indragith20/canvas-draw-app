@@ -17,6 +17,7 @@ import collaborationLight from '../assets/collaboration-light.png';
 import styles from '../styles/styles.css';
 import { useTheme } from '~/contexts/themeContext';
 import { checkSessionCookie } from 'server/auth';
+import { headerLinks } from '~/constants/signInLinks';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -58,7 +59,7 @@ export default function Index() {
   const { theme } = useTheme();
   return (
     <div className='home-page'>
-      <Header headerLinks={[]} />
+      <Header headerLinks={headerLinks} />
       <main>
         <div className='background-image-container'>
           <div className='main-content'>
