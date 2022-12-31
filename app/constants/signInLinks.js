@@ -8,7 +8,7 @@ export const headerLinks = [
     text: 'About',
   },
   {
-    link: '/Help',
+    link: '/help',
     text: 'Help',
   },
 ];

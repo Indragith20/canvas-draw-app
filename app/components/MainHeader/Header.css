@@ -1,6 +1,8 @@
 .header {
   z-index: 1;
-  position: relative;
+  position: sticky;
+  top: 0px;
+  background-color: var(--primary-background);
 }
 .main-header {
   display: flex;

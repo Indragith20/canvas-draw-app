@@ -52,7 +52,6 @@
 
 .main-text {
   font-size: 1rem;
-  width: 100%;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
