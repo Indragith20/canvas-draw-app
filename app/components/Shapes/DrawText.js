@@ -36,9 +36,7 @@ class DrawText {
 
   onBlur() {
     if (this.textBox) {
-      console.log('Drawing text', this.textBox.innerHTML);
       let text = this.textBox.innerHTML.replace(/<div>/g, "\n").replace(/<\/div>/g, "").replace(/<br>/g, "\n").replace('&nbsp;', ' ');
-      console.log(text);
       //let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
 
 
@@ -46,10 +44,8 @@ class DrawText {
       // TODO: Replace undefined with exact line height
       let textareaStyle = window.getComputedStyle(this.textBox);
       let tetxtareaClientStyle = this.textBox.getBoundingClientRect();
-      console.log(textareaStyle);
       let width = Math.ceil(Number(textareaStyle.width.slice(0, -2)));
       let height = Math.ceil(Number(textareaStyle.height.slice(0, -2)));
-      console.log(width);
       //let numberOfLines = drawText(text, this.tempContext, tetxtareaClientStyle.x, tetxtareaClientStyle.y, Math.ceil(width), undefined, color, this.baseFontSize);
 
 

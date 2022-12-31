@@ -14,7 +14,6 @@ const AuthResultStatus = {
 
 
 export function handleException(e) {
-  console.log("code", e.code);
   let status;
   switch (e.code) {
     case "auth/invalid-email":

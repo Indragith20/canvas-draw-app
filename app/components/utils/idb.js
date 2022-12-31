@@ -38,7 +38,6 @@ class LocalIdb {
         const transaction = this.db.transaction(['redux-persistance'], mode);
         const reduxState = transaction.objectStore('redux-persistance');
         if (clearDb) {
-          console.log('Clearing Db');
           this.transactionReq = reduxState.clear();
         } else if (mode === 'readonly') {
           this.transactionReq = reduxState.get(key);
@@ -63,7 +62,7 @@ class LocalIdb {
 
   updateDb(data, key) {
     this.performTransaction('readwrite', { transactionData: data, key }).then((transactionDet) => {
-      console.log('Performed transaction', transactionDet);
+      console.log('Performed transaction');
     });
   }
 

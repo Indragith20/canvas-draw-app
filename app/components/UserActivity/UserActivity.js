@@ -27,7 +27,6 @@ function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape
     }
 
     function onUpdateShape(data) {
-      console.log('updating shape...')
       if (data.action === 'add') {
         addShape(data.shape);
       } else if (data.action === 'delete') {

@@ -12,7 +12,6 @@ function drawDiamond(xCenter, yCenter, size, context) {
 
 function drawText(text, context, x, y, maxWidth, lineHeight, color, fontSize = 24) {
   context.font = `normal ${fontSize}px/${lineHeight}px Mali`;
-  console.log(lineHeight);
   context.fillStyle = color;
   context.textBaseline = "top";
   let words = text.split('');
@@ -67,7 +66,6 @@ function getMinMaxCoords(shapes) {
       bottom = Math.max(shape.y, shape.endY);
     }
   });
-  console.log({ top, left, right, bottom });
   return { top, left, right, bottom }
 }
 

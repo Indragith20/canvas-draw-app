@@ -42,14 +42,11 @@ export async function action({ request }) {
   if (action === 'deleteRoom') {
     try {
       data = await deleteRoom(userId, roomId);
-      console.log('Room Deleted Successfully');
     } catch (err) {
-      console.log('Room Not Deleted', err);
       return json({ actionData: err });
     }
   }
 
-  console.log('actionData', data);
   return json({ actionData: data, action });
 }
 
@@ -65,7 +62,6 @@ export default function RoomsList() {
     list: []
   });
   let { submit, data, state, load } = useFetcher();
-  console.log(data);
   function onDeleteRoom() {
     if (deleteRoom.roomId) {
       let formData = new FormData();
@@ -82,7 +78,6 @@ export default function RoomsList() {
   }
 
   useEffect(() => {
-    console.log('action data changes', data);
     if (data && data.action === 'deleteRoom') {
       let { actionData } = data;
       if (actionData && actionData.message === 'success') {

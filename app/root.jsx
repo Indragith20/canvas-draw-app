@@ -142,7 +142,6 @@ export default function App() {
       <ThemeProvider defaultTheme={'dark'}>
         <ThemeContext.Consumer>
           {({ theme }) => {
-            console.log(theme);
             return (
               <body
                 className={

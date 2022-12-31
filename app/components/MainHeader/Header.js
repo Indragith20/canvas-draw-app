@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useOutletContext } from '@remix-run/react';
+import { Link, useLocation } from '@remix-run/react';
 import styles from './Header.css';
 
 import Logo from './Logo';
@@ -9,11 +9,9 @@ import { useMatchMedia } from '../Common/hooks/useMatchMedia';
 export const HeaderStyleLinks = () => [{ rel: 'stylesheet', href: styles }];
 
 function Header({ headerLinks, isLoggedInUser = false }) {
-  const userData = useOutletContext();
   const { pathname } = useLocation();
   const [menu, toggleMenu] = useState(false);
   const isMobile = useMatchMedia('(min-width: 320px) and (max-width: 767px)');
-  console.log(userData);
 
   function showMenus() {
     toggleMenu(!menu);

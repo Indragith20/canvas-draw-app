@@ -416,7 +416,6 @@ class MainComponent extends React.PureComponent {
   }
 
   onClickTool(e) {
-    console.log(e.currentTarget.id);
     this.updateTool(e.currentTarget.id);
   }
 
@@ -488,7 +487,6 @@ class MainComponent extends React.PureComponent {
 
       let isExistingShape = false;
       let filteredShapes = shapes.filter(shape => {
-        console.log(shape.id, modifiedImage.id)
         if (shape.id === modifiedImage.id) {
           isExistingShape = true;
           return null;
@@ -504,7 +502,6 @@ class MainComponent extends React.PureComponent {
 
       //let filteredShapes = shapes.filter(shape => shape.id !== drawenImage.id);
 
-      console.log("isExistingShape", isExistingShape);
       this.setState({ shapes: [...filteredShapes, modifiedImage] }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
@@ -520,7 +517,7 @@ class MainComponent extends React.PureComponent {
 
   redraw() {
     // TODO: If the shape is outside the scrolling area skip the draw process(Possible Improvementt)
-    console.log('redraw')
+
     let { shapes, scrollX, scrollY, baseLineHeight, baseFontSize, disableScroll } = this.state;
     if (disableScroll) {
       return;
@@ -687,7 +684,6 @@ class MainComponent extends React.PureComponent {
       this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
       let selectedElement = getElementsAtPosition(ev._x, ev._y, shapes);
       this.selectedElement = selectedElement;
-      console.log(selectedElement);
       if (this.selectedElement) {
         if (this.selectedElement.type === 'rectangle') {
           let { x, y, width, height } = this.selectedElement;

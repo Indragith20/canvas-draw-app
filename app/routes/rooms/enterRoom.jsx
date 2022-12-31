@@ -44,7 +44,6 @@ export async function action({ request }) {
       }
     });
   } catch (err) {
-    console.log('Actio Error', err);
     return json({ error: 'Please Enter Valid Room Code' }, { status: 401 });
   }
 }
@@ -63,9 +62,6 @@ export default function EnterRoom() {
     formData.set('roomId', room);
     fetcher.submit(formData, { method: 'post' });
   }
-
-  console.log('actionData', actionData);
-  console.log('fetcher', fetcher);
 
   return (
     <div className='form-main-container'>

@@ -15,7 +15,7 @@ export default function handleRequest(
 
   return new Response('<!DOCTYPE html>' + markup, {
     status: responseStatusCode,
-    headers: responseHeaders,
+    headers: responseHeaders
   });
 }
 
@@ -24,6 +24,5 @@ export const handleDataRequest = (
   // same args that get passed to the action or loader that was called
   { request, params, context }
 ) => {
-  console.log('Initakl', params);
   return response;
 };

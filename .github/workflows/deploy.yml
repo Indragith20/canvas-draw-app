@@ -97,7 +97,7 @@ jobs:
   deploy:
     name: 🚀 Deploy
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [lint, build]
     # only build/deploy remix-setup branch on pushes
     if: ${{ (github.ref == 'refs/heads/remix-setup') &&
       github.event_name == 'push' }}

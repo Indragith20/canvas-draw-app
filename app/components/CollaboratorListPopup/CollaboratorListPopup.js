@@ -9,7 +9,6 @@ export const CollaboratorsListPopupLinks = () => ([{
 }])
 
 function CollaboratorListPopup({ showPopup, onCancel, collaboratorList, transitionState }) {
-  console.log(collaboratorList, "collaboratorList", transitionState)
   return (
     <Modal show={showPopup} close={onCancel}>
       <Modal.Header needCloseIcon={true}>

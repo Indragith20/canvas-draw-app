@@ -47,7 +47,6 @@ export async function action({ request }) {
   // }
   session.set('userId', draw.userId);
 
-  console.log(draw);
   return redirect(`/draw/${draw.id}`, {
     headers: {
       'Set-Cookie': await commitSession(session)
