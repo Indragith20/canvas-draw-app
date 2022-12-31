@@ -1,11 +1,13 @@
 import { json } from '@remix-run/node';
 import React, { useEffect, useState } from 'react';
 import { useMatchMedia } from '~/components/Common/hooks/useMatchMedia';
+import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
 import MainComponent, { MainComponentStyles } from '~/components/main';
 import { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
+import MobileWarning from '~/components/MobileWarning/MobileWarning';
 import { SelectToolLinks } from '~/components/SelectTool/SelectTool';
 import { TextToolLinks } from '~/components/TextTool/TextTool';
 import Idb from '~/components/utils/idb';
@@ -22,6 +24,7 @@ export const links = () => [
   ...ConfigToolLinks(),
   ...TextToolLinks(),
   ...ZoomContainerLinks(),
+  ...ModalLinks(),
   { rel: 'stylesheet', href: styles }
 ];
 
@@ -60,6 +63,7 @@ export default function FreeDrawIndex() {
         isMobile={isMobile}
         backLink={'/'}
       />
+      <MobileWarning backLink={'/'} backLinkText='Back to Home' />
     </div>
   );
 }
