@@ -8,5 +8,8 @@ export function isTouchDevice() {
 }
 
 export function handle_pinch_zoom(ev) {
-  if (ev.targetTouches.length === 2 && ev.changedTouches.length === 2) { }
+  if (ev.targetTouches.length === 2 && ev.changedTouches.length === 2) {
+    // TO be Impleemennted
+    return true;
+  }
 }

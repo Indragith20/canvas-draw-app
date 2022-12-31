@@ -3,7 +3,6 @@ import {
   useActionData,
   useOutletContext,
   useFetcher,
-  useLocation,
   useLoaderData
 } from '@remix-run/react';
 import styles from '../../styles/form.css';
@@ -33,7 +32,6 @@ export async function action({ request }) {
   const body = await request.formData();
   let roomId = body.get('roomId');
   let userId = body.get('userId');
-  let userName = body.get('userName');
   //const draw = await createRoom(userId, userName, name);
   const session = await getSession(request.headers.get('Cookie'));
 

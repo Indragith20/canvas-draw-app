@@ -4,7 +4,6 @@ import {
   useLoaderData,
   useFetcher,
   useActionData,
-  useCatch,
   Link
 } from '@remix-run/react';
 import io from 'socket.io-client';
@@ -31,9 +30,7 @@ import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { useTheme } from '~/contexts/themeContext';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
-import Modal, { ModalLinks } from '~/components/Common/Modal/Modal';
-import { useToast } from '~/components/Common/Toast/ToastContext';
-import BackIcon from '~/components/BackIcon/BackIcon';
+import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { isTouchDevice } from '~/components/utils/common';
 import { PopOverLinks } from '~/components/Common/Popover/PopOver';
 import MobileWarning from '~/components/MobileWarning/MobileWarning';
@@ -108,7 +105,6 @@ export const action = async ({ request, params }) => {
 };
 
 export function CatchBoundary() {
-  const caught = useCatch();
   return (
     <>
       <Header headerLinks={[]} />

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import styles from './UserActivity.css';
 import { useSocket } from '../../contexts/socketContext';
 
@@ -9,7 +9,7 @@ export function UserActivityLinks() {
 
 function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape, removeShape, deleteAllShapes }) {
   const userActivityCanvasRef = useRef(null);
-  const [users, setUsers] = useState([]);
+  //const [users, setUsers] = useState([]);
   const socket = useSocket();
 
   useEffect(() => {

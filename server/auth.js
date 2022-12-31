@@ -1,7 +1,7 @@
 import { redirect } from '@remix-run/node';
-import { confirmPasswordReset, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import { confirmPasswordReset, signInWithEmailAndPassword } from 'firebase/auth';
 
-import { destroySession, getSession } from '~/sessions';
+import { getSession } from '~/sessions';
 import { addUser } from './db';
 import { getServerAuth, getClientAuth } from './firebase.server';
 

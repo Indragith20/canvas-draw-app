@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+// eslint-disable-next-line no-unused-vars
 import * as config from './config';
 import express from 'express';
 import path from 'path';
@@ -13,7 +14,7 @@ import { onSocketConnect } from './socket';
 
 // eslint-disable-next-line import/first
 import { getServerAuth } from './firebase.server';
-import initRedisConnection, { deleteAllCaches, setDataForCaching } from './redis';
+import initRedisConnection, { deleteAllCaches } from './redis';
 
 
 const BUILD_DIR = path.join(process.cwd(), "build");
