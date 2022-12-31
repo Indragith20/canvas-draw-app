@@ -226,6 +226,26 @@ body {
   margin: 1rem;
 }
 
+.back-btn {
+  cursor: pointer;
+  border: 2px solid lightgray;
+  background-color: transparent;
+  border-radius: 10px;
+  padding: .5rem .75rem;
+  color: currentColor;
+  font-size: medium;
+}
+
+.proceed-btn {
+  cursor: pointer;
+  border: 2px solid lightgray;
+  background-color: var(--selected-tool-color);
+  border-radius: 10px;
+  padding: .5rem .75rem;
+  color: currentColor;
+  font-size: medium;
+}
+
 @media screen and (min-width: 1700px) {
   .background-image-container {
     max-width: 1500px;

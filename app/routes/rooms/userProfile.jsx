@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useActionData, useFetcher, useOutletContext } from '@remix-run/react';
 import styles from '../../styles/form.css';
 import userProfileStyles from '../../styles/userProfile.css';
-import UserImage from '../../assets/user.png';
-import ValidationMessage from '~/components/ValidationMessage/ValidationMessage';
 import { updateUser } from 'server/db';
 import { json } from '@remix-run/node';
 

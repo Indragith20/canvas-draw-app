@@ -1,16 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import {
-  useActionData,
-  useFetcher,
-  useLoaderData,
-  useOutletContext
-} from '@remix-run/react';
+import { useFetcher, useOutletContext } from '@remix-run/react';
 
 import SingleRoom, { RoomLinks } from '../../components/SingleRoom/SingleRoom';
 import styles from '~/styles/room.css';
 import { deleteRoom, getCollaboratorsList } from 'server/db';
 import { json } from '@remix-run/node';
-import Modal, { ModalLinks } from '~/components/Common/Modal/Modal';
+import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { useToast } from '~/components/Common/Toast/ToastContext';
 import DeleteRoom, {
   DeleteRoomLinks
@@ -103,13 +98,7 @@ export default function RoomsList() {
 
   function showCollaborators(roomId) {
     setCollaborators({ showPopup: true, list: [] });
-    // let formData = new FormData();
-
-    // formData.set('roomId', roomId);
-    // formData.set('userId', userData.id);
-    // formData.set('action', 'getCollaborator');
-    // submit(formData, { method: 'post' });
-    let data = load(`/rooms?roomId=${roomId}&action=getCollaborator&index`);
+    load(`/rooms?roomId=${roomId}&action=getCollaborator&index`);
   }
 
   function hideCollaborators() {

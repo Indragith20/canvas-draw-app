@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { Link, Outlet, useCatch, useLoaderData } from '@remix-run/react';
+import { Link, Outlet, useLoaderData } from '@remix-run/react';
 import React from 'react';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
@@ -18,7 +18,7 @@ export const links = () => [
 ];
 
 export async function loader({ request }) {
-  const { displayName, uid } = await requireAuth(request);
+  const { uid } = await requireAuth(request);
   console.log('Rooms Loader Called', uid);
   const userData = await getUser(uid);
   console.log('Error', userData.error);
@@ -71,7 +71,6 @@ function Rooms() {
 }
 
 export function CatchBoundary() {
-  const caught = useCatch();
   return (
     <>
       <Header headerLinks={[]} />

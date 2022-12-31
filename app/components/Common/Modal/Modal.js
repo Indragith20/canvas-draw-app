@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useRef } from "react";
 import ReactDOM from 'react-dom';
 import afterTransition from "~/components/utils/transitionElement";
 import styles from './Modal.css';

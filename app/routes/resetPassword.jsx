@@ -1,10 +1,6 @@
 import React from 'react';
 import { Link, useFetcher } from '@remix-run/react';
-import {
-  checkSessionCookie,
-  confirmResetpassword,
-  generatePasswordResetLink
-} from '../../server/auth';
+import { checkSessionCookie, confirmResetpassword } from '../../server/auth';
 import { commitSession, getSession } from '../sessions';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
@@ -15,8 +11,6 @@ import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import formStyles from '../styles/form.css';
 import { handleException } from '~/components/utils/AuthException';
 import { json, redirect } from '@remix-run/node';
-import { getResetPasswordTemplate } from 'server/resetPasswordTemplate';
-import { sendPasswordResetMail } from 'server/mailerService';
 
 export const links = () => [
   ...HeaderStyleLinks(),

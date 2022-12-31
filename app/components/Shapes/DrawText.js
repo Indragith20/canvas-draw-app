@@ -1,5 +1,3 @@
-import { drawText } from "../utils/drawShapes.js";
-
 class DrawText {
   constructor(tempCanvas, tempContext, callback, id, selectedTheme) {
     this.started = false;
@@ -41,7 +39,7 @@ class DrawText {
       console.log('Drawing text', this.textBox.innerHTML);
       let text = this.textBox.innerHTML.replace(/<div>/g, "\n").replace(/<\/div>/g, "").replace(/<br>/g, "\n").replace('&nbsp;', ' ');
       console.log(text);
-      let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
+      //let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
 
 
 
