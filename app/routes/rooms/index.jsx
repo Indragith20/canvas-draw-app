@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useFetcher, useOutletContext } from '@remix-run/react';
+import { Link, useFetcher, useOutletContext } from '@remix-run/react';
 
 import SingleRoom, { RoomLinks } from '../../components/SingleRoom/SingleRoom';
 import styles from '~/styles/room.css';
@@ -102,20 +102,32 @@ export default function RoomsList() {
 
   return (
     <div className='main-container'>
-      <span className='room-header'>List of Rooms</span>
+      <span className='room-header'>
+        {userData.rooms && userData.rooms.length > 0 ? 'List of Rooms' : null}
+      </span>
       <div className='roomContainer'>
-        {userData.rooms && userData.rooms.length > 0
-          ? userData.rooms.map((room) => {
-              return (
-                <SingleRoom
-                  key={room.id}
-                  {...room}
-                  onDeleteRoom={showPopUp}
-                  showCollaborators={showCollaborators}
-                />
-              );
-            })
-          : null}
+        {userData.rooms && userData.rooms.length > 0 ? (
+          userData.rooms.map((room) => {
+            return (
+              <SingleRoom
+                key={room.id}
+                {...room}
+                onDeleteRoom={showPopUp}
+                showCollaborators={showCollaborators}
+              />
+            );
+          })
+        ) : (
+          <div className='empty-room-container'>
+            <div className='empty-room'>
+              <span className='error-msg'>No Rooms Found</span>
+              <Link to='/rooms/createRoom' className='error-link'>
+                {' '}
+                + Create Room
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
       <DeleteRoom
         onCancel={onCancel}

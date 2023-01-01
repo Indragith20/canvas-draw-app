@@ -28,7 +28,7 @@ async function createRoom(userId, userName, roomName) {
     addRoomToUser(userId, newRoomRef.id).then(() => {
       let mainRoomPromise = newRoomRef.set({ isCreated: true });
       let collaboratorPromise = db.collaborators(newRoomRef.id).doc(userId).set({ name: userName, color: 'blue', isActive: true, id: userId });
-      let roomPromise = newRoomDetailsRef.set({ id: newRoomRef.id, roomName, createdAt: new Date(Timestamp.now().toDate()), createdBy: userName });
+      let roomPromise = newRoomDetailsRef.set({ id: newRoomRef.id, roomName, createdAt: new Date(Timestamp.now().toDate()), createdBy: userName, createdUserId: userId });
       let shapePromise = db.shapeCollection(newRoomRef.id).doc('shapeList').set({ shapeList: [] })
       Promise.all([mainRoomPromise, collaboratorPromise, roomPromise, shapePromise]).then(() => {
         resolve({ id: newRoomRef.id, userId: userId });
@@ -50,21 +50,48 @@ function deleteRoom(userId, roomId) {
         userRef.update({ rooms: updatedRooms }).then(() => {
           let promises = [];
           let roomRef = db.rooms().doc(roomId);
-          promises.push(db.roomDetails().doc(roomId).delete());
-          promises.push(roomRef.collection('collaborators').get().then((snapshot) => {
-            let collectionDeletePromise = [];
-            snapshot.docs.forEach(doc => {
-              collectionDeletePromise.push(doc.ref.delete());
-            });
-            return collectionDeletePromise;
-          }))
-          promises.push(roomRef.collection('shapes').doc('shapeList').delete());
-          promises.push(roomRef.delete());
-          Promise.all(promises).then(() => {
-            resolve({ message: 'success' })
-          }).catch(err => {
-            reject({ message: err })
+          let roomDetailsRef = db.roomDetails().doc(roomId);
+          roomDetailsRef.get().then(doc => {
+            if (!doc.exists) {
+              resolve({ message: 'success' });
+            } else {
+              let data = doc.data();
+              if (data.createdUserId === userId) {
+                promises.push(db.roomDetails().doc(roomId).delete());
+                promises.push(roomRef.collection('collaborators').get().then((snapshot) => {
+                  let collectionDeletePromise = [];
+                  snapshot.docs.forEach(doc => {
+                    collectionDeletePromise.push(doc.ref.delete());
+                  });
+                  return collectionDeletePromise;
+                }))
+                promises.push(roomRef.collection('shapes').doc('shapeList').delete());
+                promises.push(roomRef.delete());
+                Promise.all(promises).then(() => {
+                  resolve({ message: 'success' })
+                }).catch(err => {
+                  reject({ message: err })
+                })
+              } else {
+                promises.push(roomRef.collection('collaborators').get().then((snapshot) => {
+                  let collectionDeletePromise = [];
+                  snapshot.docs.forEach(doc => {
+                    let collaboratorId = doc.id;
+                    if (collaboratorId === userId) {
+                      collectionDeletePromise.push(doc.ref.delete());
+                    }
+                  });
+                  return collectionDeletePromise;
+                }))
+                Promise.all(promises).then(() => {
+                  resolve({ message: 'success' })
+                }).catch(err => {
+                  reject({ message: err })
+                })
+              }
+            }
           })
+
         }).catch(err => {
           reject({ message: err });
         })

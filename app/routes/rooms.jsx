@@ -31,7 +31,14 @@ export async function loader({ request }) {
         promises.push(getRoomDetails(id));
       });
       let roomData = await Promise.all(promises);
-      return json({ ...userData.data, rooms: roomData });
+      let filteredRooms = roomData.filter((room) => {
+        if (room.id) {
+          return room;
+        } else {
+          return null;
+        }
+      });
+      return json({ ...userData.data, rooms: filteredRooms });
     } else {
       return json({ ...userData.data, rooms: [] });
     }

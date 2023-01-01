@@ -59,6 +59,10 @@ function onSocketConnect(socket, io) {
     emitData(io, socket, 'updateshape', data);
   });
 
+  socket.on('deleteAllShapes', (data) => {
+    emitData(io, socket, 'deleteAllShapes', data);
+  })
+
   socket.on('setliveuser', (data) => {
     if (data.roomId) {
       setDataForCaching(data.roomId, 'liveUserFetchNeeded', 'true');
