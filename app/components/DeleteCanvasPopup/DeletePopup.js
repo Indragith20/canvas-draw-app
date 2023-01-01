@@ -1,5 +1,6 @@
-import { useFetcher } from '@remix-run/react';
-import React, { useEffect } from 'react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
+import React, { useEffect, useState } from 'react';
+import { useSocket } from '~/contexts/socketContext';
 import Modal from '../Common/Modal/Modal';
 import { useToast } from '../Common/Toast/ToastContext';
 import styles from './DeletePopup.css';
@@ -13,25 +14,28 @@ export const DeletePopupLinks = () => (
 function DeletePopup({ showDeletePopup, onCancel, deleteCanvas }) {
   const { submit, data } = useFetcher();
   const { addToast } = useToast();
-
+  const socket = useSocket();
+  const { currentUser, roomId } = useLoaderData();
+  const [submission, setSubmission] = useState(false)
 
   function onDelete() {
     let formData = new FormData();
     formData.set('action', 'deleteAll');
     submit(formData, { method: 'post' });
+    setSubmission(true);
   }
 
-
-
-  useEffect(() => {
-    if (data && data.action === 'deleteAll') {
-      let { actionData } = data;
-      if (actionData && actionData.message === 'success') {
-        addToast({ message: 'Canvas Deleted Successfully', timeout: 5000 })
-        deleteCanvas();
-      }
+  if (data && data.action === 'deleteAll' && submission === true) {
+    let { actionData } = data;
+    if (actionData && actionData.message === 'success') {
+      socket.emit('deleteAllShapes', { user: currentUser, roomId, action: 'deleteAll' })
+      addToast({ message: 'Canvas Deleted Successfully', timeout: 5000 })
+      deleteCanvas();
     }
-  }, [data, addToast, deleteCanvas])
+    setSubmission(false);
+
+  }
+
   return (
     <Modal show={showDeletePopup} close={onCancel}>
       <Modal.Header needCloseIcon={true}>
