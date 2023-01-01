@@ -1,5 +1,5 @@
 import { useFetcher, useLoaderData } from '@remix-run/react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSocket } from '~/contexts/socketContext';
 import Modal from '../Common/Modal/Modal';
 import { useToast } from '../Common/Toast/ToastContext';
