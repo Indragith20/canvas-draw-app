@@ -3,7 +3,8 @@
 }
 
 .content {
-  width: min(600px, 100%);
+  width: clamp(200px, 600px, 800px);
+  max-width: 100%;
 }
 
 .avatar {
