@@ -19,10 +19,16 @@ function DeletePopup({ showDeletePopup, onCancel, deleteCanvas }) {
   const [submission, setSubmission] = useState(false)
 
   function onDelete() {
-    let formData = new FormData();
-    formData.set('action', 'deleteAll');
-    submit(formData, { method: 'post' });
-    setSubmission(true);
+    if (!currentUser || !roomId) {
+      addToast({ message: 'Canvas Deleted Successfully', timeout: 5000 })
+      deleteCanvas();
+    } else {
+      let formData = new FormData();
+      formData.set('action', 'deleteAll');
+      submit(formData, { method: 'post' });
+      setSubmission(true);
+    }
+
   }
 
   if (data && data.action === 'deleteAll' && submission === true) {

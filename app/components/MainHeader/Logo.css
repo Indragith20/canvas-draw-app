@@ -7,3 +7,7 @@
 .banner {
   width: clamp(100px, 200px, 400px);
 }
+
+.banner:hover {
+  transform: scale(1.01);
+}
