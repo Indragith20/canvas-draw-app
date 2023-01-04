@@ -798,7 +798,7 @@ class MainComponent extends React.PureComponent {
   }
 
   render() {
-    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes } = this.state;
+    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes, selectedTheme } = this.state;
     let { backLink } = this.props;
     return (
       <div
@@ -823,6 +823,8 @@ class MainComponent extends React.PureComponent {
               addShape={this.addShape}
               removeShape={this.removeShape}
               deleteAllShapes={this.onEmptyCanvas}
+              baseLineHeight={baseLineHeight}
+              baseFontSize={baseFontSize}
             />
           </div>
 

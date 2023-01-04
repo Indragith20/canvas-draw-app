@@ -1,6 +1,6 @@
 import { drawDiamond, drawText } from "./drawShapes";
 
-function changeFromOneScalingFactor(coords, scalingFactor) {
+export function changeFromOneScalingFactor(coords, scalingFactor) {
   return coords * scalingFactor;
 }
 

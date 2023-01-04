@@ -66,9 +66,19 @@ function onSocketConnect(socket, io) {
   socket.on('setliveuser', (data) => {
     if (data.roomId) {
       setDataForCaching(data.roomId, 'liveUserFetchNeeded', 'true');
+      emitData(io, socket, 'setliveuser', data);
       addLiveUsers(data.roomId, socket.id, data.userDetails);
+
     }
   });
+
+  socket.on('removeliveuser', (data) => {
+    if (data.roomId) {
+      emitData(io, socket, 'removeliveuser', data);
+      removeLiveUsers(socket.id);
+
+    }
+  })
 
   socket.on('disconnect', (data) => {
     removeLiveUsers(socket.id);

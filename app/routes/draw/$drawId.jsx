@@ -140,29 +140,30 @@ function DrawIndex() {
       });
     }
 
+    function removeLiveUser() {
+      socket.emit('removeliveuser', {
+        roomId: roomId,
+        userDetails: { id, name, isActive: false }
+      });
+    }
+
+    function onVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        onConfirm();
+      } else {
+        removeLiveUser();
+      }
+    }
+
     socket.on('confirmation', onConfirm);
+    window.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       socket.off('confirmation', onConfirm);
+      window.removeEventListener('visibilitychange', onVisibilityChange);
       socket.close();
     };
   }, [roomId, id, name]);
-
-  // useEffect(() => {
-  //   if (!socket) {
-  //     return;
-  //   }
-
-  //   function onConfirm() {
-  //     socket.emit('setliveuser', { roomId: roomId, userDetails: currentUser });
-  //   }
-
-  //   socket.on('confirmation', onConfirm);
-
-  //   return () => {
-  //     socket.off('confirmation', onConfirm);
-  //   };
-  // }, [socket, currentUser, roomId]);
 
   const updateShape = useCallback(
     (shape, action = 'add') => {
@@ -177,7 +178,11 @@ function DrawIndex() {
 
   const onMouseMove = useCallback(
     (eventDetails) => {
-      socket.emit('mousemove', { ...eventDetails, user: currentUser, roomId });
+      socket.emit('mousemove', {
+        ...eventDetails,
+        user: currentUser,
+        roomId
+      });
     },
     [socket, currentUser, roomId]
   );
