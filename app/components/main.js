@@ -67,6 +67,7 @@ class MainComponent extends React.PureComponent {
       scrollY: 0,
       canvasWidth: 0,
       canvasHeight: 0,
+      lineWidth: 3,
       selectedTheme: 'light',
       selectedTool: 'select',
       showModal: null,
@@ -138,12 +139,12 @@ class MainComponent extends React.PureComponent {
     this.setState({ canvasWidth: window.innerWidth, canvasHeight: window.innerHeight }, () => {
       this.redraw();
     });
-    let { selectedTool } = this.state;
+    let { selectedTool, lineWidth } = this.state;
     let { selectedTheme } = this.props;
     this.mainContext = this.mainCanvas.current.getContext('2d');
     this.tempContext = this.tempCanvas.current.getContext('2d');
     this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';// Default line color. 
-    this.tempContext.lineWidth = 1.0;// Default stroke weight. 
+    this.tempContext.lineWidth = lineWidth;// Default stroke weight. 
 
     // Fill transparent canvas with dark grey (So we can use the color to erase). 
     this.tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#FFFFFF';
@@ -528,7 +529,7 @@ class MainComponent extends React.PureComponent {
     this.tempContext.setLineDash([]);
     this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
     this.tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
-    this.tempContext.lineWidth = 1.0;
+    this.tempContext.lineWidth = 3.0;
 
     shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
