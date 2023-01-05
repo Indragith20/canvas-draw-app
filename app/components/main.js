@@ -87,6 +87,7 @@ class MainComponent extends React.PureComponent {
     this.onWheelMove = this.onWheelMove.bind(this);
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onTouchMove = this.onTouchMove.bind(this);
+    this.onTouchEnd = this.onTouchEnd.bind(this);
     this.imgUpdate = this.imgUpdate.bind(this);
     this.drawImage = this.drawImage.bind(this);
     this.onResize = this.onResize.bind(this);
@@ -181,7 +182,7 @@ class MainComponent extends React.PureComponent {
     if (isTouchDevice()) {
       this.tempCanvas.current.addEventListener('touchstart', this.onTouchStart, false);
       this.tempCanvas.current.addEventListener('touchmove', this.onTouchMove, false);
-      this.tempCanvas.current.addEventListener('touchend', this.onEvent, false);
+      this.tempCanvas.current.addEventListener('touchend', this.onTouchEnd, false);
     } else {
       this.tempCanvas.current.addEventListener('mousedown', this.onEvent, false);
       this.tempCanvas.current.addEventListener('mousemove', this.onEvent, false);
@@ -202,7 +203,7 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.removeEventListener('mouseup', this.onEvent, false);
     this.tempCanvas.current.removeEventListener('touchstart', this.onTouchStart, false);
     this.tempCanvas.current.removeEventListener('touchmove', this.onTouchMove, false);
-    this.tempCanvas.current.removeEventListener('touchend', this.onEvent, false);
+    this.tempCanvas.current.removeEventListener('touchend', this.onTouchEnd, false);
     this.tempCanvas.current.removeEventListener('dblclick', this.changeToTextTool, false);
     document.removeEventListener('keydown', this.onKeyDown, false);
     this.tempCanvas.current.removeEventListener('click', this.onDocumentClick, false);
@@ -282,24 +283,48 @@ class MainComponent extends React.PureComponent {
   }
 
   onTouchStart(ev) {
+    console.log('Touch Start Fired', ev);
+    ev.preventDefault();
     let { selectedTool } = this.state;
-    if (selectedTool === 'select' || ev.touches.length > 0) {
-      this.touchStartX = ev.touches[0].clientX;
-      this.touchStartY = ev.touches[0].clientY;
+    if (ev.targetTouches.length > 0) {
+      this.touchStartX = ev.targetTouches[0].clientX;
+      this.touchStartY = ev.targetTouches[0].clientY;
+      ev.x = ev.targetTouches[0].clientX;
+      ev.y = ev.targetTouches[0].clientY;
+      this.onEvent(ev);
     } else {
       this.onEvent(ev);
     }
   }
 
   onTouchMove(ev) {
+    ev.preventDefault();
+    console.log('Touch Move Fired', ev);
     let { selectedTool } = this.state;
-    if (selectedTool === 'select' || ev.touches.length > 0) {
-      let deltaX = this.touchStartX - ev.touches[0].clientX;
-      let deltaY = this.touchStartY - ev.touches[0].clientY;
+    if (ev.targetTouches.length > 0) {
+      let deltaX = this.touchStartX - ev.targetTouches[0].pageX;
+      let deltaY = this.touchStartY - ev.targetTouches[0].pageY;
       ev.deltaX = deltaX;
       ev.deltaY = deltaY;
-      this.onWheelMove(ev);
+      console.log(deltaX, deltaY);
+      if (selectedTool === 'select') {
+        this.onWheelMove(ev);
+      } else {
+        ev.x = ev.targetTouches[0].clientX;
+        ev.y = ev.targetTouches[0].clientY;
+        this.onEvent(ev);
+      }
+
     } else {
+      this.onEvent(ev);
+    }
+  }
+
+  onTouchEnd(ev) {
+    console.log('Touch End Fired', ev);
+    if (ev.changedTouches.length > 0) {
+      ev.x = ev.changedTouches[0].clientX;
+      ev.y = ev.changedTouches[0].clientY;
       this.onEvent(ev);
     }
   }
@@ -409,6 +434,7 @@ class MainComponent extends React.PureComponent {
         }
       }
     } else if (this.tool) {
+      console.log("Event TYpe", ev.type);
       let func = this.tool[eventTypeMapping[ev.type]];
       if (func) {
         func(ev);
@@ -462,6 +488,7 @@ class MainComponent extends React.PureComponent {
 
 
   imgUpdate(drawenImage) {
+    console.log('imgUpdate called');
     if (drawenImage && drawenImage.type) {
       let { scrollX, scrollY, scalingFactor, shapes } = this.state;
       /** TODO: Change this logic to object key value structure */
