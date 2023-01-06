@@ -88,6 +88,7 @@ class MainComponent extends React.PureComponent {
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onTouchMove = this.onTouchMove.bind(this);
     this.onTouchEnd = this.onTouchEnd.bind(this);
+    this.onTouchMoveThreshold = this.onTouchMoveThreshold.bind(this);
     this.imgUpdate = this.imgUpdate.bind(this);
     this.drawImage = this.drawImage.bind(this);
     this.onResize = this.onResize.bind(this);
@@ -118,7 +119,9 @@ class MainComponent extends React.PureComponent {
     this.isUserDragging = false;
     this.draggingElement = null;
 
-
+    // touch events
+    this.touchStartTimer = null;
+    this.DELTA_TIME_THRESHOLD_MS = 700;
 
     // To emulate scroll behaviour
     // this.state.scrollX = 0;
@@ -284,28 +287,55 @@ class MainComponent extends React.PureComponent {
 
   onTouchStart(ev) {
     console.log('Touch Start Fired', ev);
-    ev.preventDefault();
     let { selectedTool } = this.state;
-    if (ev.targetTouches.length > 0) {
-      this.touchStartX = ev.targetTouches[0].clientX;
-      this.touchStartY = ev.targetTouches[0].clientY;
-      ev.x = ev.targetTouches[0].clientX;
-      ev.y = ev.targetTouches[0].clientY;
-      this.onEvent(ev);
+    if (ev.targetTouches.length === 1) {
+      if (this.touchStartTimer === null) {
+        this.touchStartTimer = setTimeout(() => {
+          this.touchStartTimer = null;
+        }, this.DELTA_TIME_THRESHOLD_MS);
+        this.touchStartX = ev.targetTouches[0].clientX;
+        this.touchStartY = ev.targetTouches[0].clientY;
+        ev.x = ev.targetTouches[0].clientX;
+        ev.y = ev.targetTouches[0].clientY;
+        this.onEvent(ev);
+      } else {
+        ev.x = ev.targetTouches[0].clientX;
+        ev.y = ev.targetTouches[0].clientY;
+        this.changeToTextTool(ev);
+      }
+
     } else {
       this.onEvent(ev);
     }
+  }
+
+  onTouchMoveThreshold(x, y) {
+    let threshold = { x, y };
+    if (x > 5) {
+      threshold.x = 5;
+    }
+    if (x < -5) {
+      threshold.x = -5;
+    }
+    if (y > 5) {
+      threshold.y = 5;
+    }
+    if (y < -5) {
+      threshold.y = -5
+    }
+    return threshold;
   }
 
   onTouchMove(ev) {
     ev.preventDefault();
     console.log('Touch Move Fired', ev);
     let { selectedTool } = this.state;
-    if (ev.targetTouches.length > 0) {
-      let deltaX = this.touchStartX - ev.targetTouches[0].pageX;
-      let deltaY = this.touchStartY - ev.targetTouches[0].pageY;
-      ev.deltaX = deltaX;
-      ev.deltaY = deltaY;
+    if (ev.targetTouches.length === 1) {
+      let deltaX = this.touchStartX - ev.targetTouches[0].clientX;
+      let deltaY = this.touchStartY - ev.targetTouches[0].clientY;
+      let thresholdedDelta = this.onTouchMoveThreshold(deltaX, deltaY);
+      ev.deltaX = thresholdedDelta.x;
+      ev.deltaY = thresholdedDelta.y;
       console.log(deltaX, deltaY);
       if (selectedTool === 'select') {
         this.onWheelMove(ev);
@@ -322,7 +352,7 @@ class MainComponent extends React.PureComponent {
 
   onTouchEnd(ev) {
     console.log('Touch End Fired', ev);
-    if (ev.changedTouches.length > 0) {
+    if (ev.changedTouches.length === 1) {
       ev.x = ev.changedTouches[0].clientX;
       ev.y = ev.changedTouches[0].clientY;
       this.onEvent(ev);
@@ -346,10 +376,10 @@ class MainComponent extends React.PureComponent {
     // let isUserDragging = false;
 
     if (selectedTool === 'select') {
-      if (ev.type === 'mousedown') {
+      if (ev.type === 'mousedown' || ev.type === 'touchstart') {
         this.mouseXPosition = ev._x;
         this.mouseYPosition = ev._y;
-      } else if (ev.type === 'mousemove') {
+      } else if (ev.type === 'mousemove' || ev.type === 'touchmove') {
         if (this.mouseYPosition && this.mouseXPosition) {
           let diffX = Math.abs(this.mouseXPosition - ev._x);
           let diffY = Math.abs(this.mouseYPosition - ev._y);
@@ -655,7 +685,8 @@ class MainComponent extends React.PureComponent {
       //   });
       // }
 
-      let func = this.tool[eventTypeMapping[ev.type]];
+      let eventMapping = ev.type === 'touchstart' ? 'dblclick' : 'dblclick';
+      let func = this.tool[eventMapping];
       if (func) {
         this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
         // func will be dbclick in drawtext
