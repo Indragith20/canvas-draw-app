@@ -299,7 +299,7 @@ class MainComponent extends React.PureComponent {
         ev.y = ev.targetTouches[0].clientY;
         this.onEvent(ev);
       } else {
-        if (ev.targetTouches[0].clientX === this.touchStartX && ev.targetTouches[0].clientY === this.touchStartY) {
+        if ((Math.abs(ev.targetTouches[0].clientX - this.touchStartX) < 10) && (Math.abs(ev.targetTouches[0].clientY - this.touchStartY) < 10)) {
           ev.x = ev.targetTouches[0].clientX;
           ev.y = ev.targetTouches[0].clientY;
           this.changeToTextTool(ev);
