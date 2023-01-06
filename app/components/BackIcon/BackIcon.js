@@ -29,6 +29,9 @@ function BackIcon({ backLink }) {
         <span>Back</span>
 
       </div>
+      <div className='mobile-back-container'>
+        <svg xmlns="http://www.w3.org/2000/svg" className='icon-style' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 12 7-7v4h11v6H10v4z"></path></svg>
+      </div>
     </Link>
   )
 }
