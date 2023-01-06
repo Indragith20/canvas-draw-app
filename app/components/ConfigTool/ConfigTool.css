@@ -53,22 +53,27 @@
 
 @media (min-width: 320px) and (max-width: 767px) {
   .configTool {
-    top: initial;
-    bottom: 20px;
+    top: 30px;
+    /* bottom: 20px; */
     padding: .5rem;
+    border: none;
   }
   .configTool .wrapper {
     flex-direction: column;
     padding: 0px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid hsl(230deg, 100%, 69%);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 2px solid hsl(230deg, 100%, 69%);
+  }
+
+  .configTool .icon {
+    padding: 0px;
   }
 
   .mobile-icon {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top: 8px;
   }
 
   .hide-tools {

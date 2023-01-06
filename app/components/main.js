@@ -67,6 +67,7 @@ class MainComponent extends React.PureComponent {
       scrollY: 0,
       canvasWidth: 0,
       canvasHeight: 0,
+      lineWidth: 3,
       selectedTheme: 'light',
       selectedTool: 'select',
       showModal: null,
@@ -86,6 +87,8 @@ class MainComponent extends React.PureComponent {
     this.onWheelMove = this.onWheelMove.bind(this);
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onTouchMove = this.onTouchMove.bind(this);
+    this.onTouchEnd = this.onTouchEnd.bind(this);
+    this.onTouchMoveThreshold = this.onTouchMoveThreshold.bind(this);
     this.imgUpdate = this.imgUpdate.bind(this);
     this.drawImage = this.drawImage.bind(this);
     this.onResize = this.onResize.bind(this);
@@ -116,7 +119,9 @@ class MainComponent extends React.PureComponent {
     this.isUserDragging = false;
     this.draggingElement = null;
 
-
+    // touch events
+    this.touchStartTimer = null;
+    this.DELTA_TIME_THRESHOLD_MS = 700;
 
     // To emulate scroll behaviour
     // this.state.scrollX = 0;
@@ -138,12 +143,12 @@ class MainComponent extends React.PureComponent {
     this.setState({ canvasWidth: window.innerWidth, canvasHeight: window.innerHeight }, () => {
       this.redraw();
     });
-    let { selectedTool } = this.state;
+    let { selectedTool, lineWidth } = this.state;
     let { selectedTheme } = this.props;
     this.mainContext = this.mainCanvas.current.getContext('2d');
     this.tempContext = this.tempCanvas.current.getContext('2d');
     this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';// Default line color. 
-    this.tempContext.lineWidth = 1.0;// Default stroke weight. 
+    this.tempContext.lineWidth = lineWidth;// Default stroke weight. 
 
     // Fill transparent canvas with dark grey (So we can use the color to erase). 
     this.tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#FFFFFF';
@@ -180,7 +185,7 @@ class MainComponent extends React.PureComponent {
     if (isTouchDevice()) {
       this.tempCanvas.current.addEventListener('touchstart', this.onTouchStart, false);
       this.tempCanvas.current.addEventListener('touchmove', this.onTouchMove, false);
-      this.tempCanvas.current.addEventListener('touchend', this.onEvent, false);
+      this.tempCanvas.current.addEventListener('touchend', this.onTouchEnd, false);
     } else {
       this.tempCanvas.current.addEventListener('mousedown', this.onEvent, false);
       this.tempCanvas.current.addEventListener('mousemove', this.onEvent, false);
@@ -201,7 +206,7 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.removeEventListener('mouseup', this.onEvent, false);
     this.tempCanvas.current.removeEventListener('touchstart', this.onTouchStart, false);
     this.tempCanvas.current.removeEventListener('touchmove', this.onTouchMove, false);
-    this.tempCanvas.current.removeEventListener('touchend', this.onEvent, false);
+    this.tempCanvas.current.removeEventListener('touchend', this.onTouchEnd, false);
     this.tempCanvas.current.removeEventListener('dblclick', this.changeToTextTool, false);
     document.removeEventListener('keydown', this.onKeyDown, false);
     this.tempCanvas.current.removeEventListener('click', this.onDocumentClick, false);
@@ -281,24 +286,78 @@ class MainComponent extends React.PureComponent {
   }
 
   onTouchStart(ev) {
+    console.log('Touch Start Fired', ev);
     let { selectedTool } = this.state;
-    if (selectedTool === 'select' || ev.touches.length > 0) {
-      this.touchStartX = ev.touches[0].clientX;
-      this.touchStartY = ev.touches[0].clientY;
+    if (ev.targetTouches.length === 1) {
+      if (this.touchStartTimer === null) {
+        this.touchStartTimer = setTimeout(() => {
+          this.touchStartTimer = null;
+        }, this.DELTA_TIME_THRESHOLD_MS);
+        this.touchStartX = ev.targetTouches[0].clientX;
+        this.touchStartY = ev.targetTouches[0].clientY;
+        ev.x = ev.targetTouches[0].clientX;
+        ev.y = ev.targetTouches[0].clientY;
+        this.onEvent(ev);
+      } else {
+        if ((Math.abs(ev.targetTouches[0].clientX - this.touchStartX) < 10) && (Math.abs(ev.targetTouches[0].clientY - this.touchStartY) < 10)) {
+          ev.x = ev.targetTouches[0].clientX;
+          ev.y = ev.targetTouches[0].clientY;
+          this.changeToTextTool(ev);
+        }
+
+      }
+
     } else {
       this.onEvent(ev);
     }
   }
 
+  onTouchMoveThreshold(x, y) {
+    let threshold = { x, y };
+    if (x > 5) {
+      threshold.x = 5;
+    }
+    if (x < -5) {
+      threshold.x = -5;
+    }
+    if (y > 5) {
+      threshold.y = 5;
+    }
+    if (y < -5) {
+      threshold.y = -5
+    }
+    return threshold;
+  }
+
   onTouchMove(ev) {
+    ev.preventDefault();
+    console.log('Touch Move Fired', ev);
     let { selectedTool } = this.state;
-    if (selectedTool === 'select' || ev.touches.length > 0) {
-      let deltaX = this.touchStartX - ev.touches[0].clientX;
-      let deltaY = this.touchStartY - ev.touches[0].clientY;
-      ev.deltaX = deltaX;
-      ev.deltaY = deltaY;
-      this.onWheelMove(ev);
+    if (ev.targetTouches.length === 1) {
+      let deltaX = this.touchStartX - ev.targetTouches[0].clientX;
+      let deltaY = this.touchStartY - ev.targetTouches[0].clientY;
+      let thresholdedDelta = this.onTouchMoveThreshold(deltaX, deltaY);
+      ev.deltaX = thresholdedDelta.x;
+      ev.deltaY = thresholdedDelta.y;
+      console.log(deltaX, deltaY);
+      if (selectedTool === 'select') {
+        this.onWheelMove(ev);
+      } else {
+        ev.x = ev.targetTouches[0].clientX;
+        ev.y = ev.targetTouches[0].clientY;
+        this.onEvent(ev);
+      }
+
     } else {
+      this.onEvent(ev);
+    }
+  }
+
+  onTouchEnd(ev) {
+    console.log('Touch End Fired', ev);
+    if (ev.changedTouches.length === 1) {
+      ev.x = ev.changedTouches[0].clientX;
+      ev.y = ev.changedTouches[0].clientY;
       this.onEvent(ev);
     }
   }
@@ -320,10 +379,10 @@ class MainComponent extends React.PureComponent {
     // let isUserDragging = false;
 
     if (selectedTool === 'select') {
-      if (ev.type === 'mousedown') {
+      if (ev.type === 'mousedown' || ev.type === 'touchstart') {
         this.mouseXPosition = ev._x;
         this.mouseYPosition = ev._y;
-      } else if (ev.type === 'mousemove') {
+      } else if (ev.type === 'mousemove' || ev.type === 'touchmove') {
         if (this.mouseYPosition && this.mouseXPosition) {
           let diffX = Math.abs(this.mouseXPosition - ev._x);
           let diffY = Math.abs(this.mouseYPosition - ev._y);
@@ -408,6 +467,7 @@ class MainComponent extends React.PureComponent {
         }
       }
     } else if (this.tool) {
+      console.log("Event TYpe", ev.type);
       let func = this.tool[eventTypeMapping[ev.type]];
       if (func) {
         func(ev);
@@ -461,6 +521,7 @@ class MainComponent extends React.PureComponent {
 
 
   imgUpdate(drawenImage) {
+    console.log('imgUpdate called');
     if (drawenImage && drawenImage.type) {
       let { scrollX, scrollY, scalingFactor, shapes } = this.state;
       /** TODO: Change this logic to object key value structure */
@@ -528,11 +589,11 @@ class MainComponent extends React.PureComponent {
     this.tempContext.setLineDash([]);
     this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
     this.tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
-    this.tempContext.lineWidth = 1.0;
+    this.tempContext.lineWidth = 3.0;
 
     shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
-        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height));
+        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height), [10]);
       } else if (shape.type === 'arrow') {
         let headlen = 10;
         let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
@@ -593,10 +654,10 @@ class MainComponent extends React.PureComponent {
 
   changeToTextTool(ev) {
     let { scrollX, scrollY, shapes } = this.state;
-    ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
-    ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
+    ev._x = ev.x;
+    ev._y = ev.y;
 
-    let enclosedElement = getElementsAtPosition(ev._x, ev._y, shapes);
+    let enclosedElement = getElementsAtPosition(this.changeToOneScalingFactor(ev.x - scrollX), this.changeToOneScalingFactor(ev.y - scrollY), shapes);
 
     // Temporarily updating tool manually
     //this.updateTool('text', enclosedElement && enclosedElement.type === 'text' ? enclosedElement.id : null);
@@ -611,7 +672,7 @@ class MainComponent extends React.PureComponent {
 
       if (enclosedElement && enclosedElement.type === 'text') {
         textId = enclosedElement.id;
-        let shapes = this.state.shapes.filter(shape => shape.id !== this.selectedElement.id);
+        let shapes = this.state.shapes.filter(shape => shape.id !== enclosedElement.id);
         this.setState({ shapes }, () => {
           this.redraw();
         });
@@ -627,7 +688,8 @@ class MainComponent extends React.PureComponent {
       //   });
       // }
 
-      let func = this.tool[eventTypeMapping[ev.type]];
+      let eventMapping = ev.type === 'touchstart' ? 'dblclick' : 'dblclick';
+      let func = this.tool[eventMapping];
       if (func) {
         this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
         // func will be dbclick in drawtext

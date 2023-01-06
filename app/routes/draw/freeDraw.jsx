@@ -63,7 +63,7 @@ export default function FreeDrawIndex() {
         isMobile={isMobile}
         backLink={'/'}
       />
-      <MobileWarning backLink={'/'} backLinkText='Back to Home' />
+      {/* <MobileWarning backLink={'/'} backLinkText='Back to Home' /> */}
     </div>
   );
 }

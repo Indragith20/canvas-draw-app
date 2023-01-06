@@ -199,7 +199,7 @@ function DrawIndex() {
           isMobile={isMobile}
           backLink={'/rooms'}
         />
-        <MobileWarning backLink='/rooms' backLinkText='Back To Rooms' />
+        {/* <MobileWarning backLink='/rooms' backLinkText='Back To Rooms' /> */}
       </SocketProvider>
     </div>
   );
