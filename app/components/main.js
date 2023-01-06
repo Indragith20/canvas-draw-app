@@ -299,9 +299,12 @@ class MainComponent extends React.PureComponent {
         ev.y = ev.targetTouches[0].clientY;
         this.onEvent(ev);
       } else {
-        ev.x = ev.targetTouches[0].clientX;
-        ev.y = ev.targetTouches[0].clientY;
-        this.changeToTextTool(ev);
+        if (ev.targetTouches[0].clientX === this.touchStartX && ev.targetTouches[0].clientY === this.touchStartY) {
+          ev.x = ev.targetTouches[0].clientX;
+          ev.y = ev.targetTouches[0].clientY;
+          this.changeToTextTool(ev);
+        }
+
       }
 
     } else {
@@ -590,7 +593,7 @@ class MainComponent extends React.PureComponent {
 
     shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
-        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height));
+        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height), [10]);
       } else if (shape.type === 'arrow') {
         let headlen = 10;
         let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
@@ -669,7 +672,7 @@ class MainComponent extends React.PureComponent {
 
       if (enclosedElement && enclosedElement.type === 'text') {
         textId = enclosedElement.id;
-        let shapes = this.state.shapes.filter(shape => shape.id !== this.selectedElement.id);
+        let shapes = this.state.shapes.filter(shape => shape.id !== enclosedElement.id);
         this.setState({ shapes }, () => {
           this.redraw();
         });
