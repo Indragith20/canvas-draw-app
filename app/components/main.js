@@ -654,10 +654,10 @@ class MainComponent extends React.PureComponent {
 
   changeToTextTool(ev) {
     let { scrollX, scrollY, shapes } = this.state;
-    ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
-    ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
+    ev._x = ev.x;
+    ev._y = ev.y;
 
-    let enclosedElement = getElementsAtPosition(ev._x, ev._y, shapes);
+    let enclosedElement = getElementsAtPosition(this.changeToOneScalingFactor(ev.x - scrollX), this.changeToOneScalingFactor(ev.y - scrollY), shapes);
 
     // Temporarily updating tool manually
     //this.updateTool('text', enclosedElement && enclosedElement.type === 'text' ? enclosedElement.id : null);

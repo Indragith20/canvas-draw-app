@@ -1,7 +1,7 @@
 .back-icon-container {
   position: fixed;
   top: 10px;
-  left: 20px;
+  /* left: 1rem; */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -25,7 +25,8 @@
 /* TODO instead of display none show different UI for back Icon */
 @media (min-width: 320px) and (max-width: 767px) {
   .back-icon-container {
-    display: none;
+    top: 22px;
+    border: 1px solid var(--border-color);
   }
 }
 
