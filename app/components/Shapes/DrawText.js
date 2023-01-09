@@ -1,7 +1,9 @@
 class DrawText {
   constructor(tempCanvas, tempContext, callback, id, selectedTheme) {
     this.started = false;
+
     this.id = id;
+    console.log(this.id);
     this.initialText = '';
     this.tempCanvas = tempCanvas;
     this.tempContext = tempContext;
@@ -36,7 +38,7 @@ class DrawText {
 
   onBlur() {
     if (this.textBox) {
-      let text = this.textBox.innerHTML.replace(/<div>/g, "\n").replace(/<\/div>/g, "").replace(/<br>/g, "\n").replace('&nbsp;', ' ');
+      let text = this.textBox.innerHTML.replace(/<div>/g, "\n").replace(/<\/div>/g, "").replace(/<br>/g, "\n").replace(/\&nbsp;/g, ' ');
       //let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
 
 
@@ -86,7 +88,7 @@ class DrawText {
     // TODO: Currently implemented for rectangle enclosed element. Check possibility for all other shapes
     this.startX = ev.x;
     this.startY = ev.y;
-    this.textBoxContainer.style.top = `${ev.y}px`;
+    this.textBoxContainer.style.top = `${ev.y - 5}px`;
     this.textBoxContainer.style.left = `${ev.x}px`;
     this.textBoxContainer.style.display = 'block';
     this.textBox.focus();
