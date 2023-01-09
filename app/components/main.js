@@ -72,6 +72,7 @@ class MainComponent extends React.PureComponent {
       selectedTool: 'select',
       showModal: null,
       shapes: props.shapes,
+      selectedElement: null,
       ...baseConfig
     };
     this.addEventListeners = this.addEventListeners.bind(this);
@@ -102,13 +103,14 @@ class MainComponent extends React.PureComponent {
     this.onModalClose = this.onModalClose.bind(this);
     this.onShareLink = this.onShareLink.bind(this);
     this.onEmptyCanvas = this.onEmptyCanvas.bind(this);
+    this.deleteShape = this.deleteShape.bind(this);
+    this.clearSelectedElement = this.clearSelectedElement.bind(this);
 
     //this.idb = new Idb();
 
     this.mainCanvas = React.createRef();
     this.tempCanvas = React.createRef();
 
-    this.selectedElement = null;
 
     // sequeunce id 
     //this.id = 0;
@@ -260,7 +262,7 @@ class MainComponent extends React.PureComponent {
 
   updateTool(value, id = null) {
     if (this.tools[value]) {
-      this.setState({ selectedTool: value }, () => {
+      this.setState({ selectedTool: value, selectedElement: null }, () => {
         let { selectedTool } = this.state;
         let { selectedTheme } = this.props;
         let selectedOne = this.tools[selectedTool];
@@ -275,6 +277,9 @@ class MainComponent extends React.PureComponent {
         } else {
           this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, id, selectedTheme);
         }
+
+        // clear the tempCanvas
+        this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
       })
     }
   }
@@ -419,11 +424,10 @@ class MainComponent extends React.PureComponent {
         // First case of move tool -> User just selected the element.events should be mousedown
         let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - scrollX), this.changeToOneScalingFactor(this.mouseYPosition - scrollY), shapes);
         if (elementSelected) {
-          this.selectedElement = elementSelected;
           let updatedShapes = shapes.filter(shape => shape.id !== elementSelected.id);
           //redrawig without element selected
-          this.setState({ shapes: updatedShapes, selectedTool: 'move' }, () => {
-            let { shapes, scalingFactor } = this.state;
+          this.setState({ shapes: updatedShapes, selectedTool: 'move', selectedElement: elementSelected }, () => {
+            let { shapes, scalingFactor, selectedElement } = this.state;
             let { selectedTheme } = this.props;
             let { updateDb } = this.props;
             updateDb(shapes, 'app-state-persist');
@@ -431,20 +435,20 @@ class MainComponent extends React.PureComponent {
             this.draggingElement = elementSelected;
             this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
             //modifyig the selectedElement
-            let selectedElement = {
-              ...this.selectedElement,
-              x: this.changeFromOneScalingFactor(this.selectedElement.x),
-              y: this.changeFromOneScalingFactor(this.selectedElement.y),
-              endX: this.changeFromOneScalingFactor(this.selectedElement.endX),
-              endY: this.changeFromOneScalingFactor(this.selectedElement.endY),
-              startX: this.changeFromOneScalingFactor(this.selectedElement.startX),
-              startY: this.changeFromOneScalingFactor(this.selectedElement.startY),
-              radius: this.changeFromOneScalingFactor(this.selectedElement.radius),
-              width: this.selectedElement.width ? this.changeFromOneScalingFactor(this.selectedElement.width) : null,
-              height: this.selectedElement.height ? this.changeFromOneScalingFactor(this.selectedElement.height) : null,
+            let modifiedSelectedElement = {
+              ...selectedElement,
+              x: this.changeFromOneScalingFactor(selectedElement.x),
+              y: this.changeFromOneScalingFactor(selectedElement.y),
+              endX: this.changeFromOneScalingFactor(selectedElement.endX),
+              endY: this.changeFromOneScalingFactor(selectedElement.endY),
+              startX: this.changeFromOneScalingFactor(selectedElement.startX),
+              startY: this.changeFromOneScalingFactor(selectedElement.startY),
+              radius: this.changeFromOneScalingFactor(selectedElement.radius),
+              width: selectedElement.width ? this.changeFromOneScalingFactor(selectedElement.width) : null,
+              height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
               scalingFactor: scalingFactor
             }
-            this.tool = new MoveTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, selectedElement, selectedTheme);
+            this.tool = new MoveTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement, selectedTheme);
             // element is present. we need to call movetool
             this.tool[eventTypeMapping['mousedown']](ev);
           })
@@ -561,9 +565,14 @@ class MainComponent extends React.PureComponent {
         isExistingShape = this.draggingElement.id === modifiedImage.id ? true : false;
       }
 
+      // While Editing we are removing the shape so we need to check this here
+      if (this.selectedTextEle) {
+        isExistingShape = this.selectedTextEle === modifiedImage.id ? true : false;
+      }
+
       //let filteredShapes = shapes.filter(shape => shape.id !== drawenImage.id);
 
-      this.setState({ shapes: [...filteredShapes, modifiedImage] }, () => {
+      this.setState({ shapes: [...filteredShapes, modifiedImage], selectedElement: null }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
         updateShape(modifiedImage, isExistingShape ? 'update' : 'add');
@@ -650,6 +659,13 @@ class MainComponent extends React.PureComponent {
     this.mainContext.drawImage(this.tempCanvas.current, 0, 0);
     this.tempContext.restore();
     this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
+
+  }
+
+  clearSelectedElement() {
+    if (this.state.selectedElement) {
+      this.setState({ selectedElement: null });
+    }
   }
 
   changeToTextTool(ev) {
@@ -673,6 +689,7 @@ class MainComponent extends React.PureComponent {
       if (enclosedElement && enclosedElement.type === 'text') {
         textId = enclosedElement.id;
         let shapes = this.state.shapes.filter(shape => shape.id !== enclosedElement.id);
+        this.selectedTextEle = textId;
         this.setState({ shapes }, () => {
           this.redraw();
         });
@@ -680,14 +697,8 @@ class MainComponent extends React.PureComponent {
         //this.id = this.id + 1;
         textId = uuidv4();
       }
+      console.log(textId);
       this.tool = new DrawText(this.tempCanvas.current, this.tempContext, this.imgUpdate, textId, selectedTheme);
-      // if (enclosedElement && enclosedElement.type === 'text') {
-      //   let shapes = this.state.shapes.filter(shape => shape.id !== this.selectedElement.id);
-      //   this.setState({ shapes }, () => {
-      //     this.redraw();
-      //   });
-      // }
-
       let eventMapping = ev.type === 'touchstart' ? 'dblclick' : 'dblclick';
       let func = this.tool[eventMapping];
       if (func) {
@@ -711,14 +722,14 @@ class MainComponent extends React.PureComponent {
 
     } else {
       // special keys 
-      if (this.selectedElement) {
+      if (this.state.selectedElement) {
         // Backspace or delete key
         if (ev.which === 46 || ev.which === 8) {
-          let shapes = this.state.shapes.filter(shape => shape.id !== this.selectedElement.id);
+          let shapes = this.state.shapes.filter(shape => shape.id !== this.state.selectedElement.id);
           this.setState({ shapes }, () => {
             let { updateDb, updateShape } = this.props;
             updateDb(this.state.shapes, 'app-state-persist');
-            updateShape(this.selectedElement, 'delete');
+            updateShape(this.state.selectedElement, 'delete');
             this.redraw();
           })
 
@@ -745,31 +756,35 @@ class MainComponent extends React.PureComponent {
     if (selectedTool === 'select') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
       let selectedElement = getElementsAtPosition(ev._x, ev._y, shapes);
-      this.selectedElement = selectedElement;
-      if (this.selectedElement) {
-        if (this.selectedElement.type === 'rectangle') {
-          let { x, y, width, height } = this.selectedElement;
-          this.strokeOuterRect(x, y, width, height);
-        } else if (this.selectedElement.type === 'line' || this.selectedElement.type === 'arrow') {
-          let { startX, startY, width, height } = this.selectedElement;
-          this.strokeOuterRect(startX, startY, width, height);
-        } else if (this.selectedElement.type === 'circle') {
-          let x = this.changeFromOneScalingFactor(this.selectedElement.x) + scrollX;
-          let y = this.changeFromOneScalingFactor(this.selectedElement.y) + scrollY;
-          this.tempContext.setLineDash([6]);
-          this.tempContext.beginPath();
-          this.tempContext.arc(x, y, this.changeFromOneScalingFactor(this.selectedElement.radius) + 10, 0, 2 * Math.PI);
-          this.tempContext.stroke();
-        } else if (this.selectedElement.type === 'diamond') {
-          let { startX, startY, width, height } = this.selectedElement;
-          this.strokeOuterRect(startX, startY, width, height);
-        } else if (this.selectedElement.type === 'text') {
-          let { x, y, width, height } = this.selectedElement;
-          this.strokeOuterRect(x, y, width, height);
-        } else if (this.selectedElement.type === 'chalk') {
-          let [minX, minY, maxX, maxY] = getChalkRectValues(this.selectedElement.drawPoints);
-          this.strokeOuterRect(minX, minY, maxX - minX, maxY - minY);
-        }
+      if (selectedElement) {
+        this.setState({ selectedElement: selectedElement }, () => {
+          let { selectedElement } = this.state;
+          if (selectedElement.type === 'rectangle') {
+            let { x, y, width, height } = selectedElement;
+            this.strokeOuterRect(x, y, width, height);
+          } else if (selectedElement.type === 'line' || selectedElement.type === 'arrow') {
+            let { startX, startY, width, height } = selectedElement;
+            this.strokeOuterRect(startX, startY, width, height);
+          } else if (selectedElement.type === 'circle') {
+            let x = this.changeFromOneScalingFactor(selectedElement.x) + scrollX;
+            let y = this.changeFromOneScalingFactor(selectedElement.y) + scrollY;
+            this.tempContext.setLineDash([6]);
+            this.tempContext.beginPath();
+            this.tempContext.arc(x, y, this.changeFromOneScalingFactor(selectedElement.radius) + 10, 0, 2 * Math.PI);
+            this.tempContext.stroke();
+          } else if (selectedElement.type === 'diamond') {
+            let { startX, startY, width, height } = selectedElement;
+            this.strokeOuterRect(startX, startY, width, height);
+          } else if (selectedElement.type === 'text') {
+            let { x, y, width, height } = selectedElement;
+            this.strokeOuterRect(x, y, width, height);
+          } else if (selectedElement.type === 'chalk') {
+            let [minX, minY, maxX, maxY] = getChalkRectValues(selectedElement.drawPoints);
+            this.strokeOuterRect(minX, minY, maxX - minX, maxY - minY);
+          }
+        })
+      } else {
+        this.clearSelectedElement();
       }
     }
   }
@@ -797,7 +812,8 @@ class MainComponent extends React.PureComponent {
     this.setState(prevstate => {
       return {
         scrollX: prevstate.scrollX - e.deltaX,
-        scrollY: prevstate.scrollY - e.deltaY
+        scrollY: prevstate.scrollY - e.deltaY,
+        selectedElement: null
       }
     }, () => {
       this.redraw();
@@ -809,6 +825,8 @@ class MainComponent extends React.PureComponent {
     this.draggingElement = null;
     this.mouseXPosition = null;
     this.mouseYPosition = null;
+    this.selectedTextEle = null;
+    this.clearSelectedElement();
   }
 
 
@@ -859,8 +877,23 @@ class MainComponent extends React.PureComponent {
     })
   }
 
+
+  deleteShape() {
+    if (this.state.selectedElement) {
+      let shapes = this.state.shapes.filter(shape => shape.id !== this.state.selectedElement.id);
+      this.setState({ shapes, selectedElement: null }, () => {
+        let { updateDb, updateShape } = this.props;
+        updateDb(this.state.shapes, 'app-state-persist');
+        updateShape(this.state.selectedElement, 'delete');
+        this.redraw();
+      })
+    }
+  }
+
+
+
   render() {
-    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes, selectedTheme } = this.state;
+    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes, selectedTheme, lineWidth, selectedElement } = this.state;
     let { backLink } = this.props;
     return (
       <div
@@ -902,10 +935,22 @@ class MainComponent extends React.PureComponent {
           baseFontSize={baseFontSize}
           baseLineHeight={baseLineHeight}
           scalingFactor={scalingFactor}
+          lineWidth={lineWidth}
           shapes={shapes} />
         <ShareLink showShareLink={showModal === 'shareLink'} onCancel={this.onModalClose} />
         <DeletePopup showDeletePopup={showModal === 'deleteCanvas'} onCancel={this.onModalClose} deleteCanvas={this.onEmptyCanvas} />
         <BackIcon backLink={backLink} />
+        {
+          selectedElement ? (
+            <div className='delete-toast'>
+              <div className='delete-toast-msg' onClick={this.deleteShape}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                Delete
+              </div>
+
+            </div>
+          ) : null
+        }
       </div>
     )
   }

@@ -4,7 +4,7 @@ export function changeFromOneScalingFactor(coords, scalingFactor) {
   return coords * scalingFactor;
 }
 
-export function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedTheme, baseLineHeight, baseFontSize, scalingFactor, canvasWidth, canvasHeight }) {
+export function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedTheme, baseLineHeight, baseFontSize, scalingFactor, canvasWidth, canvasHeight, lineWidth }) {
   tempContext.clearRect(0, 0, canvasWidth, canvasHeight);
   tempContext.restore();
   tempContext.setLineDash([]);
@@ -12,7 +12,7 @@ export function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedThe
   tempContext.fillStyle = selectedTheme === 'dark' ? '#0e141b' : '#ffffff';
   tempContext.fillRect(0, 0, canvasWidth, canvasHeight);
   tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
-  tempContext.lineWidth = 1.0;
+  tempContext.lineWidth = lineWidth;
   shapes.forEach(shape => {
     if (shape.type === 'rectangle') {
       tempContext.strokeRect(shape.x + bufferX, shape.y + bufferY, changeFromOneScalingFactor(shape.width, scalingFactor), changeFromOneScalingFactor(shape.height, scalingFactor));

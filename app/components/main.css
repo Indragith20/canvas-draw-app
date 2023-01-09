@@ -47,3 +47,42 @@
   padding: 50px 30px 0 40px;
   width: 820px;
 }
+
+.delete-toast {
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
+  margin-left: auto;
+  
+  color: white;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  font-size: large;
+}
+
+.delete-toast-msg {
+  max-width: 150px;
+  background-color: var(--failure-color);
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  border-radius: 5px;
+  animation: fromDown 500ms;
+  cursor: pointer;
+}
+
+@keyframes fromDown {
+  from {
+    transform: translateY(200px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}

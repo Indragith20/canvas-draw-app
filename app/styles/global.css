@@ -104,7 +104,29 @@ a:active {
   height: 24px;
 }
 
-@media (min-width: 320px) and (max-width: 767px) {
+@media (max-width: 360px) {
+  .icon-style {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (min-width: 360px) and (max-width: 380px) {
+  .icon-style {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (min-width: 381px) and (max-width: 479px) {
+  .icon-style {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+
+@media (min-width: 480px) and (max-width: 767px) {
   .icon-style {
     width: 20px;
     height: 20px;
