@@ -201,6 +201,9 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.addEventListener('wheel', this.onWheelMove, false);
 
     window.addEventListener('resize', this.onResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', this.onResize);
+    }
   }
 
   removeEventListeners() {
@@ -215,6 +218,9 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.removeEventListener('click', this.onDocumentClick, false);
     this.tempCanvas.current.removeEventListener('wheel', this.onWheelMove, false);
     window.removeEventListener('resize', this.onResize);
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', this.onResize);
+    }
   }
 
 
