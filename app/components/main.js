@@ -124,7 +124,7 @@ class MainComponent extends React.PureComponent {
     // touch events
     this.touchStartTimer = null;
     this.DELTA_TIME_THRESHOLD_MS = 700;
-    this.TOUCH_MOVE_THRESHOLD = 10;
+    this.TOUCH_MOVE_THRESHOLD = 3;
 
     // To emulate scroll behaviour
     // this.state.scrollX = 0;
