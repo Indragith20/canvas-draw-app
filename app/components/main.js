@@ -286,7 +286,7 @@ class MainComponent extends React.PureComponent {
   }
 
   onResize(e) {
-    this.setState({ canvasWidth: window.innerWidth, canvasHeight: window.innerHeight }, () => {
+    this.setState({ canvasWidth: window.visualViewport.width, canvasHeight: window.visualViewport.height }, () => {
       this.redraw();
     })
   }
