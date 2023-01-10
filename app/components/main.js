@@ -124,6 +124,7 @@ class MainComponent extends React.PureComponent {
     // touch events
     this.touchStartTimer = null;
     this.DELTA_TIME_THRESHOLD_MS = 700;
+    this.TOUCH_MOVE_THRESHOLD = 10;
 
     // To emulate scroll behaviour
     // this.state.scrollX = 0;
@@ -321,17 +322,17 @@ class MainComponent extends React.PureComponent {
 
   onTouchMoveThreshold(x, y) {
     let threshold = { x, y };
-    if (x > 5) {
-      threshold.x = 5;
+    if (x > this.TOUCH_MOVE_THRESHOLD) {
+      threshold.x = this.TOUCH_MOVE_THRESHOLD;
     }
-    if (x < -5) {
-      threshold.x = -5;
+    if (x < -this.TOUCH_MOVE_THRESHOLD) {
+      threshold.x = -this.TOUCH_MOVE_THRESHOLD;
     }
-    if (y > 5) {
-      threshold.y = 5;
+    if (y > this.TOUCH_MOVE_THRESHOLD) {
+      threshold.y = this.TOUCH_MOVE_THRESHOLD;
     }
-    if (y < -5) {
-      threshold.y = -5
+    if (y < -this.TOUCH_MOVE_THRESHOLD) {
+      threshold.y = -this.TOUCH_MOVE_THRESHOLD;
     }
     return threshold;
   }
