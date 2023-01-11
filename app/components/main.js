@@ -124,6 +124,7 @@ class MainComponent extends React.PureComponent {
     // touch events
     this.touchStartTimer = null;
     this.DELTA_TIME_THRESHOLD_MS = 700;
+    this.TOUCH_MOVE_THRESHOLD = 10;
 
     // To emulate scroll behaviour
     // this.state.scrollX = 0;
@@ -200,6 +201,9 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.addEventListener('wheel', this.onWheelMove, false);
 
     window.addEventListener('resize', this.onResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', this.onResize);
+    }
   }
 
   removeEventListeners() {
@@ -214,6 +218,9 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.removeEventListener('click', this.onDocumentClick, false);
     this.tempCanvas.current.removeEventListener('wheel', this.onWheelMove, false);
     window.removeEventListener('resize', this.onResize);
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', this.onResize);
+    }
   }
 
 
@@ -285,7 +292,7 @@ class MainComponent extends React.PureComponent {
   }
 
   onResize(e) {
-    this.setState({ canvasWidth: window.innerWidth, canvasHeight: window.innerHeight }, () => {
+    this.setState({ canvasWidth: window.visualViewport.width, canvasHeight: window.visualViewport.height }, () => {
       this.redraw();
     })
   }
@@ -294,24 +301,28 @@ class MainComponent extends React.PureComponent {
     console.log('Touch Start Fired', ev);
     let { selectedTool } = this.state;
     if (ev.targetTouches.length === 1) {
-      if (this.touchStartTimer === null) {
-        this.touchStartTimer = setTimeout(() => {
-          this.touchStartTimer = null;
-        }, this.DELTA_TIME_THRESHOLD_MS);
-        this.touchStartX = ev.targetTouches[0].clientX;
-        this.touchStartY = ev.targetTouches[0].clientY;
-        ev.x = ev.targetTouches[0].clientX;
-        ev.y = ev.targetTouches[0].clientY;
-        this.onEvent(ev);
-      } else {
-        if ((Math.abs(ev.targetTouches[0].clientX - this.touchStartX) < 10) && (Math.abs(ev.targetTouches[0].clientY - this.touchStartY) < 10)) {
-          ev.x = ev.targetTouches[0].clientX;
-          ev.y = ev.targetTouches[0].clientY;
-          this.changeToTextTool(ev);
-        }
+      // if (this.touchStartTimer === null) {
+      //   this.touchStartTimer = setTimeout(() => {
+      //     this.touchStartTimer = null;
+      //   }, this.DELTA_TIME_THRESHOLD_MS);
+      //   this.touchStartX = ev.targetTouches[0].clientX;
+      //   this.touchStartY = ev.targetTouches[0].clientY;
+      //   ev.x = ev.targetTouches[0].clientX;
+      //   ev.y = ev.targetTouches[0].clientY;
+      //   this.onEvent(ev);
+      // } else {
+      //   if ((Math.abs(ev.targetTouches[0].clientX - this.touchStartX) < 10) && (Math.abs(ev.targetTouches[0].clientY - this.touchStartY) < 10)) {
+      //     ev.x = ev.targetTouches[0].clientX;
+      //     ev.y = ev.targetTouches[0].clientY;
+      //     this.changeToTextTool(ev);
+      //   }
 
-      }
-
+      // }
+      this.touchStartX = ev.targetTouches[0].clientX;
+      this.touchStartY = ev.targetTouches[0].clientY;
+      ev.x = ev.targetTouches[0].clientX;
+      ev.y = ev.targetTouches[0].clientY;
+      this.onEvent(ev);
     } else {
       this.onEvent(ev);
     }
@@ -319,17 +330,15 @@ class MainComponent extends React.PureComponent {
 
   onTouchMoveThreshold(x, y) {
     let threshold = { x, y };
-    if (x > 5) {
-      threshold.x = 5;
+    if (x > this.TOUCH_MOVE_THRESHOLD) {
+      threshold.x = this.TOUCH_MOVE_THRESHOLD;
+    } else if (x < -this.TOUCH_MOVE_THRESHOLD) {
+      threshold.x = -this.TOUCH_MOVE_THRESHOLD;
     }
-    if (x < -5) {
-      threshold.x = -5;
-    }
-    if (y > 5) {
-      threshold.y = 5;
-    }
-    if (y < -5) {
-      threshold.y = -5
+    if (y > this.TOUCH_MOVE_THRESHOLD) {
+      threshold.y = this.TOUCH_MOVE_THRESHOLD;
+    } else if (y < -this.TOUCH_MOVE_THRESHOLD) {
+      threshold.y = -this.TOUCH_MOVE_THRESHOLD;
     }
     return threshold;
   }
@@ -339,12 +348,13 @@ class MainComponent extends React.PureComponent {
     console.log('Touch Move Fired', ev);
     let { selectedTool } = this.state;
     if (ev.targetTouches.length === 1) {
-      let deltaX = this.touchStartX - ev.targetTouches[0].clientX;
-      let deltaY = this.touchStartY - ev.targetTouches[0].clientY;
+      let deltaX = ev.targetTouches[0].clientX - this.touchStartX;
+      let deltaY = ev.targetTouches[0].clientY - this.touchStartY;
+      console.log('Delta Main', deltaX, deltaY);
       let thresholdedDelta = this.onTouchMoveThreshold(deltaX, deltaY);
       ev.deltaX = thresholdedDelta.x;
       ev.deltaY = thresholdedDelta.y;
-      console.log(deltaX, deltaY);
+      console.log("Delta diff", ev.deltaX, ev.deltaY);
       if (selectedTool === 'select') {
         this.onWheelMove(ev);
       } else {
@@ -359,11 +369,26 @@ class MainComponent extends React.PureComponent {
   }
 
   onTouchEnd(ev) {
-    console.log('Touch End Fired', ev);
+    console.log('Touch End Fired', ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
     if (ev.changedTouches.length === 1) {
-      ev.x = ev.changedTouches[0].clientX;
-      ev.y = ev.changedTouches[0].clientY;
-      this.onEvent(ev);
+      if (this.touchStartTimer === null) {
+        this.touchStartTimer = setTimeout(() => {
+          this.touchStartTimer = null;
+        }, this.DELTA_TIME_THRESHOLD_MS);
+        // this.touchStartX = ev.changedTouches[0].clientX;
+        // this.touchStartY = ev.changedTouches[0].clientY;
+        ev.x = ev.changedTouches[0].clientX;
+        ev.y = ev.changedTouches[0].clientY;
+        this.onEvent(ev);
+      } else {
+        if ((Math.abs(ev.changedTouches[0].clientX - this.touchStartX) < 10) && (Math.abs(ev.changedTouches[0].clientY - this.touchStartY) < 10)) {
+          ev.preventDefault();
+          ev.x = ev.changedTouches[0].clientX;
+          ev.y = ev.changedTouches[0].clientY;
+          this.changeToTextTool(ev);
+        }
+      }
+
     }
   }
 
@@ -529,7 +554,7 @@ class MainComponent extends React.PureComponent {
     if (drawenImage && drawenImage.type) {
       let { scrollX, scrollY, scalingFactor, shapes } = this.state;
       /** TODO: Change this logic to object key value structure */
-
+      console.log("drawen Image", drawenImage.x, drawenImage.y);
       let modifiedImage = {
         ...drawenImage,
         x: this.changeToOneScalingFactor(drawenImage.x - scrollX),
@@ -543,7 +568,6 @@ class MainComponent extends React.PureComponent {
         height: drawenImage.height ? this.changeToOneScalingFactor(drawenImage.height) : null,
         scalingFactor: scalingFactor
       }
-
       if (drawenImage.type === 'chalk') {
         modifiedImage.drawPoints = drawenImage.drawPoints.map(point => {
           return { x: this.changeToOneScalingFactor(point[0] - scrollX), y: this.changeToOneScalingFactor(point[1] - scrollY) }
@@ -944,7 +968,7 @@ class MainComponent extends React.PureComponent {
           selectedElement ? (
             <div className='delete-toast'>
               <div className='delete-toast-msg' onClick={this.deleteShape}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                 Delete
               </div>
 
