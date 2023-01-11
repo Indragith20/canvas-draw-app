@@ -369,20 +369,20 @@ class MainComponent extends React.PureComponent {
 
   onTouchEnd(ev) {
     console.log('Touch End Fired', ev);
-    if (ev.changedTouches.length === 1) {
+    if (ev.targetTouches.length === 1) {
       if (this.touchStartTimer === null) {
         this.touchStartTimer = setTimeout(() => {
           this.touchStartTimer = null;
         }, this.DELTA_TIME_THRESHOLD_MS);
-        this.touchStartX = ev.changedTouches[0].clientX;
-        this.touchStartY = ev.changedTouches[0].clientY;
-        ev.x = ev.changedTouches[0].clientX;
-        ev.y = ev.changedTouches[0].clientY;
+        this.touchStartX = ev.targetTouches[0].clientX;
+        this.touchStartY = ev.targetTouches[0].clientY;
+        ev.x = ev.targetTouches[0].clientX;
+        ev.y = ev.targetTouches[0].clientY;
         this.onEvent(ev);
       } else {
-        if ((Math.abs(ev.changedTouches[0].clientX - this.touchStartX) < 10) && (Math.abs(ev.changedTouches[0].clientY - this.touchStartY) < 10)) {
-          ev.x = ev.changedTouches[0].clientX;
-          ev.y = ev.changedTouches[0].clientY;
+        if ((Math.abs(ev.targetTouches[0].clientX - this.touchStartX) < 10) && (Math.abs(ev.targetTouches[0].clientY - this.touchStartY) < 10)) {
+          ev.x = ev.targetTouches[0].clientX;
+          ev.y = ev.targetTouches[0].clientY;
           this.changeToTextTool(ev);
         }
       }
