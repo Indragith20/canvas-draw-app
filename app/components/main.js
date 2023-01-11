@@ -318,8 +318,8 @@ class MainComponent extends React.PureComponent {
       //   }
 
       // }
-      ev.x = ev.targetTouches[0].clientX;
-      ev.y = ev.targetTouches[0].clientY;
+      ev.x = ev.targetTouches[0].pageX;
+      ev.y = ev.targetTouches[0].pageY;
       this.onEvent(ev);
     } else {
       this.onEvent(ev);
@@ -348,8 +348,8 @@ class MainComponent extends React.PureComponent {
     console.log('Touch Move Fired', ev);
     let { selectedTool } = this.state;
     if (ev.targetTouches.length === 1) {
-      let deltaX = this.touchStartX - ev.targetTouches[0].clientX;
-      let deltaY = this.touchStartY - ev.targetTouches[0].clientY;
+      let deltaX = this.touchStartX - ev.targetTouches[0].pageX;
+      let deltaY = this.touchStartY - ev.targetTouches[0].pageY;
       let thresholdedDelta = this.onTouchMoveThreshold(deltaX, deltaY);
       ev.deltaX = thresholdedDelta.x;
       ev.deltaY = thresholdedDelta.y;
@@ -369,20 +369,20 @@ class MainComponent extends React.PureComponent {
 
   onTouchEnd(ev) {
     console.log('Touch End Fired', ev);
-    if (ev.targetTouches.length === 1) {
+    if (ev.changedTouches.length === 1) {
       if (this.touchStartTimer === null) {
         this.touchStartTimer = setTimeout(() => {
           this.touchStartTimer = null;
         }, this.DELTA_TIME_THRESHOLD_MS);
-        this.touchStartX = ev.targetTouches[0].clientX;
-        this.touchStartY = ev.targetTouches[0].clientY;
-        ev.x = ev.targetTouches[0].clientX;
-        ev.y = ev.targetTouches[0].clientY;
+        this.touchStartX = ev.changedTouches[0].pageX;
+        this.touchStartY = ev.changedTouches[0].pageY;
+        ev.x = ev.changedTouches[0].pageX;
+        ev.y = ev.changedTouches[0].pageY;
         this.onEvent(ev);
       } else {
-        if ((Math.abs(ev.targetTouches[0].clientX - this.touchStartX) < 10) && (Math.abs(ev.targetTouches[0].clientY - this.touchStartY) < 10)) {
-          ev.x = ev.targetTouches[0].clientX;
-          ev.y = ev.targetTouches[0].clientY;
+        if ((Math.abs(ev.changedTouches[0].pageX - this.touchStartX) < 10) && (Math.abs(ev.changedTouches[0].pageY - this.touchStartY) < 10)) {
+          ev.x = ev.changedTouches[0].pageX;
+          ev.y = ev.changedTouches[0].pageY;
           this.changeToTextTool(ev);
         }
       }
