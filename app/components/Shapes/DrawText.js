@@ -45,7 +45,7 @@ class DrawText {
 
       // TODO: Replace undefined with exact line height
       let textareaStyle = window.getComputedStyle(this.textBox);
-      let tetxtareaClientStyle = this.textBox.getBoundingClientRect();
+
       let width = Math.ceil(Number(textareaStyle.width.slice(0, -2)));
       let height = Math.ceil(Number(textareaStyle.height.slice(0, -2)));
       //let numberOfLines = drawText(text, this.tempContext, tetxtareaClientStyle.x, tetxtareaClientStyle.y, Math.ceil(width), undefined, color, this.baseFontSize);
@@ -59,8 +59,8 @@ class DrawText {
       this.callback({
         id: this.id,
         type: 'text',
-        x: tetxtareaClientStyle.left,
-        y: tetxtareaClientStyle.top + 10,
+        x: this.tetxtareaClientStyle.left,
+        y: this.tetxtareaClientStyle.top + 10,
         textContent: text,
         innerHtml: this.textBox.innerHTML,
         endX: this.startX + width,
@@ -135,6 +135,7 @@ class DrawText {
       // this.textBoxContainer.style.width = this.width + 'px';
       // this.textBoxContainer.style.height = this.height + 'px';
     }
+    this.tetxtareaClientStyle = this.textBox.getBoundingClientRect();
   }
 }
 

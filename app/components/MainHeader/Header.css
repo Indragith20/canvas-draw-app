@@ -12,6 +12,8 @@
   box-shadow: var(--primary-box-shadow);
   gap: 32px;
   color: var(--primary-font-color);
+  text-align: center;
+  align-items: center;
 }
 
 .main-header-link {
