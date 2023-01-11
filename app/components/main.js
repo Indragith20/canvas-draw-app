@@ -331,14 +331,14 @@ class MainComponent extends React.PureComponent {
   onTouchMoveThreshold(x, y) {
     let threshold = { x, y };
     if (x > this.TOUCH_MOVE_THRESHOLD) {
-      threshold.x = this.TOUCH_MOVE_THRESHOLD;
+      threshold.x = -Math.abs(this.TOUCH_MOVE_THRESHOLD);
     } else if (x < -this.TOUCH_MOVE_THRESHOLD) {
-      threshold.x = -this.TOUCH_MOVE_THRESHOLD;
+      threshold.x = Math.abs(this.TOUCH_MOVE_THRESHOLD);
     }
     if (y > this.TOUCH_MOVE_THRESHOLD) {
-      threshold.y = this.TOUCH_MOVE_THRESHOLD;
+      threshold.y = -Math.abs(this.TOUCH_MOVE_THRESHOLD);
     } else if (y < -this.TOUCH_MOVE_THRESHOLD) {
-      threshold.y = -this.TOUCH_MOVE_THRESHOLD;
+      threshold.y = this.TOUCH_MOVE_THRESHOLD;
     }
     return threshold;
   }
