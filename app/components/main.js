@@ -904,11 +904,12 @@ class MainComponent extends React.PureComponent {
 
   deleteShape() {
     if (this.state.selectedElement) {
-      let shapes = this.state.shapes.filter(shape => shape.id !== this.state.selectedElement.id);
+      let { selectedElement } = this.state;
+      let shapes = this.state.shapes.filter(shape => shape.id !== selectedElement.id);
       this.setState({ shapes, selectedElement: null }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
-        updateShape(this.state.selectedElement, 'delete');
+        updateShape(selectedElement, 'delete');
         this.redraw();
       })
     }
