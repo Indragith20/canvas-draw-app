@@ -9,7 +9,9 @@ let redisClient;
 function initRedisConnection() {
   return new Promise((resolve, reject) => {
     let promise;
+
     // eslint-disable-next-line no-undef
+    console.log('redis url', process.env.REDIS_URL);
     redisClient = createClient({
       // eslint-disable-next-line no-undef
       url: process.env.REDIS_URL
@@ -23,8 +25,10 @@ function initRedisConnection() {
     promise = redisClient.connect();
 
     promise.then(() => {
+      console.log('Redis connection successful');
       resolve();
     }).catch(err => {
+      console.log('Redis connection Not successful');
       reject(err);
     })
   })
