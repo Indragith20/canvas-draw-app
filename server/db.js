@@ -291,10 +291,10 @@ async function addUser(name, userId, email) {
   })
 }
 
-async function updateUser(name, userId) {
+async function updateUser(preferences, userId) {
   return new Promise((resolve, reject) => {
     let newUserRef = db.users().doc(userId);
-    newUserRef.update({ name, id: userId }).then(() => {
+    newUserRef.update({ ...preferences, id: userId }).then(() => {
       resolve({ userId: newUserRef.id });
     }).catch(err => {
       reject(err);

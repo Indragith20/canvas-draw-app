@@ -16,7 +16,8 @@ import {
   deleteShape,
   getInitialDrawData,
   getUser,
-  updateShape
+  updateShape,
+  updateUser
 } from '../../../server/db';
 import Idb from '~/components/utils/idb';
 import { requireAuth } from '../../../server/auth';
@@ -88,6 +89,10 @@ export const action = async ({ request, params }) => {
     data = await updateShape(params.drawId, actionData);
   } else if (action === 'deleteAll') {
     data = await deleteAllShapes(params.drawId);
+  } else if (action === 'changePreference') {
+    let preference = {};
+    preference[body.get('preference')] = body.get('changedPreference');
+    data = await updateUser(preference, body.get('userId'));
   }
 
   return json({ actionData: data, action });
@@ -123,8 +128,8 @@ function DrawIndex() {
   const { submit } = useFetcher();
   const isMobile = isTouchDevice();
   const { currentUser, shapes, roomId } = useLoaderData();
-  let { id, name } = currentUser;
-  const { theme } = useTheme();
+  let { id, name, darkMode } = currentUser;
+  const { theme, updateTheme } = useTheme();
 
   const [socket, setSocket] = useState();
 
@@ -164,6 +169,19 @@ function DrawIndex() {
       socket.close();
     };
   }, [roomId, id, name]);
+
+  useEffect(() => {
+    updateTheme(darkMode === 'true' ? 'dark' : 'light');
+  }, [darkMode, updateTheme]);
+
+  useEffect(() => {
+    let formData = new FormData();
+    formData.set('preference', 'darkMode');
+    formData.set('changedPreference', theme === 'dark' ? 'true' : 'false');
+    formData.set('userId', id);
+    formData.set('action', 'changePreference');
+    submit(formData, { method: 'post' });
+  }, [theme, id, submit]);
 
   const updateShape = useCallback(
     (shape, action = 'add') => {
