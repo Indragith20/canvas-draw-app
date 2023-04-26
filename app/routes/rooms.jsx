@@ -1,13 +1,14 @@
 import { json, redirect } from '@remix-run/node';
-import { Link, Outlet, useLoaderData } from '@remix-run/react';
-import React from 'react';
+import { Link, Outlet, useFetcher, useLoaderData } from '@remix-run/react';
+import React, { useEffect } from 'react';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { requireAuth } from '../../server/auth';
-import { getRoomDetails, getUser } from '../../server/db';
+import { getRoomDetails, getUser, updateUser } from '../../server/db';
 import { PopOverLinks } from '~/components/Common/Popover/PopOver';
+import { useTheme } from '~/contexts/themeContext';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -45,6 +46,21 @@ export async function loader({ request }) {
   }
 }
 
+export async function action({ request }) {
+  console.log('Root action called');
+  const body = await request.formData();
+  let action = body.get('action');
+  let userId = body.get('userId');
+  let draw = {};
+  if (action === 'changePreference') {
+    let preference = {};
+    preference[body.get('preference')] = body.get('changedPreference');
+    draw = await updateUser(preference, userId);
+  }
+
+  return json({ draw });
+}
+
 const MainRoomLinks = [
   {
     link: '/rooms/createRoom',
@@ -66,6 +82,23 @@ const MainRoomLinks = [
 
 function Rooms() {
   const data = useLoaderData();
+  const { theme, updateTheme } = useTheme();
+  const { submit } = useFetcher();
+  const { id } = data;
+
+  useEffect(() => {
+    let formData = new FormData();
+    formData.set('preference', 'darkMode');
+    formData.set('changedPreference', theme === 'dark' ? 'true' : 'false');
+    formData.set('userId', id);
+    formData.set('action', 'changePreference');
+    submit(formData, { method: 'post' });
+  }, [theme, id, submit]);
+
+  useEffect(() => {
+    updateTheme(data.darkMode === 'true' ? 'dark' : 'light');
+  }, [data.darkMode, updateTheme]);
+
   return (
     <>
       <Header headerLinks={MainRoomLinks} isLoggedInUser={true} />

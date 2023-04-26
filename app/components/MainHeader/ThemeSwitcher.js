@@ -6,7 +6,6 @@ export const ThemeSwitcherLinks = () => [{
   rel: 'stylesheet',
   href: styles
 }]
-
 function ThemeSwitcher() {
   const { theme, updateTheme } = useTheme();
   return (
