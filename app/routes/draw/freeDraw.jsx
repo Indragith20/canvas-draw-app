@@ -7,7 +7,6 @@ import MainComponent, { MainComponentStyles } from '~/components/main';
 import { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
-import MobileWarning from '~/components/MobileWarning/MobileWarning';
 import { SelectToolLinks } from '~/components/SelectTool/SelectTool';
 import { TextToolLinks } from '~/components/TextTool/TextTool';
 import Idb from '~/components/utils/idb';

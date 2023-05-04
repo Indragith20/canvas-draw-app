@@ -29,7 +29,6 @@ import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { isTouchDevice } from '~/components/utils/common';
 import { PopOverLinks } from '~/components/Common/Popover/PopOver';
-import MobileWarning from '~/components/MobileWarning/MobileWarning';
 
 export const links = () => [
   ...HeaderStyleLinks(),

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useActionData, useFetcher, useOutletContext } from '@remix-run/react';
 import styles from '../../styles/form.css';
 import userProfileStyles from '../../styles/userProfile.css';
