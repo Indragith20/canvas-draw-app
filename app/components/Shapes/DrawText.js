@@ -38,37 +38,41 @@ class DrawText {
 
   onBlur() {
     if (this.textBox) {
-      let text = this.textBox.innerHTML.replace(/<div>/g, "\n").replace(/<\/div>/g, "").replace(/<br>/g, "\n").replace(/\&nbsp;/g, ' ');
+      // TODO: Need to find optimized way
+      let text = this.textBox.innerHTML.replace(/<br><\/div>/g, "").replace(/<div>/g, "\n").replace(/<\/div>/g, "").replace(/<br>/g, "\n").replace(/\&nbsp;/g, ' ');
       //let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
 
+      if (text && text !== '') {
+        console.log(text);
+
+        // TODO: Replace undefined with exact line height
+        let textareaStyle = window.getComputedStyle(this.textBox);
+
+        let width = Math.ceil(Number(textareaStyle.width.slice(0, -2)));
+        let height = Math.ceil(Number(textareaStyle.height.slice(0, -2)));
+        //let numberOfLines = drawText(text, this.tempContext, tetxtareaClientStyle.x, tetxtareaClientStyle.y, Math.ceil(width), undefined, color, this.baseFontSize);
 
 
-      // TODO: Replace undefined with exact line height
-      let textareaStyle = window.getComputedStyle(this.textBox);
+        //let textMetrics = this.tempContext.measureText(text);
 
-      let width = Math.ceil(Number(textareaStyle.width.slice(0, -2)));
-      let height = Math.ceil(Number(textareaStyle.height.slice(0, -2)));
-      //let numberOfLines = drawText(text, this.tempContext, tetxtareaClientStyle.x, tetxtareaClientStyle.y, Math.ceil(width), undefined, color, this.baseFontSize);
+        // Adding buffer 10 to the height and width values
+        //let height = Math.abs(textMetrics.fontBoundingBoxAscent) + Math.abs(textMetrics.fontBoundingBoxDescent) + 10;
+        //let width = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight) + 10;
+        this.callback({
+          id: this.id,
+          type: 'text',
+          x: this.tetxtareaClientStyle.left,
+          y: this.tetxtareaClientStyle.top + 10,
+          textContent: text,
+          innerHtml: this.textBox.innerHTML,
+          endX: this.startX + width,
+          endY: this.startY + height,
+          //width: Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight),
+          width: width,
+          height: height
+        });
+      }
 
-
-      //let textMetrics = this.tempContext.measureText(text);
-
-      // Adding buffer 10 to the height and width values
-      //let height = Math.abs(textMetrics.fontBoundingBoxAscent) + Math.abs(textMetrics.fontBoundingBoxDescent) + 10;
-      //let width = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight) + 10;
-      this.callback({
-        id: this.id,
-        type: 'text',
-        x: this.tetxtareaClientStyle.left,
-        y: this.tetxtareaClientStyle.top + 10,
-        textContent: text,
-        innerHtml: this.textBox.innerHTML,
-        endX: this.startX + width,
-        endY: this.startY + height,
-        //width: Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight),
-        width: width,
-        height: height
-      });
 
       // resetting the textarea values
       // this.textBox.removeEventListener('blur', this.onBlur);

@@ -18,6 +18,10 @@ class Arrow {
     if (this.started) {
       this.mousemove(e);
       this.started = false;
+      if (this.startX === e._x && this.startY === e._y) {
+        this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+        return;
+      }
       this.callback({
         id: this.id,
         type: 'arrow',

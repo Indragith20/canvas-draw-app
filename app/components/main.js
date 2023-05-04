@@ -299,7 +299,6 @@ class MainComponent extends React.PureComponent {
 
   onTouchStart(ev) {
     console.log('Touch Start Fired', ev);
-    let { selectedTool } = this.state;
     if (ev.targetTouches.length === 1) {
       // if (this.touchStartTimer === null) {
       //   this.touchStartTimer = setTimeout(() => {
@@ -918,7 +917,7 @@ class MainComponent extends React.PureComponent {
 
 
   render() {
-    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes, selectedTheme, lineWidth, selectedElement } = this.state;
+    let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes, lineWidth, selectedElement } = this.state;
     let { backLink } = this.props;
     return (
       <div
