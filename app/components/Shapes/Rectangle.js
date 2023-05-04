@@ -19,16 +19,19 @@ class Rect {
     if (this.started) {
       this.mousemove(e);
       this.started = false;
-      this.callback({
-        id: this.id,
-        type: 'rectangle',
-        x: Math.min(this.startX, e._x),
-        y: Math.min(this.startY, e._y),
-        width: this.width,
-        height: this.height,
-        endX: Math.max(this.startX, e._x),
-        endY: Math.max(this.startY, e._y)
-      });
+      if (this.width !== null && this.height !== null) {
+        this.callback({
+          id: this.id,
+          type: 'rectangle',
+          x: Math.min(this.startX, e._x),
+          y: Math.min(this.startY, e._y),
+          width: this.width,
+          height: this.height,
+          endX: Math.max(this.startX, e._x),
+          endY: Math.max(this.startY, e._y)
+        });
+      }
+
     }
   }
 

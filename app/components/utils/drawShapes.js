@@ -10,6 +10,42 @@ function drawDiamond(xCenter, yCenter, size, context) {
   context.stroke();
 }
 
+const tokens = {
+  'b': 'bold',
+  'i': 'italic'
+};
+
+function traverseDOM(node, depth) {
+  let returnArray = [];
+  let domObj = {};
+  let textContent = ''
+  domObj = {
+    tagName: node.tagName.toLowerCase(),
+  }
+  for (let i = 0; i < node.childNodes.length; i++) {
+    const childNode = node.childNodes[i];
+    console.log(childNode.nodeType === Node.TEXT_NODE);
+    if (childNode.nodeType === Node.ELEMENT_NODE) {
+      returnArray = [...returnArray, ...traverseDOM(childNode, depth + 1)]
+    } else if (childNode.nodeType === Node.TEXT_NODE) {
+      textContent += childNode.textContent;
+    }
+  }
+  domObj = { ...domObj, textContent: textContent };
+  returnArray.push(domObj)
+  return returnArray;
+}
+
+
+function htmlTagParser(htmlInput) {
+  const tempElement = document.createElement('div');
+  tempElement.innerHTML = htmlInput;
+
+  const t = traverseDOM(tempElement);
+  return t.reverse();
+}
+
+// TODO: Optimize usinng Html Tag parser
 function drawText(text, context, x, y, maxWidth, lineHeight, color, fontSize = 24) {
   context.font = `normal ${fontSize}px/${lineHeight}px Mali`;
   context.fillStyle = color;
@@ -17,31 +53,71 @@ function drawText(text, context, x, y, maxWidth, lineHeight, color, fontSize = 2
   let words = text.split('');
   let line = '';
   let numberOfLines = 1;
+  let xPointer = x;
 
   for (let n = 0; n < words.length; n++) {
-    if (words[n] === '\n') {
-      context.fillText(line, x, y);
+    if (words[n] === '<') {
+      let nextToken = words[n + 1];
+      if (tokens[nextToken] && words[n + 2] === '>') {
+        if (line !== '') {
+          context.font = `normal ${fontSize}px/${lineHeight}px Mali`;
+          context.fillText(line, xPointer, y);
+          let width = context.measureText(line).width;
+          line = '';
+          xPointer = xPointer + width;
+        }
+        let indicator = n + 3;
+        let wordsForToken = ``
+        while (words[indicator] && (words[indicator] != '<' && words[indicator + 1] != '/')) {
+          wordsForToken = `${wordsForToken}${words[indicator]}`
+          indicator++;
+        }
+        context.font = `${tokens[nextToken]} ${fontSize}px/${lineHeight}px Mali`;
+        context.fillText(wordsForToken, xPointer, y);
+        let width = context.measureText(wordsForToken).width;
+        xPointer = xPointer + width;
+        n = indicator + 3;
+      } else if (tokens[nextToken] && words[n + 2] === ' ') {
+        if (line !== '') {
+          context.font = `normal ${fontSize}px/${lineHeight}px Mali`;
+          context.fillText(line, xPointer, y);
+          let width = context.measureText(line).width;
+          line = '';
+          xPointer = xPointer + width;
+        }
+        // finding > end for the identified tag(nextToken)
+        let indicator = n + 2;
+        while (tokens[indicator] && tokens[indicator] !== '>') {
+          indicator++;
+        }
+        // get words after the tag end
+        indicator = indicator + 1;
+        let wordsForToken = ``
+        while (words[indicator] && (words[indicator] != '<' && words[indicator + 1] != '/')) {
+          wordsForToken = `${wordsForToken}${words[indicator]}`
+          indicator++;
+        }
+        context.font = `${tokens[nextToken]} ${fontSize}px/${lineHeight}px Mali`;
+        context.fillText(wordsForToken, xPointer, y);
+        let width = context.measureText(wordsForToken).width;
+        xPointer = xPointer + width;
+        n = indicator + 3;
+      }
+    } else if (words[n] === '\n') {
+      context.font = `normal ${fontSize}px/${lineHeight}px Mali`;
+      context.fillText(line, xPointer, y);
       line = '';
+      xPointer = x;
       y += lineHeight;
       numberOfLines++;
     } else {
-      // let testLine = line + words[n] + '';
-      // let metrics = context.measureText(testLine);
-      // let testWidth = metrics.width;
-      // if (testWidth > maxWidth && n > 0) {
-      //   context.fillText(line, x, y);
-      //   line = words[n] + '';
-      //   y += lineHeight;
-      //   numberOfLines++;
-      // } else {
-      //   line = testLine;
-      // }
       let testLine = line + words[n] + '';
       line = testLine;
     }
 
   }
-  context.fillText(line, x, y);
+  context.font = `normal ${fontSize}px/${lineHeight}px Mali`;
+  context.fillText(line, xPointer, y);
   return numberOfLines;
 }
 

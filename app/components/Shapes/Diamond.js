@@ -23,6 +23,10 @@ class Diamond {
       this.started = false;
       let width = (Math.abs(this.startX - e._x)) * 2;
       // width and height will be same for the diamond 
+      if (this.startX === e._x && this.startY === e._y) {
+        this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+        return;
+      }
       this.callback({
         id: this.id,
         type: 'diamond',

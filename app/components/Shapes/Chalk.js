@@ -14,6 +14,7 @@ class Chalk {
 
   mouseMove(e) {
     if (this.started) {
+
       this.points.push([e._x, e._y]);
       this.tempContext.lineTo(e._x, e._y);
       this.tempContext.stroke();
@@ -32,6 +33,10 @@ class Chalk {
     if (this.started) {
       this.mousemove(e);
       this.started = false;
+      if (this.startX === e._x && this.startY === e._y) {
+        this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+        return;
+      }
       this.callback({
         id: this.id,
         type: 'chalk',
