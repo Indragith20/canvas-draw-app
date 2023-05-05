@@ -39,6 +39,16 @@ async function createRoom(userId, userName, roomName) {
   })
 }
 
+function updateRoom(roomId, updatedRoom) {
+  return new Promise((resolve, reject) => {
+    db.roomDetails().doc(roomId).update(updatedRoom).then(() => {
+      resolve({ id: roomId, message: 'success' });
+    }).catch(err => {
+      reject({ message: err })
+    })
+  })
+}
+
 function deleteRoom(userId, roomId) {
   return new Promise((resolve, reject) => {
     // delete room requires delete from three collection and two subcollection. Check whether there is an alternative way
@@ -441,6 +451,7 @@ function resetAllLiveUsers() {
 export {
   isRoomExist,
   addUser,
+  updateRoom,
   updateUser,
   addLiveUsers,
   addRoomToUser,

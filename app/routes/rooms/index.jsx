@@ -1,24 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useFetcher, useOutletContext } from '@remix-run/react';
+import {
+  Link,
+  useActionData,
+  useFetcher,
+  useOutletContext
+} from '@remix-run/react';
 
 import SingleRoom, { RoomLinks } from '../../components/SingleRoom/SingleRoom';
 import styles from '~/styles/room.css';
-import { deleteRoom, getCollaboratorsList } from 'server/db';
+import {
+  deleteRoom,
+  getCollaboratorsList,
+  getRoomDetails,
+  updateRoom
+} from 'server/db';
 import { json } from '@remix-run/node';
 import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { useToast } from '~/components/Common/Toast/ToastContext';
 import DeleteRoom, {
   DeleteRoomLinks
 } from '~/components/DeleteRoom/DeleteRoom';
-import CollaboratorListPopup, {
-  CollaboratorsListPopupLinks
-} from '~/components/CollaboratorListPopup/CollaboratorListPopup';
 
 export const links = () => [
   ...RoomLinks(),
   ...ModalLinks(),
   ...DeleteRoomLinks(),
-  ...CollaboratorsListPopupLinks(),
   { rel: 'stylesheet', href: styles }
 ];
 
@@ -26,9 +32,12 @@ export async function loader({ request, params }) {
   const url = new URL(request.url);
   const roomId = url.searchParams.get('roomId');
   const getApiAction = url.searchParams.get('action');
-  if (roomId && getApiAction === 'getCollaborator') {
-    let data = await getCollaboratorsList(roomId);
-    return json({ ...data, action: 'getCollaborator' });
+  if (roomId && getApiAction === 'getRoomDetails') {
+    let [roomDetails, data] = await Promise.all([
+      getRoomDetails(roomId),
+      getCollaboratorsList(roomId)
+    ]);
+    return json({ ...data, ...roomDetails, action: 'getRoomDetails' });
   }
   return json({ message: 'Success' });
 }
@@ -45,9 +54,16 @@ export async function action({ request }) {
     } catch (err) {
       return json({ actionData: err });
     }
+  } else if (action === 'changeRoomName') {
+    try {
+      const room = { roomName: body.get('roomName') };
+      data = await updateRoom(roomId, room);
+    } catch (err) {
+      return json({ actionData: err });
+    }
   }
 
-  return json({ actionData: data, action });
+  return json({ actionData: data, action, roomId });
 }
 
 export default function RoomsList() {
@@ -61,7 +77,12 @@ export default function RoomsList() {
     showPopup: false,
     list: []
   });
-  let { submit, data, state, load } = useFetcher();
+  let { submit, data, state, load, submission, type } = useFetcher();
+  console.log('actionData', data, type);
+
+  if (submission && data && data.action === 'changeRoomName') {
+    load(`/rooms?roomId=${data.roomId}&action=getRoomDetails&index`);
+  }
   function onDeleteRoom() {
     if (deleteRoom.roomId) {
       let formData = new FormData();
@@ -69,6 +90,18 @@ export default function RoomsList() {
       formData.set('roomId', deleteRoom.roomId);
       formData.set('userId', userData.id);
       formData.set('action', 'deleteRoom');
+      submit(formData, { method: 'post' });
+    }
+  }
+
+  function onChangeRoomName(roomId, modifiedName) {
+    if (modifiedName !== '') {
+      let formData = new FormData();
+
+      formData.set('roomId', roomId);
+      formData.set('userId', userData.id);
+      formData.set('roomName', modifiedName);
+      formData.set('action', 'changeRoomName');
       submit(formData, { method: 'post' });
     }
   }
@@ -92,8 +125,11 @@ export default function RoomsList() {
   }
 
   function showCollaborators(roomId) {
-    setCollaborators({ showPopup: true, list: [] });
-    load(`/rooms?roomId=${roomId}&action=getCollaborator&index`);
+    setCollaborators({
+      showPopup: true,
+      list: []
+    });
+    load(`/rooms?roomId=${roomId}&action=getRoomDetails&index`);
   }
 
   function hideCollaborators() {
@@ -134,12 +170,6 @@ export default function RoomsList() {
         transitionState={state}
         onDeleteRoom={onDeleteRoom}
         showPopup={deleteRoom.showConfirmPopup}
-      />
-      <CollaboratorListPopup
-        showPopup={collaborators.showPopup}
-        onCancel={hideCollaborators}
-        transitionState={state}
-        collaboratorList={data && data.collaborators ? data.collaborators : []}
       />
     </div>
   );
