@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Link,
-  useActionData,
   useFetcher,
   useLoaderData,
   useOutletContext,
@@ -29,7 +27,6 @@ export const links = () => [
 ];
 
 export async function loader({ request, params }) {
-  const url = new URL(request.url);
   if (params.roomId) {
     let [roomDetails, data] = await Promise.all([
       getRoomDetails(params.roomId),
@@ -76,15 +73,11 @@ export default function RoomsDetailContainer() {
   });
   const [editMode, setEditMode] = useState(false);
   const [inputValue, setInputValue] = useState(null);
-  let { submit, data, state, load, submission, type } = useFetcher();
+  let { submit, data, state, type } = useFetcher();
   console.log('actionData', data, type);
 
   function onCancel() {
     setDeleteRoom({ roomId: null, showConfirmPopup: false });
-  }
-
-  function showPopUp(roomId) {
-    setDeleteRoom({ roomId, showConfirmPopup: true });
   }
 
   function onDeleteRoom() {

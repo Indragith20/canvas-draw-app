@@ -39,7 +39,7 @@ class DrawText {
   onBlur() {
     if (this.textBox) {
       // TODO: Need to find optimized way
-      let text = this.textBox.innerHTML.replace(/<br><\/div>/g, "").replace(/<div>/g, "\n").replace(/<\/div>/g, "").replace(/<br>/g, "\n").replace(/\&nbsp;/g, ' ');
+      let text = this.textBox.innerHTML.replace(/<br><\/div>/g, "").replace(/<div>/g, "\n").replace(/<\/div>/g, "").replace(/<br>/g, "\n").replace(/&nbsp;/g, ' ');
       //let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
 
       if (text && text !== '') {

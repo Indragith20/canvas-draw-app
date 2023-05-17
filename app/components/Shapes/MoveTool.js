@@ -36,6 +36,7 @@ class MoveTool {
       // For rectangle
       if (this.element.type === 'rectangle') {
         this.callback({
+          ...this.element,
           id: this.element.id,
           type: 'rectangle',
           x: e._x,
@@ -49,6 +50,7 @@ class MoveTool {
         let endX = this.element.endX > this.element.x ? e._x + this.element.width : e._x - this.element.width;
         let endY = this.element.endY > this.element.y ? e._y + this.element.height : e._y - this.element.height;
         this.callback({
+          ...this.element,
           id: this.id,
           type: 'arrow',
           x: e._x,
@@ -64,6 +66,7 @@ class MoveTool {
         let endX = this.element.endX > this.element.x ? e._x + this.element.width : e._x - this.element.width;
         let endY = this.element.endY > this.element.y ? e._y + this.element.height : e._y - this.element.height;
         this.callback({
+          ...this.element,
           id: this.id,
           type: 'line',
           x: e._x,
@@ -77,6 +80,7 @@ class MoveTool {
         });
       } else if (this.element.type === 'circle') {
         this.callback({
+          ...this.element,
           id: this.id,
           type: 'circle',
           x: e._x,
@@ -87,6 +91,7 @@ class MoveTool {
         });
       } else if (this.element.type === 'diamond') {
         this.callback({
+          ...this.element,
           id: this.id,
           type: 'diamond',
           x: e._x,
@@ -102,6 +107,7 @@ class MoveTool {
         });
       } else if (this.element.type === 'text') {
         this.callback({
+          ...this.element,
           id: this.id,
           type: 'text',
           x: e._x,
