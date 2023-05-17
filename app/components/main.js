@@ -708,7 +708,6 @@ class MainComponent extends React.PureComponent {
       this.resetDraggingValues();
 
       let textId = null;
-
       if (enclosedElement && enclosedElement.type === 'text') {
         textId = enclosedElement.id;
         let shapes = this.state.shapes.filter(shape => shape.id !== enclosedElement.id);
