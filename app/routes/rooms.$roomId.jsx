@@ -3,7 +3,7 @@ import {
   useFetcher,
   useLoaderData,
   useOutletContext,
-  useTransition
+  useNavigation
 } from '@remix-run/react';
 
 import styles from '~/styles/room.css';
@@ -28,11 +28,22 @@ export const links = () => [
 
 export async function loader({ request, params }) {
   if (params.roomId) {
-    let [roomDetails, data] = await Promise.all([
-      getRoomDetails(params.roomId),
-      getCollaboratorsList(params.roomId)
-    ]);
-    return json({ ...data, ...roomDetails });
+    console.log('Inside RoomId Loader', params.roomId);
+    try {
+      let [roomDetails, data] = await Promise.all([
+        getRoomDetails(params.roomId),
+        getCollaboratorsList(params.roomId)
+      ]);
+      if (!roomDetails || !roomDetails.id) {
+        throw new Error(`Room Does not Exist ${JSON.stringify(roomDetails)}`);
+      } else {
+        return json({ ...data, ...roomDetails });
+      }
+    } catch (err) {
+      throw new Response(err, {
+        status: 404
+      });
+    }
   }
   return json({ message: 'Success' });
 }
@@ -64,7 +75,7 @@ export async function action({ request }) {
 export default function RoomsDetailContainer() {
   let userData = useOutletContext();
   const loaderData = useLoaderData();
-  const transition = useTransition();
+  const transition = useNavigation();
   console.log(loaderData);
   const { addToast } = useToast();
   let [deleteRoom, setDeleteRoom] = useState({
@@ -73,8 +84,7 @@ export default function RoomsDetailContainer() {
   });
   const [editMode, setEditMode] = useState(false);
   const [inputValue, setInputValue] = useState(null);
-  let { submit, data, state, type } = useFetcher();
-  console.log('actionData', data, type);
+  let { submit, data, state } = useFetcher();
 
   function onCancel() {
     setDeleteRoom({ roomId: null, showConfirmPopup: false });
@@ -87,7 +97,7 @@ export default function RoomsDetailContainer() {
       formData.set('roomId', deleteRoom.roomId);
       formData.set('userId', userData.id);
       formData.set('action', 'deleteRoom');
-      submit(formData, { method: 'post' });
+      submit(formData, { method: 'POST' });
     }
   }
 
@@ -99,7 +109,7 @@ export default function RoomsDetailContainer() {
       formData.set('userId', userData.id);
       formData.set('roomName', inputValue);
       formData.set('action', 'changeRoomName');
-      submit(formData, { method: 'post' });
+      submit(formData, { method: 'POST' });
     }
   }
 
@@ -207,7 +217,7 @@ export default function RoomsDetailContainer() {
         <div className='secondary-content'>
           <div className='secondary-heading'>Collaborators</div>
           <div className='secondary-details'>
-            {loaderData?.collaborators && transition !== 'loading' ? (
+            {loaderData?.collaborators && transition.state !== 'loading' ? (
               loaderData.collaborators.map((collaborator) => {
                 return (
                   <li key={collaborator.id} className='collaborator-item'>

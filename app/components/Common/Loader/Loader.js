@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTransition } from "@remix-run/react";
+import { useNavigation } from "@remix-run/react";
 import styles from './Loader.css';
 
 export const LoaderLinks = () => [{
@@ -9,7 +9,7 @@ export const LoaderLinks = () => [{
 
 
 function GlobalLoading() {
-  const transition = useTransition();
+  const transition = useNavigation();
   const active = transition.state !== "idle";
 
   const ref = React.useRef(null);

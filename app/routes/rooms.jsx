@@ -1,6 +1,13 @@
 import { json, redirect } from '@remix-run/node';
-import { Link, Outlet, useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  Link,
+  Outlet,
+  useFetcher,
+  useLoaderData,
+  useRouteError
+} from '@remix-run/react';
 import React, { useEffect } from 'react';
+import ErrorBoundaryStyles from '../styles/errorBoundary.css';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
@@ -15,7 +22,8 @@ export const links = () => [
   ...LogoLinks(),
   ...ModalLinks(),
   ...PopOverLinks(),
-  ...ThemeSwitcherLinks()
+  ...ThemeSwitcherLinks(),
+  { rel: 'stylesheet', href: ErrorBoundaryStyles }
 ];
 
 export async function loader({ request }) {
@@ -92,7 +100,7 @@ function Rooms() {
     formData.set('changedPreference', theme === 'dark' ? 'true' : 'false');
     formData.set('userId', id);
     formData.set('action', 'changePreference');
-    submit(formData, { method: 'post' });
+    submit(formData, { method: 'POST' });
   }, [theme, id, submit]);
 
   useEffect(() => {
@@ -107,16 +115,19 @@ function Rooms() {
   );
 }
 
-export function CatchBoundary() {
+export function ErrorBoundary() {
+  const error = useRouteError();
+  console.error(error);
   return (
     <>
       <Header headerLinks={[]} />
       <div className='error-container'>
         <div className='error-page'>
           <span>Something Bad Happened</span>
+          <p>{error?.data}</p>
           <p>
             Go Back to &nbsp;
-            <Link className='join-link' to='/'>
+            <Link className='join-link' to='/rooms'>
               Home
             </Link>
             ?

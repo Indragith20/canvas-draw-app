@@ -126,7 +126,7 @@ export function links() {
   ];
 }
 export function meta() {
-  return { title: 'Draw Anything' };
+  return [{ title: 'Draw Anything' }];
 }
 
 export default function App() {

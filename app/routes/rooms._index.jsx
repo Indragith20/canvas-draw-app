@@ -6,7 +6,7 @@ import {
   useOutletContext
 } from '@remix-run/react';
 
-import SingleRoom, { RoomLinks } from '../../components/SingleRoom/SingleRoom';
+import SingleRoom, { RoomLinks } from '../components/SingleRoom/SingleRoom';
 import styles from '~/styles/room.css';
 import {
   deleteRoom,
@@ -54,13 +54,6 @@ export async function action({ request }) {
     } catch (err) {
       return json({ actionData: err });
     }
-  } else if (action === 'changeRoomName') {
-    try {
-      const room = { roomName: body.get('roomName') };
-      data = await updateRoom(roomId, room);
-    } catch (err) {
-      return json({ actionData: err });
-    }
   }
 
   return json({ actionData: data, action, roomId });
@@ -73,16 +66,8 @@ export default function RoomsList() {
     roomId: null,
     showConfirmPopup: false
   });
-  let [collaborators, setCollaborators] = useState({
-    showPopup: false,
-    list: []
-  });
-  let { submit, data, state, load, submission, type } = useFetcher();
-  console.log('actionData', data, type);
+  let { submit, data, state } = useFetcher();
 
-  if (submission && data && data.action === 'changeRoomName') {
-    load(`/rooms?roomId=${data.roomId}&action=getRoomDetails&index`);
-  }
   function onDeleteRoom() {
     if (deleteRoom.roomId) {
       let formData = new FormData();
@@ -90,19 +75,7 @@ export default function RoomsList() {
       formData.set('roomId', deleteRoom.roomId);
       formData.set('userId', userData.id);
       formData.set('action', 'deleteRoom');
-      submit(formData, { method: 'post' });
-    }
-  }
-
-  function onChangeRoomName(roomId, modifiedName) {
-    if (modifiedName !== '') {
-      let formData = new FormData();
-
-      formData.set('roomId', roomId);
-      formData.set('userId', userData.id);
-      formData.set('roomName', modifiedName);
-      formData.set('action', 'changeRoomName');
-      submit(formData, { method: 'post' });
+      submit(formData, { method: 'POST' });
     }
   }
 
@@ -124,18 +97,6 @@ export default function RoomsList() {
     setDeleteRoom({ roomId: null, showConfirmPopup: false });
   }
 
-  function showCollaborators(roomId) {
-    setCollaborators({
-      showPopup: true,
-      list: []
-    });
-    load(`/rooms?roomId=${roomId}&action=getRoomDetails&index`);
-  }
-
-  function hideCollaborators() {
-    setCollaborators({ showPopup: false, list: [] });
-  }
-
   return (
     <div className='main-container'>
       <span className='room-header'>
@@ -145,12 +106,7 @@ export default function RoomsList() {
         {userData.rooms && userData.rooms.length > 0 ? (
           userData.rooms.map((room) => {
             return (
-              <SingleRoom
-                key={room.id}
-                {...room}
-                onDeleteRoom={showPopUp}
-                showCollaborators={showCollaborators}
-              />
+              <SingleRoom key={room.id} {...room} onDeleteRoom={showPopUp} />
             );
           })
         ) : (

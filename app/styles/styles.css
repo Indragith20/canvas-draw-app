@@ -20,46 +20,6 @@ body {
   align-items: center;
 }
 
-.error-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top: 5rem;
-  color: var(--primary-font-color);
-  flex-direction: column;
-}
-
-.error-page {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  border-left: 3px solid hsl(230deg, 100%, 69%);
-  border-radius: 6px 6px 6px 3px;
-  padding: clamp(.5rem, 2rem, 5rem);
-  margin: 1rem;
-  font-size: var(--text-font-size);
-  width: clamp(300px,50%, 700px);
-}
-
-.error-page span {
-  font-size: 2rem;
-  margin-bottom: 16px;
-}
-
-.dark-background .error-page {
-  border-color: hsl(230deg, 100%, 69%);
-  background-color: hsl(210deg, 38%, 15%);
-}
-
-.light-background .error-page {
-  border-color: initial;
-  background-color: white;
-  border: 1px solid black;
-  border-left: 3px solid black;
-}
-
 .home-page {
   position: relative;
 }

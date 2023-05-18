@@ -5,10 +5,10 @@ import {
   useFetcher,
   useLoaderData
 } from '@remix-run/react';
-import styles from '../../styles/form.css';
-import enterRoomStyles from '../../styles/enterRoom.css';
+import styles from '../styles/form.css';
+import enterRoomStyles from '../styles/enterRoom.css';
 import { json, redirect } from '@remix-run/node';
-import { commitSession, getSession } from '../../sessions';
+import { commitSession, getSession } from '../sessions';
 import ValidationMessage from '~/components/ValidationMessage/ValidationMessage';
 import { addRoomToUser, isRoomExist } from 'server/db';
 
@@ -60,7 +60,7 @@ export default function EnterRoom() {
     formData.set('userName', userData.name);
     formData.set('userId', userData.id);
     formData.set('roomId', room);
-    fetcher.submit(formData, { method: 'post' });
+    fetcher.submit(formData, { method: 'POST' });
   }
 
   return (
