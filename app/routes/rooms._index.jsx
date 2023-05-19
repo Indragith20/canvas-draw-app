@@ -1,19 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Link,
-  useActionData,
-  useFetcher,
-  useOutletContext
-} from '@remix-run/react';
+import { Link, useFetcher, useOutletContext } from '@remix-run/react';
 
 import SingleRoom, { RoomLinks } from '../components/SingleRoom/SingleRoom';
 import styles from '~/styles/room.css';
-import {
-  deleteRoom,
-  getCollaboratorsList,
-  getRoomDetails,
-  updateRoom
-} from 'server/db';
+import { deleteRoom, getCollaboratorsList, getRoomDetails } from 'server/db';
 import { json } from '@remix-run/node';
 import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { useToast } from '~/components/Common/Toast/ToastContext';

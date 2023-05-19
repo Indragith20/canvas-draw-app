@@ -13,12 +13,3 @@ export function handle_pinch_zoom(ev) {
     return true;
   }
 }
-
-function parseString() {
-
-}
-
-function innertHTMLToText(html) {
-  let originalString = html;
-
-}
