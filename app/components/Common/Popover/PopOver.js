@@ -22,7 +22,10 @@ function PopOver({ children, position }) {
 function TriggerNode({ children }) {
   let { open, toggleOpen } = useContext(PopOverContext);
   return (
-    <div className='popover-trigger' onClick={(e) => { toggleOpen(!open) }}>{children}</div>
+    <div className='popover-trigger' onClick={(e) => {
+      e.stopPropagation();
+      toggleOpen(!open)
+    }}>{children}</div>
   )
 }
 
@@ -35,18 +38,30 @@ function Content({ children }) {
       if (popOverRef.current && popOverRef.current.contains(e.target)) {
         //toggleOpen(!open);
       } else {
+        console.log('toggleOutside called')
         toggleOpen(false);
       }
     }
 
     if (open) {
+      console.log('open called')
       window.addEventListener('click', onClickOutside);
+      window.addEventListener('scroll', onClickOutside);
+    } else {
+      console.log('close called')
+      window.removeEventListener('click', onClickOutside);
+      window.removeEventListener('scroll', onClickOutside);
     }
 
     return () => {
-      window.removeEventListener('click', onClickOutside);
+      window.removeEventListener('mousedown', onClickOutside);
+      window.removeEventListener('scroll', onClickOutside);
     }
   }, [open, toggleOpen])
+
+  if (typeof window === 'undefined') {
+    return null;
+  }
 
   return open ? (
     <div className='popover-content' style={{ [position]: '0px' }} ref={popOverRef}>

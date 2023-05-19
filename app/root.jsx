@@ -35,12 +35,12 @@ export function links() {
     {
       rel: 'preconnect',
       href: 'https://fonts.googleapis.com',
-      crossorgin: 'true'
+      crossOrigin: 'anonymous'
     },
     {
       rel: 'preconnect',
       href: 'https://fonts.gstatic.com',
-      crossorigin: 'true'
+      crossOrigin: 'anonymous'
     },
     {
       rel: 'stylesheet',

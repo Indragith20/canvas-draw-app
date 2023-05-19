@@ -1,6 +1,5 @@
 import { addLiveUsers, getLiveUsers, removeLiveUsers } from "./db";
 import { getAllCachedDataByKey, getCachedData, setDataForCaching } from "./redis";
-//const { addLiveUsers, getLiveUsers, removeLiveUsers } = require('./db');
 
 function emitData(io, socket, key, data) {
   if (data.roomId) {
