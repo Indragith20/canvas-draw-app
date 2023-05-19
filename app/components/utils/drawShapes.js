@@ -171,4 +171,4 @@ function getBufferedCoords(shapes) {
 }
 
 
-export { drawDiamond, drawText, getMinMaxCoords, getBufferedCoords };
+export { drawDiamond, drawText, getMinMaxCoords, getBufferedCoords, htmlTagParser };

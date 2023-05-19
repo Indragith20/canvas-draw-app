@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useActionData, useOutletContext, useFetcher } from '@remix-run/react';
-import styles from '../../styles/form.css';
-import { createRoom } from '../../../server/db';
+import styles from '../styles/form.css';
+import { createRoom } from '../../server/db';
 import { redirect } from '@remix-run/node';
-import { commitSession, getSession } from '../../sessions';
+import { commitSession, getSession } from '../sessions';
 import ValidationMessage from '~/components/ValidationMessage/ValidationMessage';
 
 // export async function loader({ request }) {
@@ -51,7 +51,7 @@ export default function CreateRoom() {
     formData.set('userName', userData.name);
     formData.set('userId', userData.id);
     formData.set('roomName', name);
-    fetcher.submit(formData, { method: 'post' });
+    fetcher.submit(formData, { method: 'POST' });
   }
 
   return (

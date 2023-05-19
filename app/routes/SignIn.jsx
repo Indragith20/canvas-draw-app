@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { Form, Link, useActionData, useTransition } from '@remix-run/react';
+import { Form, Link, useActionData, useNavigation } from '@remix-run/react';
 import { addCollaborator, addRoomToUser } from 'server/db';
 
 import { checkSessionCookie, signIn } from '../../server/auth';
@@ -92,7 +92,7 @@ export const action = async ({ request, params }) => {
 };
 
 export default function Login() {
-  const transition = useTransition();
+  const transition = useNavigation();
   const action = useActionData();
   return (
     <>

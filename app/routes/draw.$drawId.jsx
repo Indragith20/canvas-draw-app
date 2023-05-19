@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { json, redirect } from '@remix-run/node';
 import { useLoaderData, useFetcher, Link } from '@remix-run/react';
 import io from 'socket.io-client';
+import ErrorBoundaryStyles from '../styles/errorBoundary.css';
 
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
 import MainComponent, { MainComponentStyles } from '~/components/main';
 import { SelectToolLinks } from '~/components/SelectTool/SelectTool';
 import { TextToolLinks } from '~/components/TextTool/TextTool';
 import { ZoomContainerLinks } from '~/components/ZoomContainer/ZoomContainer';
-import styles from '../../styles/styles.css';
+import styles from '../styles/styles.css';
 import { SocketProvider } from '~/contexts/socketContext';
 import {
   addShape,
@@ -18,9 +19,9 @@ import {
   getUser,
   updateShape,
   updateUser
-} from '../../../server/db';
+} from '../../server/db';
 import Idb from '~/components/utils/idb';
-import { requireAuth } from '../../../server/auth';
+import { requireAuth } from '../../server/auth';
 import { UserActivityLinks } from '~/components/UserActivity/UserActivity';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { useTheme } from '~/contexts/themeContext';
@@ -42,6 +43,7 @@ export const links = () => [
   ...UserActivityLinks(),
   ...ModalLinks(),
   ...PopOverLinks(),
+  { rel: 'stylesheet', href: ErrorBoundaryStyles },
   { rel: 'stylesheet', href: styles }
 ];
 
@@ -97,7 +99,7 @@ export const action = async ({ request, params }) => {
   return json({ actionData: data, action });
 };
 
-export function CatchBoundary() {
+export function ErrorBoundary() {
   return (
     <>
       <Header headerLinks={[]} />
@@ -179,7 +181,7 @@ function DrawIndex() {
     formData.set('changedPreference', theme === 'dark' ? 'true' : 'false');
     formData.set('userId', id);
     formData.set('action', 'changePreference');
-    submit(formData, { method: 'post' });
+    submit(formData, { method: 'POST' });
   }, [theme, id, submit]);
 
   const updateShape = useCallback(
@@ -187,7 +189,7 @@ function DrawIndex() {
       let formData = new FormData();
       formData.set('data', JSON.stringify({ ...shape }));
       formData.set('action', action);
-      submit(formData, { method: 'post' });
+      submit(formData, { method: 'POST' });
       socket.emit('updateshape', { user: currentUser, roomId, shape, action });
     },
     [submit, socket, currentUser, roomId]

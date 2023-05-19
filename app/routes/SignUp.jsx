@@ -1,5 +1,5 @@
 import { json, redirect } from '@remix-run/node';
-import { Form, Link, useActionData, useTransition } from '@remix-run/react';
+import { Form, Link, useActionData, useNavigation } from '@remix-run/react';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
@@ -59,7 +59,7 @@ export const action = async ({ request }) => {
 
 export default function Login() {
   const action = useActionData();
-  const transition = useTransition();
+  const transition = useNavigation();
   return (
     <>
       <Header headerLinks={headerLinks} />

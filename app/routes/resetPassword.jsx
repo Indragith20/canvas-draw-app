@@ -1,5 +1,10 @@
 import React from 'react';
-import { Link, useFetcher } from '@remix-run/react';
+import {
+  Link,
+  isRouteErrorResponse,
+  useFetcher,
+  useRouteError
+} from '@remix-run/react';
 import { checkSessionCookie, confirmResetpassword } from '../../server/auth';
 import { commitSession, getSession } from '../sessions';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
@@ -140,8 +145,19 @@ export default function SignupRoute() {
   );
 }
 
-export function ErrorBoundary({ error }) {
+export function ErrorBoundary() {
+  const error = useRouteError();
   console.error(error);
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        <h1>Oops</h1>
+        <p>Status: {error.status}</p>
+        <p>{error.data.message}</p>
+      </div>
+    );
+  }
 
   return <div>An unexpected error occurred: {error.message}</div>;
 }

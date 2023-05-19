@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React from 'react';
 import {
   Links,
   LiveReload,
@@ -8,11 +8,10 @@ import {
   ScrollRestoration
 } from '@remix-run/react';
 import styles from './styles/global.css';
-import { ThemeContext, ThemeProvider, useTheme } from './contexts/themeContext';
+import { ThemeContext, ThemeProvider } from './contexts/themeContext';
 import { GlobalLoading, LoaderLinks } from './components/Common/Loader/Loader';
-import Toast, { ToastStyleLinks } from './components/Common/Toast/SingleToast';
+import { ToastStyleLinks } from './components/Common/Toast/SingleToast';
 import ToastProvider from './components/Common/Toast/ToastContext';
-import ToastContainer from './components/Common/Toast/ToastContainer';
 
 import FavIcon16 from './assets/favicon-16x16.png';
 import FavIcon32 from './assets/favicon-32x32.png';
@@ -35,12 +34,12 @@ export function links() {
     {
       rel: 'preconnect',
       href: 'https://fonts.googleapis.com',
-      crossorgin: 'true'
+      crossOrigin: 'anonymous'
     },
     {
       rel: 'preconnect',
       href: 'https://fonts.gstatic.com',
-      crossorigin: 'true'
+      crossOrigin: 'anonymous'
     },
     {
       rel: 'stylesheet',
@@ -126,7 +125,7 @@ export function links() {
   ];
 }
 export function meta() {
-  return { title: 'Draw Anything' };
+  return [{ title: 'Draw Anything' }];
 }
 
 export default function App() {

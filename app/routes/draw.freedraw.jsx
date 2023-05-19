@@ -12,7 +12,7 @@ import { TextToolLinks } from '~/components/TextTool/TextTool';
 import Idb from '~/components/utils/idb';
 import { ZoomContainerLinks } from '~/components/ZoomContainer/ZoomContainer';
 import { useTheme } from '~/contexts/themeContext';
-import styles from '../../styles/styles.css';
+import styles from '../styles/styles.css';
 
 export const links = () => [
   ...HeaderStyleLinks(),

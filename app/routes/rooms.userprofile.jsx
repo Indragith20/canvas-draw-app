@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useActionData, useFetcher, useOutletContext } from '@remix-run/react';
-import styles from '../../styles/form.css';
-import userProfileStyles from '../../styles/userProfile.css';
+import styles from '../styles/form.css';
+import userProfileStyles from '../styles/userProfile.css';
 import { updateUser } from 'server/db';
 import { json } from '@remix-run/node';
 import { useTheme } from '~/contexts/themeContext';
@@ -48,7 +48,7 @@ export default function Profile() {
     formData.set('userName', name);
     formData.set('userId', userData.id);
     formData.set('action', 'changeName');
-    fetcher.submit(formData, { method: 'post' });
+    fetcher.submit(formData, { method: 'POST' });
     toggleEditMode();
   }
 

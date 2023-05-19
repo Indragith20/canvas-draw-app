@@ -9,7 +9,7 @@ export function RoomLinks() {
   return [{ rel: 'stylesheet', href: styles }];
 }
 
-export default function SingleRoom({ id, roomName, createdAt, createdBy, onDeleteRoom, showCollaborators }) {
+export default function SingleRoom({ id, roomName, createdAt, createdBy, onDeleteRoom }) {
   return (
 
     <div className='room'>
@@ -22,7 +22,7 @@ export default function SingleRoom({ id, roomName, createdAt, createdBy, onDelet
           </PopOver.TriggerNode>
           <PopOver.Content>
             <ul className='actions-list'>
-              <li className='actions-list-item' onClick={() => { showCollaborators(id) }}>
+              <li className='actions-list-item'>
                 <svg xmlns="http://www.w3.org/2000/svg" className='icon-style' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 <Link to={`/rooms/${id}`} className='room-detail-link'>View Room Details</Link>
               </li>

@@ -25,7 +25,7 @@ function DeletePopup({ showDeletePopup, onCancel, deleteCanvas }) {
     } else {
       let formData = new FormData();
       formData.set('action', 'deleteAll');
-      submit(formData, { method: 'post' });
+      submit(formData, { method: 'POST' });
       setSubmission(true);
     }
 
