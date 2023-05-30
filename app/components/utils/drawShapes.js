@@ -49,7 +49,7 @@ function htmlTagParser(htmlInput) {
 function drawText(text, context, x, y, maxWidth, lineHeight, color, fontSize = 24) {
   context.font = `normal ${fontSize}px/${lineHeight}px Mali`;
   context.fillStyle = color;
-  context.textBaseline = "top";
+  context.textBaseline = "hanging";
   let words = text.split('');
   let line = '';
   let numberOfLines = 1;

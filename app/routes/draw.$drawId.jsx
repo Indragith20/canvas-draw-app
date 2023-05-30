@@ -207,7 +207,7 @@ function DrawIndex() {
   );
 
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
+    <div>
       <SocketProvider socket={socket}>
         <MainComponent
           shapes={shapes}

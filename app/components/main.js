@@ -298,7 +298,6 @@ class MainComponent extends React.PureComponent {
   }
 
   onTouchStart(ev) {
-    console.log('Touch Start Fired', ev);
     if (ev.targetTouches.length === 1) {
       // if (this.touchStartTimer === null) {
       //   this.touchStartTimer = setTimeout(() => {
@@ -344,16 +343,13 @@ class MainComponent extends React.PureComponent {
 
   onTouchMove(ev) {
     ev.preventDefault();
-    console.log('Touch Move Fired', ev);
     let { selectedTool } = this.state;
     if (ev.targetTouches.length === 1) {
       let deltaX = ev.targetTouches[0].clientX - this.touchStartX;
       let deltaY = ev.targetTouches[0].clientY - this.touchStartY;
-      console.log('Delta Main', deltaX, deltaY);
       let thresholdedDelta = this.onTouchMoveThreshold(deltaX, deltaY);
       ev.deltaX = thresholdedDelta.x;
       ev.deltaY = thresholdedDelta.y;
-      console.log("Delta diff", ev.deltaX, ev.deltaY);
       if (selectedTool === 'select') {
         this.onWheelMove(ev);
       } else {
@@ -368,7 +364,6 @@ class MainComponent extends React.PureComponent {
   }
 
   onTouchEnd(ev) {
-    console.log('Touch End Fired', ev.changedTouches[0].clientX, ev.changedTouches[0].clientY);
     if (ev.changedTouches.length === 1) {
       if (this.touchStartTimer === null) {
         this.touchStartTimer = setTimeout(() => {
@@ -495,7 +490,6 @@ class MainComponent extends React.PureComponent {
         }
       }
     } else if (this.tool) {
-      console.log("Event TYpe", ev.type);
       let func = this.tool[eventTypeMapping[ev.type]];
       if (func) {
         func(ev);
@@ -549,7 +543,6 @@ class MainComponent extends React.PureComponent {
 
 
   imgUpdate(drawenImage) {
-    console.log('imgUpdate called');
     if (drawenImage && drawenImage.type) {
       let { scrollX, scrollY, scalingFactor, shapes } = this.state;
       /** TODO: Change this logic to object key value structure */
@@ -719,7 +712,6 @@ class MainComponent extends React.PureComponent {
         //this.id = this.id + 1;
         textId = uuidv4();
       }
-      console.log(textId);
       this.tool = new DrawText(this.tempCanvas.current, this.tempContext, this.imgUpdate, textId, selectedTheme);
       let eventMapping = ev.type === 'touchstart' ? 'dblclick' : 'dblclick';
       let func = this.tool[eventMapping];

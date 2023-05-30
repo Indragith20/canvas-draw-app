@@ -52,7 +52,7 @@ export default function FreeDrawIndex() {
   return loading ? (
     <div className='loading'>Setting Up environment</div>
   ) : (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
+    <div>
       <MainComponent
         shapes={shapes}
         mouseMove={() => {}}

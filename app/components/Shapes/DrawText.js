@@ -62,7 +62,7 @@ class DrawText {
           id: this.id,
           type: 'text',
           x: this.tetxtareaClientStyle.left,
-          y: this.tetxtareaClientStyle.top + 10,
+          y: this.tetxtareaClientStyle.top + 7,
           textContent: text,
           innerHtml: this.textBox.innerHTML,
           endX: this.startX + width,
@@ -92,11 +92,10 @@ class DrawText {
     // TODO: Currently implemented for rectangle enclosed element. Check possibility for all other shapes
     this.startX = ev.x;
     this.startY = ev.y;
-    this.textBoxContainer.style.top = `${ev.y - 5}px`;
+    this.textBoxContainer.style.top = `${ev.y}px`;
     this.textBoxContainer.style.left = `${ev.x}px`;
     this.textBoxContainer.style.display = 'block';
     this.textBox.focus();
-
     if (enclosedElement) {
       if (enclosedElement.type === 'rectangle') {
         // to have equi space around the horizontal edge
