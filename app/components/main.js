@@ -513,11 +513,11 @@ class MainComponent extends React.PureComponent {
   drawImage() {
     this.resetDraggingValues();
 
-
     requestAnimationFrame(() => {
 
       // if the action is delete or move. wee nneed to call resetDraggingValues
       let { selectedTool } = this.state;
+      let { keepLastSelected } = this.props;
 
       if (selectedTool === 'move' || selectedTool === 'text') {
         this.redraw();
@@ -530,10 +530,14 @@ class MainComponent extends React.PureComponent {
         //this.renderParticularShape(modifiedImage);
 
         // Changing to select tool once we have drawn a shape except to typing text
-        if (selectedTool !== 'text') {
-
-          this.setState({ selectedTool: 'select' });
-          this.tool = null;
+        if (selectedTool !== 'text') { //???
+          if (keepLastSelected) {
+            let selectedOne = this.tools[selectedTool];
+            this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, uuidv4());
+          } else {
+            this.setState({ selectedTool: 'select' });
+            this.tool = null;
+          }
         }
       }
       // this.redraw();

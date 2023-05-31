@@ -93,6 +93,7 @@ function Rooms() {
   const { theme, updateTheme } = useTheme();
   const { submit } = useFetcher();
   const { id } = data;
+  console.log('outler daa', data);
 
   useEffect(() => {
     let formData = new FormData();

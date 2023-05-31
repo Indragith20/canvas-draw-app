@@ -110,7 +110,7 @@ class DrawText {
         // this.textBoxContainer.style.width = this.width + 'px';
         // this.textBoxContainer.style.height = this.height + 'px';
       } else if (enclosedElement.type === 'text') {
-        this.textBoxContainer.style.top = `${enclosedElement.y * scalingFactor + scrollY}px`;
+        this.textBoxContainer.style.top = `${((enclosedElement.y * scalingFactor) + scrollY) - 7}px`;
         this.textBoxContainer.style.left = `${enclosedElement.x * scalingFactor + scrollX}px`;
         this.textBox.innerHTML = enclosedElement.innerHtml;
         this.width = enclosedElement.width;

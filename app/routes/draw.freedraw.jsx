@@ -61,6 +61,7 @@ export default function FreeDrawIndex() {
         selectedTheme={theme}
         isMobile={isMobile}
         backLink={'/'}
+        keepLastSelected={true}
       />
       {/* <MobileWarning backLink={'/'} backLinkText='Back to Home' /> */}
     </div>

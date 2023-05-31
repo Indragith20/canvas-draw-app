@@ -129,7 +129,7 @@ function DrawIndex() {
   const { submit } = useFetcher();
   const isMobile = isTouchDevice();
   const { currentUser, shapes, roomId } = useLoaderData();
-  let { id, name, darkMode } = currentUser;
+  let { id, name, darkMode, lastSelected } = currentUser;
   const { theme, updateTheme } = useTheme();
 
   const [socket, setSocket] = useState();
@@ -217,6 +217,7 @@ function DrawIndex() {
           selectedTheme={theme}
           isMobile={isMobile}
           backLink={'/rooms'}
+          keepLastSelected={lastSelected === 'true'}
         />
         {/* <MobileWarning backLink='/rooms' backLinkText='Back To Rooms' /> */}
       </SocketProvider>
