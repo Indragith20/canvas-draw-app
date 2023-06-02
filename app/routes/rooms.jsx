@@ -55,7 +55,6 @@ export async function loader({ request }) {
 }
 
 export async function action({ request }) {
-  console.log('Root action called');
   const body = await request.formData();
   let action = body.get('action');
   let userId = body.get('userId');
@@ -93,7 +92,6 @@ function Rooms() {
   const { theme, updateTheme } = useTheme();
   const { submit } = useFetcher();
   const { id } = data;
-  console.log('outler daa', data);
 
   useEffect(() => {
     let formData = new FormData();

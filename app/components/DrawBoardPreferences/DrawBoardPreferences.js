@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './DrawBoardPreferences.css';
 
 
-export const DeleteDrawBoardPreferencesLinks = () => ([
+export const DrawBoardPreferencesLinks = () => ([
   { rel: 'stylesheet', href: styles }
 ])
 

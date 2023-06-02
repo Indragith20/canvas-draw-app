@@ -3,7 +3,6 @@ class DrawText {
     this.started = false;
 
     this.id = id;
-    console.log(this.id);
     this.initialText = '';
     this.tempCanvas = tempCanvas;
     this.tempContext = tempContext;
@@ -43,7 +42,6 @@ class DrawText {
       //let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
 
       if (text && text !== '') {
-        console.log(text);
 
         // TODO: Replace undefined with exact line height
         let textareaStyle = window.getComputedStyle(this.textBox);

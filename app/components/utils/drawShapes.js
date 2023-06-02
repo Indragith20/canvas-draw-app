@@ -24,7 +24,6 @@ function traverseDOM(node, depth) {
   }
   for (let i = 0; i < node.childNodes.length; i++) {
     const childNode = node.childNodes[i];
-    console.log(childNode.nodeType === Node.TEXT_NODE);
     if (childNode.nodeType === Node.ELEMENT_NODE) {
       returnArray = [...returnArray, ...traverseDOM(childNode, depth + 1)]
     } else if (childNode.nodeType === Node.TEXT_NODE) {

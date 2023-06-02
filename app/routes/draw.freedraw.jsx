@@ -1,5 +1,5 @@
 import { json } from '@remix-run/node';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMatchMedia } from '~/components/Common/hooks/useMatchMedia';
 import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
@@ -31,11 +31,21 @@ export const loader = async ({ request, params }) => {
   return json({ currentUser: null });
 };
 
+function getFromLocalStorage() {
+  if (typeof window === 'undefined') {
+    return 'false';
+  }
+  return String(window.localStorage.getItem('keepLastSelected')) === 'true'
+    ? 'true'
+    : 'false';
+}
+
 export default function FreeDrawIndex() {
   const [loading, setLoading] = useState(true);
   const [shapes, setShapes] = useState([]);
   const { theme } = useTheme();
   const isMobile = useMatchMedia('(min-width: 320px) and (max-width: 767px)');
+  const [keepLastSelected, setLastSelected] = useState(getFromLocalStorage);
 
   useEffect(() => {
     Idb.getDataFromIdb('app-state-persist')
@@ -47,6 +57,13 @@ export default function FreeDrawIndex() {
         setLoading(false);
         setShapes([]);
       });
+  }, []);
+
+  const onChangePreference = useCallback((e, preference) => {
+    localStorage.setItem(preference, e.target.checked);
+    if (preference === 'keepLastSelected') {
+      setLastSelected(String(e.target.checked));
+    }
   }, []);
 
   return loading ? (
@@ -61,7 +78,8 @@ export default function FreeDrawIndex() {
         selectedTheme={theme}
         isMobile={isMobile}
         backLink={'/'}
-        keepLastSelected={true}
+        keepLastSelected={keepLastSelected === 'true'}
+        onChangePreference={onChangePreference}
       />
       {/* <MobileWarning backLink={'/'} backLinkText='Back to Home' /> */}
     </div>

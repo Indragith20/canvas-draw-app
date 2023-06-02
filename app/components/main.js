@@ -23,9 +23,10 @@ import BackIcon, { BackIconStyles } from './BackIcon/BackIcon';
 import { isTouchDevice } from './utils/common';
 import { CollaboratorsLinks } from './Collaborators/Collaborators';
 import HintComponent, { HintComponentLinks } from './Hint/HintComponent';
+import PreferencePopup, { PreferencePopupLinks } from './PreferencePopup/PreferencePopup';
 
 export function MainComponentStyles() {
-  return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), ...HintComponentLinks(), { rel: 'stylesheet', href: styles }];
+  return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...PreferencePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), ...HintComponentLinks(), { rel: 'stylesheet', href: styles }];
 }
 
 
@@ -68,7 +69,6 @@ class MainComponent extends React.PureComponent {
       canvasWidth: 0,
       canvasHeight: 0,
       lineWidth: 3,
-      selectedTheme: 'light',
       selectedTool: 'select',
       showModal: null,
       shapes: props.shapes,
@@ -105,6 +105,7 @@ class MainComponent extends React.PureComponent {
     this.onEmptyCanvas = this.onEmptyCanvas.bind(this);
     this.deleteShape = this.deleteShape.bind(this);
     this.clearSelectedElement = this.clearSelectedElement.bind(this);
+    this.togglePreferences = this.togglePreferences.bind(this);
 
     //this.idb = new Idb();
 
@@ -550,7 +551,6 @@ class MainComponent extends React.PureComponent {
     if (drawenImage && drawenImage.type) {
       let { scrollX, scrollY, scalingFactor, shapes } = this.state;
       /** TODO: Change this logic to object key value structure */
-      console.log("drawen Image", drawenImage.x, drawenImage.y);
       let modifiedImage = {
         ...drawenImage,
         x: this.changeToOneScalingFactor(drawenImage.x - scrollX),
@@ -887,6 +887,10 @@ class MainComponent extends React.PureComponent {
     this.setState({ showModal: 'shareLink', disableScroll: true })
   }
 
+  togglePreferences() {
+    this.setState({ showModal: 'preferences', disableScroll: false })
+  }
+
   onEmptyCanvas() {
     this.setState({ shapes: [], showModal: null, disableScroll: false }, () => {
       let { updateDb } = this.props;
@@ -945,7 +949,7 @@ class MainComponent extends React.PureComponent {
         </div>
         <SelectTool selectedTool={selectedTool} updateTool={this.onClickTool} />
         <HintComponent />
-        <ConfigTool downloadImage={this.downloadAsImage} deleteCanvas={this.onDeleteCanvas} shareLink={this.onShareLink} />
+        <ConfigTool downloadImage={this.downloadAsImage} deleteCanvas={this.onDeleteCanvas} shareLink={this.onShareLink} togglePreferences={this.togglePreferences} />
         <TextTool />
         <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
         <PrintPreview
@@ -958,6 +962,20 @@ class MainComponent extends React.PureComponent {
           shapes={shapes} />
         <ShareLink showShareLink={showModal === 'shareLink'} onCancel={this.onModalClose} />
         <DeletePopup showDeletePopup={showModal === 'deleteCanvas'} onCancel={this.onModalClose} deleteCanvas={this.onEmptyCanvas} />
+        <PreferencePopup showPreferencePopup={showModal === 'preferences'} onCancel={this.onModalClose} preferences={{
+          'darkMode': {
+            type: 'checkbox',
+            checked: this.props.selectedTheme === 'dark',
+            displayName: 'Dark Mode'
+          },
+          'keepLastSelected': {
+            type: 'checkbox',
+            checked: this.props.keepLastSelected,
+            displayName: 'Keep Last Selected Tool'
+          }
+        }}
+          onChangePreference={this.props.onChangePreference}
+        />
         <BackIcon backLink={backLink} />
         {
           selectedElement ? (

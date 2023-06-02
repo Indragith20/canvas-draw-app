@@ -206,6 +206,10 @@ function DrawIndex() {
     [socket, currentUser, roomId]
   );
 
+  const onChangePreference = useCallback((e, preference) => {
+    localStorage.setItem(preference, e.target.checked);
+  }, []);
+
   return (
     <div>
       <SocketProvider socket={socket}>
@@ -218,6 +222,7 @@ function DrawIndex() {
           isMobile={isMobile}
           backLink={'/rooms'}
           keepLastSelected={lastSelected === 'true'}
+          onChangePreference={onChangePreference}
         />
         {/* <MobileWarning backLink='/rooms' backLinkText='Back To Rooms' /> */}
       </SocketProvider>

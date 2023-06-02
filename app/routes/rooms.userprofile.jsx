@@ -6,11 +6,11 @@ import { updateUser } from 'server/db';
 import { json } from '@remix-run/node';
 import { useTheme } from '~/contexts/themeContext';
 import DrawBoardPreferences, {
-  DeleteDrawBoardPreferencesLinks
+  DrawBoardPreferencesLinks
 } from '~/components/DrawBoardPreferences/DrawBoardPreferences';
 
 export const links = () => [
-  ...DeleteDrawBoardPreferencesLinks(),
+  ...DrawBoardPreferencesLinks(),
   {
     rel: 'stylesheet',
     href: styles
@@ -40,7 +40,6 @@ export default function Profile() {
   const userData = useOutletContext();
   const actionData = useActionData();
   const [name, setName] = useState(userData.name);
-  console.log('last selected', userData.lastSelected);
   const [lastSelected, setLastSelected] = useState(
     userData.lastSelected === 'true' ? Boolean(userData.lastSelected) : false
   );
@@ -62,7 +61,7 @@ export default function Profile() {
   }
 
   function onChangePreference(e, preference) {
-    if (preference === 'lastSelected') {
+    if (preference === 'keepLastSelected') {
       setLastSelected(e.target.checked);
       let formData = new FormData();
       formData.set('preference', 'lastSelected');
@@ -73,6 +72,7 @@ export default function Profile() {
     } else if (preference === 'darkMode') {
       updateTheme();
     }
+    //localStorage.setItem(preference, String(e.target.checked));
   }
 
   const preferences = useMemo(() => {
@@ -82,7 +82,7 @@ export default function Profile() {
         checked: theme === 'dark',
         displayName: 'Dark Mode'
       },
-      lastSelected: {
+      keepLastSelected: {
         type: 'checkbox',
         checked: lastSelected,
         displayName: 'Keep last selected tool'

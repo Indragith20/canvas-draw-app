@@ -34,7 +34,6 @@ function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape
     Object.keys(users.current).forEach((user => {
       let x = changeFromOneScalingFactor(users.current[user].x, scalingFactor) + scrollX;
       let y = changeFromOneScalingFactor(users.current[user].y, scalingFactor) + scrollY;
-      console.log('redraw', users.current[user], users.current[user].color);
       userActivityContext.current.strokeStyle = users.current[user].color ? users.current[user].color : 'red';
       userActivityContext.current.lineWidth = "2"
       userActivityContext.current.beginPath();
