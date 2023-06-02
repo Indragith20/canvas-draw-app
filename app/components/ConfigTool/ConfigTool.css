@@ -57,6 +57,7 @@
     /* bottom: 20px; */
     padding: .5rem;
     border: none;
+    width: clamp(40px, 50px, 60px);
   }
   .configTool .wrapper {
     flex-direction: column;

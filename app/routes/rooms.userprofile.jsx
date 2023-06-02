@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useActionData, useFetcher, useOutletContext } from '@remix-run/react';
 import styles from '../styles/form.css';
 import userProfileStyles from '../styles/userProfile.css';
 import { updateUser } from 'server/db';
 import { json } from '@remix-run/node';
 import { useTheme } from '~/contexts/themeContext';
+import DrawBoardPreferences, {
+  DrawBoardPreferencesLinks
+} from '~/components/DrawBoardPreferences/DrawBoardPreferences';
 
 export const links = () => [
+  ...DrawBoardPreferencesLinks(),
   {
     rel: 'stylesheet',
     href: styles
@@ -37,7 +41,7 @@ export default function Profile() {
   const actionData = useActionData();
   const [name, setName] = useState(userData.name);
   const [lastSelected, setLastSelected] = useState(
-    userData.lastSelected ? Boolean(userData.lastSelected) : false
+    userData.lastSelected === 'true' ? Boolean(userData.lastSelected) : false
   );
   const { theme, updateTheme } = useTheme();
   const [editMode, setEditMode] = useState(false);
@@ -55,6 +59,36 @@ export default function Profile() {
   function toggleEditMode() {
     setEditMode(!editMode);
   }
+
+  function onChangePreference(e, preference) {
+    if (preference === 'keepLastSelected') {
+      setLastSelected(e.target.checked);
+      let formData = new FormData();
+      formData.set('preference', 'lastSelected');
+      formData.set('changedPreference', e.target.checked);
+      formData.set('userId', userData.id);
+      formData.set('action', 'changePreference');
+      fetcher.submit(formData, { method: 'post' });
+    } else if (preference === 'darkMode') {
+      updateTheme();
+    }
+    //localStorage.setItem(preference, String(e.target.checked));
+  }
+
+  const preferences = useMemo(() => {
+    return {
+      darkMode: {
+        type: 'checkbox',
+        checked: theme === 'dark',
+        displayName: 'Dark Mode'
+      },
+      keepLastSelected: {
+        type: 'checkbox',
+        checked: lastSelected,
+        displayName: 'Keep last selected tool'
+      }
+    };
+  }, [theme, lastSelected]);
 
   return (
     <div className='form-main-container'>
@@ -110,7 +144,11 @@ export default function Profile() {
         <div className='card'>
           <div className='card-heading'>Draw Board Preferences</div>
           <div className='card-content'>
-            <div className='preference-row'>
+            <DrawBoardPreferences
+              preferences={preferences}
+              onChange={onChangePreference}
+            />
+            {/* <div className='preference-row'>
               <span className='main-checkbox'>
                 <input
                   type='checkbox'
@@ -147,7 +185,7 @@ export default function Profile() {
                 />
               </span>
               <span className='label'>Dark Mode</span>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

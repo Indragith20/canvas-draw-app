@@ -1,6 +1,6 @@
 
 import { useLoaderData, useMatches } from '@remix-run/react';
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export const ThemeContext = createContext('dark');
 
@@ -8,21 +8,28 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
+
 export function ThemeProvider({ defaultTheme, children }) {
   let [theme, setTheme] = useState(defaultTheme);
-  let loaderData = useLoaderData();
-  const matches = useMatches()
-  console.log("Loader Data", loaderData, matches);
 
   const updateTheme = useCallback((theme) => {
     if (theme && typeof theme === 'string') {
       setTheme(theme);
     } else {
       setTheme((prevTheme) => {
-        return prevTheme === 'dark' ? 'light' : 'dark'
+        let themeToBeUpdated = prevTheme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('darkMode', themeToBeUpdated === 'dark')
+        return themeToBeUpdated;
       });
     }
   }, []);
+
+  useEffect(() => {
+    let isDarkMode = localStorage.getItem('darkMode');
+    if (isDarkMode === 'false' && theme === 'dark') {
+      updateTheme();
+    }
+  }, [theme, updateTheme])
 
   const contextValue = useMemo(() => {
     return { theme, updateTheme }

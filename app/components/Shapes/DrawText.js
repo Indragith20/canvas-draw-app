@@ -3,7 +3,6 @@ class DrawText {
     this.started = false;
 
     this.id = id;
-    console.log(this.id);
     this.initialText = '';
     this.tempCanvas = tempCanvas;
     this.tempContext = tempContext;
@@ -43,7 +42,6 @@ class DrawText {
       //let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
 
       if (text && text !== '') {
-        console.log(text);
 
         // TODO: Replace undefined with exact line height
         let textareaStyle = window.getComputedStyle(this.textBox);
@@ -62,7 +60,7 @@ class DrawText {
           id: this.id,
           type: 'text',
           x: this.tetxtareaClientStyle.left,
-          y: this.tetxtareaClientStyle.top + 10,
+          y: this.tetxtareaClientStyle.top + 7,
           textContent: text,
           innerHtml: this.textBox.innerHTML,
           endX: this.startX + width,
@@ -92,11 +90,10 @@ class DrawText {
     // TODO: Currently implemented for rectangle enclosed element. Check possibility for all other shapes
     this.startX = ev.x;
     this.startY = ev.y;
-    this.textBoxContainer.style.top = `${ev.y - 5}px`;
+    this.textBoxContainer.style.top = `${ev.y}px`;
     this.textBoxContainer.style.left = `${ev.x}px`;
     this.textBoxContainer.style.display = 'block';
     this.textBox.focus();
-
     if (enclosedElement) {
       if (enclosedElement.type === 'rectangle') {
         // to have equi space around the horizontal edge
@@ -111,7 +108,7 @@ class DrawText {
         // this.textBoxContainer.style.width = this.width + 'px';
         // this.textBoxContainer.style.height = this.height + 'px';
       } else if (enclosedElement.type === 'text') {
-        this.textBoxContainer.style.top = `${enclosedElement.y * scalingFactor + scrollY}px`;
+        this.textBoxContainer.style.top = `${((enclosedElement.y * scalingFactor) + scrollY) - 7}px`;
         this.textBoxContainer.style.left = `${enclosedElement.x * scalingFactor + scrollX}px`;
         this.textBox.innerHTML = enclosedElement.innerHtml;
         this.width = enclosedElement.width;

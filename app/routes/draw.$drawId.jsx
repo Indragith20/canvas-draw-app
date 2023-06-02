@@ -129,7 +129,7 @@ function DrawIndex() {
   const { submit } = useFetcher();
   const isMobile = isTouchDevice();
   const { currentUser, shapes, roomId } = useLoaderData();
-  let { id, name, darkMode } = currentUser;
+  let { id, name, darkMode, lastSelected } = currentUser;
   const { theme, updateTheme } = useTheme();
 
   const [socket, setSocket] = useState();
@@ -206,8 +206,12 @@ function DrawIndex() {
     [socket, currentUser, roomId]
   );
 
+  const onChangePreference = useCallback((e, preference) => {
+    localStorage.setItem(preference, e.target.checked);
+  }, []);
+
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
+    <div>
       <SocketProvider socket={socket}>
         <MainComponent
           shapes={shapes}
@@ -217,6 +221,8 @@ function DrawIndex() {
           selectedTheme={theme}
           isMobile={isMobile}
           backLink={'/rooms'}
+          keepLastSelected={lastSelected === 'true'}
+          onChangePreference={onChangePreference}
         />
         {/* <MobileWarning backLink='/rooms' backLinkText='Back To Rooms' /> */}
       </SocketProvider>

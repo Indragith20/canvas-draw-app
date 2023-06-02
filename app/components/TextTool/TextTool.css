@@ -8,15 +8,16 @@
   padding: 0;
   margin: 0;
   border: none;
+  outline: none;
+  font-family: "Mali";
+  font-style: normal;
+  font-size: var(--font-size);
   /* border: 1px solid red; */
 }
 
 .textarea {
   border: none;
   outline: none;
-  font-family: "Mali";
-  font-style: normal;
-  font-size: var(--font-size);
   overflow: auto;
   color: inherit;
   resize: none;
@@ -30,8 +31,7 @@
   display: block;
   width: 100%;
   resize: none;
-  min-height: 40px;
-  caret-color: currentColor;
-  padding: .05px;
+  margin: 0.05px;
+  min-height: var(--line-height);
 }
 

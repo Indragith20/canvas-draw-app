@@ -76,7 +76,6 @@ export default function RoomsDetailContainer() {
   let userData = useOutletContext();
   const loaderData = useLoaderData();
   const transition = useNavigation();
-  console.log(loaderData);
   const { addToast } = useToast();
   let [deleteRoom, setDeleteRoom] = useState({
     roomId: null,
