@@ -918,9 +918,10 @@ class MainComponent extends React.PureComponent {
   render() {
     let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes, lineWidth, selectedElement } = this.state;
     let { backLink } = this.props;
+    let cursorType = `${selectedTool === 'select' || selectedElement !== null ? `move` : 'crosshair'}`
     return (
       <div
-        style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: `${selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
+        style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: cursorType }}
       >
         <div id="wrapper" >
           <div id="blackboardPlaceholder">

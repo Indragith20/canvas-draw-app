@@ -24,8 +24,11 @@ class MoveTool {
     this.startX = e._x;
     this.startY = e._y;
     // Temp Check. Need to adopt to all this.elements. doing this for rectangle check initial.
-    this.diffX = Math.abs(this.element.x - this.startX);
-    this.diffY = Math.abs(this.element.y - e.y);
+    this.diffX = this.element.x - this.startX;
+    this.diffY = this.element.y - this.startY;
+    e._x = e._x + this.diffX;
+    e._y = e._y + this.diffY;
+    console.log('dioff', this.diffX, this.diffY);
     this.drawExisitingElementOnTemp();
   }
 
@@ -129,6 +132,8 @@ class MoveTool {
     if (!this.started) {
       return;
     }
+    e._x = e._x + this.diffX;
+    e._y = e._y + this.diffY;
     e.stopPropagation();
     if (this.element.type === 'rectangle') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
