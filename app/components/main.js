@@ -24,6 +24,7 @@ import { isTouchDevice } from './utils/common';
 import { CollaboratorsLinks } from './Collaborators/Collaborators';
 import HintComponent, { HintComponentLinks } from './Hint/HintComponent';
 import PreferencePopup, { PreferencePopupLinks } from './PreferencePopup/PreferencePopup';
+import { drawArrow } from './utils/drawArrow';
 
 export function MainComponentStyles() {
   return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...PreferencePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), ...HintComponentLinks(), { rel: 'stylesheet', href: styles }];
@@ -608,7 +609,7 @@ class MainComponent extends React.PureComponent {
   redraw() {
     // TODO: If the shape is outside the scrolling area skip the draw process(Possible Improvementt)
 
-    let { shapes, scrollX, scrollY, baseLineHeight, baseFontSize, disableScroll } = this.state;
+    let { shapes, scrollX, scrollY, baseLineHeight, baseFontSize, disableScroll, lineWidth } = this.state;
     if (disableScroll) {
       return;
     }
@@ -618,28 +619,17 @@ class MainComponent extends React.PureComponent {
     this.tempContext.setLineDash([]);
     this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
     this.tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
-    this.tempContext.lineWidth = 3.0;
+    this.tempContext.lineWidth = lineWidth;
 
     shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
         this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height), [10]);
       } else if (shape.type === 'arrow') {
-        let headlen = 10;
         let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
         let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
         let endX = this.changeFromOneScalingFactor(shape.endX) + scrollX;
         let endY = this.changeFromOneScalingFactor(shape.endY) + scrollY;
-        let dx = endX - x;
-        let dy = endY - y;
-        let angle = Math.atan2(dy, dx);
-        this.tempContext.beginPath();
-        this.tempContext.moveTo(x, y)
-        this.tempContext.lineTo(endX, endY);
-        this.tempContext.lineTo(endX - headlen * Math.cos(angle - Math.PI / 6), endY - headlen * Math.sin(angle - Math.PI / 6));
-        this.tempContext.moveTo(endX, endY);
-        this.tempContext.lineTo(endX - headlen * Math.cos(angle + Math.PI / 6), endY - headlen * Math.sin(angle + Math.PI / 6));
-        this.tempContext.stroke();
-        this.tempContext.closePath();
+        drawArrow(x, y, endX, endY, this.tempContext);
       } else if (shape.type === 'line') {
         this.tempContext.beginPath();
         this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY);
