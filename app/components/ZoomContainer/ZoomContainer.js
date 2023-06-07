@@ -5,7 +5,7 @@ export function ZoomContainerLinks() {
   return [{ rel: 'stylesheet', href: styles }];
 }
 
-function ZoomContainer({ zoomRange, zoomIn, zoomOut }) {
+function ZoomContainer({ zoomRange, zoomIn, zoomOut, resetZoom }) {
   return (
     <div className='zoomContainer'>
       <span id='minus' className='zoom-sign' onClick={zoomIn}>
@@ -22,7 +22,7 @@ function ZoomContainer({ zoomRange, zoomIn, zoomOut }) {
           <line x1='5' y1='12' x2='19' y2='12'></line>
         </svg>
       </span>
-      <span id='zoomRange' className='zoom-range'>
+      <span id='zoomRange' className='zoom-range' onClick={resetZoom}>
         {Math.floor(zoomRange * 100)}
       </span>
       <span id='plus' className='zoom-sign' onClick={zoomOut}>

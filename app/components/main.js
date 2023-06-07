@@ -20,7 +20,7 @@ import PrintPreview, { PrintPreviewLinks } from './PrintPreview/PrintPreview';
 import ShareLink, { ShareLinks } from './ShareLink/ShareLink';
 import DeletePopup, { DeletePopupLinks } from './DeleteCanvasPopup/DeletePopup';
 import BackIcon, { BackIconStyles } from './BackIcon/BackIcon';
-import { isTouchDevice } from './utils/common';
+import { getUpdatedPerformedActions, isTouchDevice } from './utils/common';
 import { CollaboratorsLinks } from './Collaborators/Collaborators';
 import HintComponent, { HintComponentLinks } from './Hint/HintComponent';
 import PreferencePopup, { PreferencePopupLinks } from './PreferencePopup/PreferencePopup';
@@ -59,7 +59,10 @@ let baseConfig = {
   baseLineHeight: (150 * 24) / 100
 }
 
-
+/** we are maintaining seperate state for undo and performed actions. we can maintain a pointer but shapes can be added
+ * by another collaborator. Hence maintaining seperate state is necessary. 
+ * const UNDO_LIMIT = 50; // If possible, Provide as an config
+ */
 
 class MainComponent extends React.PureComponent {
   constructor(props) {
@@ -74,6 +77,8 @@ class MainComponent extends React.PureComponent {
       showModal: null,
       shapes: props.shapes,
       selectedElement: null,
+      performedActions: [],
+      undoActions: [],
       ...baseConfig
     };
     this.addEventListeners = this.addEventListeners.bind(this);
@@ -96,6 +101,7 @@ class MainComponent extends React.PureComponent {
     this.onResize = this.onResize.bind(this);
     this.zoomIn = this.zoomIn.bind(this);
     this.zoomOut = this.zoomOut.bind(this);
+    this.resetZoom = this.resetZoom.bind(this);
     this.addShape = this.addShape.bind(this);
     this.removeShape = this.removeShape.bind(this);
     this.strokeOuterRect = this.strokeOuterRect.bind(this);
@@ -107,6 +113,8 @@ class MainComponent extends React.PureComponent {
     this.deleteShape = this.deleteShape.bind(this);
     this.clearSelectedElement = this.clearSelectedElement.bind(this);
     this.togglePreferences = this.togglePreferences.bind(this);
+    this.undo = this.undo.bind(this);
+    this.redo = this.redo.bind(this);
 
     //this.idb = new Idb();
 
@@ -133,6 +141,7 @@ class MainComponent extends React.PureComponent {
     // this.state.scrollY = 0;
 
     // for generating image
+
 
   }
 
@@ -243,6 +252,14 @@ class MainComponent extends React.PureComponent {
       }
     }, () => {
       this.props.updateDb(scalingFactor, 'scalingFactor');
+      this.redraw();
+    });
+  }
+
+  resetZoom(e) {
+    e.stopPropagation();
+    this.setState({ ...baseConfig }, () => {
+      this.props.updateDb(1, 'scalingFactor');
       this.redraw();
     });
   }
@@ -592,8 +609,9 @@ class MainComponent extends React.PureComponent {
       }
 
       //let filteredShapes = shapes.filter(shape => shape.id !== drawenImage.id);
-
-      this.setState({ shapes: [...filteredShapes, modifiedImage], selectedElement: null }, () => {
+      let performedActions = getUpdatedPerformedActions(this.state.performedActions, modifiedImage);
+      console.log(performedActions);
+      this.setState({ shapes: [...filteredShapes, modifiedImage], performedActions, selectedElement: null }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
         updateShape(modifiedImage, isExistingShape ? 'update' : 'add');
@@ -726,10 +744,22 @@ class MainComponent extends React.PureComponent {
       return;
     }
     if ((ev.keyCode >= 48 && ev.keyCode <= 57) || (ev.keyCode >= 65 && ev.keyCode <= 90)) {
-      // 48 - 57 number 0 - 9 and 65 - 90 Alphabetys
+      // 48 - 57 number 0 - 9 and 65 - 90 Alphabetys  
+      let ctrlKeyPressed = ev.ctrlKey || ev.metaKey;
 
+      if (ctrlKeyPressed && ev.keyCode === 90) {
+        if (ev.shiftKey) {
+          console.log('perform redo action');
+          this.redo();
+        } else {
+          console.log("perform undo action");
+          this.undo();
+        }
+
+      }
     } else {
       // special keys 
+      console.log(ev.keyCode);
       if (this.state.selectedElement) {
         // Backspace or delete key
         if (ev.which === 46 || ev.which === 8) {
@@ -743,6 +773,41 @@ class MainComponent extends React.PureComponent {
 
         }
       }
+    }
+  }
+
+
+  undo() {
+    let { shapes, performedActions, undoActions } = this.state;
+    if (performedActions && performedActions.length > 0) {
+      let actionsPerformed = [...performedActions];
+      let lastAddedElement = actionsPerformed.pop();
+      let modifiedShapes = shapes.filter(shape => shape.id !== lastAddedElement.id);
+      let updatedUndoActions = undoActions.concat(lastAddedElement);
+      console.log(updatedUndoActions);
+      this.setState({ shapes: modifiedShapes, performedActions: actionsPerformed, undoActions: updatedUndoActions }, () => {
+        let { updateDb, updateShape } = this.props;
+        updateDb(this.state.shapes, 'app-state-persist');
+        updateShape(lastAddedElement, 'delete');
+        this.redraw();
+      })
+    }
+  }
+
+  redo() {
+    let { undoActions, shapes, performedActions: originalPerformedActions } = this.state;
+    if (undoActions && undoActions.length > 0) {
+      let undoTobeModified = [...undoActions];
+      let shapeToBeAdded = undoTobeModified.pop();
+      let originalShapes = [...shapes];
+      let updatedShapes = originalShapes.concat(shapeToBeAdded);
+      let performedActions = getUpdatedPerformedActions(originalPerformedActions, shapeToBeAdded);
+      this.setState({ shapes: updatedShapes, performedActions, undoActions: [...undoTobeModified] }, () => {
+        let { updateDb, updateShape } = this.props;
+        updateDb(this.state.shapes, 'app-state-persist');
+        updateShape(shapeToBeAdded, 'add');
+        this.redraw();
+      })
     }
   }
 
@@ -942,7 +1007,7 @@ class MainComponent extends React.PureComponent {
         <HintComponent />
         <ConfigTool downloadImage={this.downloadAsImage} deleteCanvas={this.onDeleteCanvas} shareLink={this.onShareLink} togglePreferences={this.togglePreferences} />
         <TextTool />
-        <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
+        <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} resetZoom={this.resetZoom} />
         <PrintPreview
           onCancel={this.onModalClose}
           showPreview={showModal === 'downloadImage'}

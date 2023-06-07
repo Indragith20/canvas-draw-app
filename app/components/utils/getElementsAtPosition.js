@@ -146,7 +146,8 @@ function getElementsAtPosition(x, y, shapes) {
 }
 
 function getDistance(p1X, p1Y, p2X, p2Y) {
-  return Math.sqrt(Math.pow(p1X - p2X, 2) + Math.pow(p1Y - p2Y, 2))
+  // To add the Gap between cursor and circle drawn. we are adding a buffer of 20
+  return Math.abs(Math.sqrt(Math.pow(p1X - p2X, 2) + Math.pow(p1Y - p2Y, 2)) - 20)
 }
 
 function getChalkRectValues(points) {

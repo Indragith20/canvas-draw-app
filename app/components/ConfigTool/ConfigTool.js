@@ -2,8 +2,6 @@ import { useLoaderData } from '@remix-run/react';
 import React, { useState } from 'react';
 import Collaborators from '../Collaborators/Collaborators';
 import DisabledDiv from '../Common/DisabledDiv/DisabledDiv';
-//import { useMatchMedia } from '../Common/hooks/useMatchMedia';
-import ThemeSwitcher from '../MainHeader/ThemeSwitcher';
 import styles from './ConfigTool.css';
 
 export function ConfigToolLinks() {

@@ -13,3 +13,12 @@ export function handle_pinch_zoom(ev) {
     return true;
   }
 }
+
+export function getUpdatedPerformedActions(originalPerformedActions, shapeToBeAdded, UNDO_LIMIT = 100) {
+  let performedActions = [...originalPerformedActions]
+  if (performedActions.length >= UNDO_LIMIT) {
+    performedActions.shift();
+  }
+  performedActions.push(shapeToBeAdded);
+  return performedActions;
+}

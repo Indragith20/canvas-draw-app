@@ -1,5 +1,3 @@
-
-import { useLoaderData, useMatches } from '@remix-run/react';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export const ThemeContext = createContext('dark');
