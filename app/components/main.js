@@ -609,7 +609,7 @@ class MainComponent extends React.PureComponent {
       }
 
       //let filteredShapes = shapes.filter(shape => shape.id !== drawenImage.id);
-      let performedActions = getUpdatedPerformedActions(this.state.performedActions, modifiedImage);
+      let performedActions = getUpdatedPerformedActions(this.state.performedActions, isExistingShape ? [{ ...this.draggingElement }, { ...modifiedImage, isExistingShape: true }] : [modifiedImage]);
       console.log(performedActions);
       this.setState({ shapes: [...filteredShapes, modifiedImage], performedActions, selectedElement: null }, () => {
         let { updateDb, updateShape } = this.props;
@@ -781,14 +781,27 @@ class MainComponent extends React.PureComponent {
     let { shapes, performedActions, undoActions } = this.state;
     if (performedActions && performedActions.length > 0) {
       let actionsPerformed = [...performedActions];
-      let lastAddedElement = actionsPerformed.pop();
-      let modifiedShapes = shapes.filter(shape => shape.id !== lastAddedElement.id);
-      let updatedUndoActions = undoActions.concat(lastAddedElement);
+      let { isExistingShape = false, ...lastAddedElement } = actionsPerformed.pop();
+      let originalValueInCaseOfDragging = null;
+      if (isExistingShape) {
+        originalValueInCaseOfDragging = actionsPerformed.pop();
+      }
+      let modifiedShapes = [];
+      shapes.forEach(shape => {
+        if (shape.id !== lastAddedElement.id) {
+          modifiedShapes.push(shape);
+        } else {
+          if (isExistingShape) {
+            modifiedShapes.push(originalValueInCaseOfDragging);
+          }
+        }
+      })
+      let updatedUndoActions = undoActions.concat({ ...lastAddedElement, isExistingShape });
       console.log(updatedUndoActions);
       this.setState({ shapes: modifiedShapes, performedActions: actionsPerformed, undoActions: updatedUndoActions }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
-        updateShape(lastAddedElement, 'delete');
+        updateShape(isExistingShape ? originalValueInCaseOfDragging : lastAddedElement, isExistingShape ? 'update' : 'delete');
         this.redraw();
       })
     }
@@ -798,14 +811,26 @@ class MainComponent extends React.PureComponent {
     let { undoActions, shapes, performedActions: originalPerformedActions } = this.state;
     if (undoActions && undoActions.length > 0) {
       let undoTobeModified = [...undoActions];
-      let shapeToBeAdded = undoTobeModified.pop();
+      let { isExistingShape, ...shapeToBeAdded } = undoTobeModified.pop();
       let originalShapes = [...shapes];
-      let updatedShapes = originalShapes.concat(shapeToBeAdded);
-      let performedActions = getUpdatedPerformedActions(originalPerformedActions, shapeToBeAdded);
+      let updatedShapes = [];
+      if (isExistingShape) {
+        originalShapes.forEach(shape => {
+          if (shape.id === shapeToBeAdded.id) {
+            updatedShapes.push(shapeToBeAdded)
+          } else {
+            updatedShapes.push(shape);
+          }
+        });
+      } else {
+        updatedShapes = [...originalShapes, shapeToBeAdded];
+      }
+
+      let performedActions = getUpdatedPerformedActions(originalPerformedActions, [shapeToBeAdded]);
       this.setState({ shapes: updatedShapes, performedActions, undoActions: [...undoTobeModified] }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
-        updateShape(shapeToBeAdded, 'add');
+        updateShape(shapeToBeAdded, isExistingShape ? 'update' : 'add');
         this.redraw();
       })
     }
