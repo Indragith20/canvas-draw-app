@@ -1,5 +1,5 @@
 import { useFetcher, useLoaderData } from '@remix-run/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSocket } from '~/contexts/socketContext';
 import Modal from '../Common/Modal/Modal';
 import { useToast } from '../Common/Toast/ToastContext';
@@ -12,11 +12,13 @@ export const DeletePopupLinks = () => (
 );
 
 function DeletePopup({ showDeletePopup, onCancel, deleteCanvas }) {
-  const { submit, data } = useFetcher();
+  const { submit, data = {} } = useFetcher();
   const { addToast } = useToast();
   const socket = useSocket();
   const { currentUser, roomId } = useLoaderData();
-  const [submission, setSubmission] = useState(false)
+  const [submission, setSubmission] = useState(false);
+  let { action = '', actionData = {} } = data;
+  let { message } = actionData;
 
   function onDelete() {
     if (!currentUser || !roomId) {
@@ -31,16 +33,19 @@ function DeletePopup({ showDeletePopup, onCancel, deleteCanvas }) {
 
   }
 
-  if (data && data.action === 'deleteAll' && submission === true) {
-    let { actionData } = data;
-    if (actionData && actionData.message === 'success') {
-      socket.emit('deleteAllShapes', { user: currentUser, roomId, action: 'deleteAll' })
-      addToast({ message: 'Canvas Deleted Successfully', timeout: 5000 })
-      deleteCanvas();
-    }
-    setSubmission(false);
+  useEffect(() => {
+    if (action === 'deleteAll' && submission === true) {
+      if (message && message === 'success') {
+        socket.emit('deleteAllShapes', { user: currentUser, roomId, action: 'deleteAll' })
+        addToast({ message: 'Canvas Deleted Successfully', timeout: 5000 })
+        deleteCanvas();
+      }
+      setSubmission(false);
 
-  }
+    }
+  }, [addToast, socket, deleteCanvas, action, currentUser, submission, message, roomId]);
+
+
 
   return (
     <Modal show={showDeletePopup} close={onCancel}>

@@ -1,3 +1,4 @@
+import { drawArrow } from "./drawArrow";
 import { drawDiamond, drawText } from "./drawShapes";
 
 export function changeFromOneScalingFactor(coords, scalingFactor) {
@@ -17,22 +18,11 @@ export function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedThe
     if (shape.type === 'rectangle') {
       tempContext.strokeRect(shape.x + bufferX, shape.y + bufferY, changeFromOneScalingFactor(shape.width, scalingFactor), changeFromOneScalingFactor(shape.height, scalingFactor));
     } else if (shape.type === 'arrow') {
-      let headlen = 10;
       let x = shape.x + bufferX;
       let y = shape.y + bufferY;
       let endX = shape.endX + bufferX;
       let endY = shape.endY + bufferY;
-      let dx = endX - x;
-      let dy = endY - y;
-      let angle = Math.atan2(dy, dx);
-      tempContext.beginPath();
-      tempContext.moveTo(x, y)
-      tempContext.lineTo(endX, endY);
-      tempContext.lineTo(endX - headlen * Math.cos(angle - Math.PI / 6), endY - headlen * Math.sin(angle - Math.PI / 6));
-      tempContext.moveTo(endX, endY);
-      tempContext.lineTo(endX - headlen * Math.cos(angle + Math.PI / 6), endY - headlen * Math.sin(angle + Math.PI / 6));
-      tempContext.stroke();
-      tempContext.closePath();
+      drawArrow(x, y, endX, endY, tempContext);
     } else if (shape.type === 'line') {
       tempContext.beginPath();
       tempContext.moveTo(shape.x + bufferX, shape.y + bufferY);

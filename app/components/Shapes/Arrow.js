@@ -1,3 +1,5 @@
+import { drawArrow } from "../utils/drawArrow";
+
 class Arrow {
   constructor(tempCanvas, tempContext, callback, id) {
     this.id = id;
@@ -48,21 +50,7 @@ class Arrow {
       return;
     }
     this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-    /** */
-    //let cospix = 0.866025404;
-    let headlen = 10;
-    let dx = e._x - this.startX;
-    let dy = e._y - this.startY;
-    //let length = Math.sqrt(dy * dy + dx * dx); //length of arrow
-    let angle = Math.atan2(dy, dx);
-    this.tempContext.beginPath();
-    this.tempContext.moveTo(this.startX, this.startY);
-    this.tempContext.lineTo(e._x, e._y);
-    this.tempContext.lineTo(e._x - headlen * Math.cos(angle - Math.PI / 6), e._y - headlen * Math.sin(angle - Math.PI / 6));
-    this.tempContext.moveTo(e._x, e._y);
-    this.tempContext.lineTo(e._x - headlen * Math.cos(angle + Math.PI / 6), e._y - headlen * Math.sin(angle + Math.PI / 6));
-    this.tempContext.stroke();
-    this.tempContext.closePath();
+    drawArrow(this.startX, this.startY, e._x, e._y, this.tempContext);
   }
 }
 

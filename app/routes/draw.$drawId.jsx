@@ -190,6 +190,9 @@ function DrawIndex() {
       formData.set('data', JSON.stringify({ ...shape }));
       formData.set('action', action);
       submit(formData, { method: 'POST' });
+      if (!socket) {
+        return;
+      }
       socket.emit('updateshape', { user: currentUser, roomId, shape, action });
     },
     [submit, socket, currentUser, roomId]
@@ -197,6 +200,9 @@ function DrawIndex() {
 
   const onMouseMove = useCallback(
     (eventDetails) => {
+      if (!socket) {
+        return;
+      }
       socket.emit('mousemove', {
         ...eventDetails,
         user: currentUser,

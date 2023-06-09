@@ -20,10 +20,12 @@ import PrintPreview, { PrintPreviewLinks } from './PrintPreview/PrintPreview';
 import ShareLink, { ShareLinks } from './ShareLink/ShareLink';
 import DeletePopup, { DeletePopupLinks } from './DeleteCanvasPopup/DeletePopup';
 import BackIcon, { BackIconStyles } from './BackIcon/BackIcon';
-import { isTouchDevice } from './utils/common';
+import { getUpdatedPerformedActions, isTouchDevice } from './utils/common';
 import { CollaboratorsLinks } from './Collaborators/Collaborators';
 import HintComponent, { HintComponentLinks } from './Hint/HintComponent';
 import PreferencePopup, { PreferencePopupLinks } from './PreferencePopup/PreferencePopup';
+import { drawArrow } from './utils/drawArrow';
+import ShortcutKeys from './ShortcutKeys/ShortcutKeys';
 
 export function MainComponentStyles() {
   return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...PreferencePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), ...HintComponentLinks(), { rel: 'stylesheet', href: styles }];
@@ -52,13 +54,17 @@ let eventTypeMapping = {
   'touchend': 'mouseup'
 }
 
+
 let baseConfig = {
   scalingFactor: 1,
   baseFontSize: 24,
   baseLineHeight: (150 * 24) / 100
 }
 
-
+/** we are maintaining seperate state for undo and performed actions. we can maintain a pointer but shapes can be added
+ * by another collaborator. Hence maintaining seperate state is necessary. 
+ * const UNDO_LIMIT = 50; // If possible, Provide as an config
+ */
 
 class MainComponent extends React.PureComponent {
   constructor(props) {
@@ -73,6 +79,8 @@ class MainComponent extends React.PureComponent {
       showModal: null,
       shapes: props.shapes,
       selectedElement: null,
+      performedActions: [],
+      undoActions: [],
       ...baseConfig
     };
     this.addEventListeners = this.addEventListeners.bind(this);
@@ -82,7 +90,6 @@ class MainComponent extends React.PureComponent {
     this.changeToOneScalingFactor = this.changeToOneScalingFactor.bind(this);
     this.changeFromOneScalingFactor = this.changeFromOneScalingFactor.bind(this);
     this.changeToTextTool = this.changeToTextTool.bind(this);
-    this.onKeyDown = this.onKeyDown.bind(this);
     this.onDocumentClick = this.onDocumentClick.bind(this);
     this.resetDraggingValues = this.resetDraggingValues.bind(this);
     this.onWheelMove = this.onWheelMove.bind(this);
@@ -95,6 +102,7 @@ class MainComponent extends React.PureComponent {
     this.onResize = this.onResize.bind(this);
     this.zoomIn = this.zoomIn.bind(this);
     this.zoomOut = this.zoomOut.bind(this);
+    this.resetZoom = this.resetZoom.bind(this);
     this.addShape = this.addShape.bind(this);
     this.removeShape = this.removeShape.bind(this);
     this.strokeOuterRect = this.strokeOuterRect.bind(this);
@@ -106,6 +114,8 @@ class MainComponent extends React.PureComponent {
     this.deleteShape = this.deleteShape.bind(this);
     this.clearSelectedElement = this.clearSelectedElement.bind(this);
     this.togglePreferences = this.togglePreferences.bind(this);
+    this.undo = this.undo.bind(this);
+    this.redo = this.redo.bind(this);
 
     //this.idb = new Idb();
 
@@ -127,12 +137,13 @@ class MainComponent extends React.PureComponent {
     this.DELTA_TIME_THRESHOLD_MS = 700;
     this.TOUCH_MOVE_THRESHOLD = 10;
 
-    // To emulate scroll behaviour
-    // this.state.scrollX = 0;
-    // this.state.scrollY = 0;
 
-    // for generating image
-
+    this.keyMapping = {
+      'ctrl+z': this.undo,
+      'ctrl+shift+z': this.redo,
+      'backspace': this.deleteShape,
+      'delete': this.deleteShape
+    }
   }
 
 
@@ -197,7 +208,6 @@ class MainComponent extends React.PureComponent {
     }
 
     this.tempCanvas.current.addEventListener('dblclick', this.changeToTextTool, false);
-    document.addEventListener('keydown', this.onKeyDown, false);
     this.tempCanvas.current.addEventListener('click', this.onDocumentClick, false);
     this.tempCanvas.current.addEventListener('wheel', this.onWheelMove, false);
 
@@ -215,7 +225,6 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.removeEventListener('touchmove', this.onTouchMove, false);
     this.tempCanvas.current.removeEventListener('touchend', this.onTouchEnd, false);
     this.tempCanvas.current.removeEventListener('dblclick', this.changeToTextTool, false);
-    document.removeEventListener('keydown', this.onKeyDown, false);
     this.tempCanvas.current.removeEventListener('click', this.onDocumentClick, false);
     this.tempCanvas.current.removeEventListener('wheel', this.onWheelMove, false);
     window.removeEventListener('resize', this.onResize);
@@ -242,6 +251,14 @@ class MainComponent extends React.PureComponent {
       }
     }, () => {
       this.props.updateDb(scalingFactor, 'scalingFactor');
+      this.redraw();
+    });
+  }
+
+  resetZoom(e) {
+    e.stopPropagation();
+    this.setState({ ...baseConfig }, () => {
+      this.props.updateDb(1, 'scalingFactor');
       this.redraw();
     });
   }
@@ -591,8 +608,9 @@ class MainComponent extends React.PureComponent {
       }
 
       //let filteredShapes = shapes.filter(shape => shape.id !== drawenImage.id);
-
-      this.setState({ shapes: [...filteredShapes, modifiedImage], selectedElement: null }, () => {
+      let performedActions = getUpdatedPerformedActions(this.state.performedActions, isExistingShape ? [{ ...this.draggingElement }, { ...modifiedImage, isExistingShape: true }] : [modifiedImage]);
+      console.log(performedActions);
+      this.setState({ shapes: [...filteredShapes, modifiedImage], performedActions, selectedElement: null }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
         updateShape(modifiedImage, isExistingShape ? 'update' : 'add');
@@ -608,7 +626,7 @@ class MainComponent extends React.PureComponent {
   redraw() {
     // TODO: If the shape is outside the scrolling area skip the draw process(Possible Improvementt)
 
-    let { shapes, scrollX, scrollY, baseLineHeight, baseFontSize, disableScroll } = this.state;
+    let { shapes, scrollX, scrollY, baseLineHeight, baseFontSize, disableScroll, lineWidth } = this.state;
     if (disableScroll) {
       return;
     }
@@ -618,28 +636,17 @@ class MainComponent extends React.PureComponent {
     this.tempContext.setLineDash([]);
     this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
     this.tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
-    this.tempContext.lineWidth = 3.0;
+    this.tempContext.lineWidth = lineWidth;
 
     shapes.forEach(shape => {
       if (shape.type === 'rectangle') {
         this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height), [10]);
       } else if (shape.type === 'arrow') {
-        let headlen = 10;
         let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
         let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
         let endX = this.changeFromOneScalingFactor(shape.endX) + scrollX;
         let endY = this.changeFromOneScalingFactor(shape.endY) + scrollY;
-        let dx = endX - x;
-        let dy = endY - y;
-        let angle = Math.atan2(dy, dx);
-        this.tempContext.beginPath();
-        this.tempContext.moveTo(x, y)
-        this.tempContext.lineTo(endX, endY);
-        this.tempContext.lineTo(endX - headlen * Math.cos(angle - Math.PI / 6), endY - headlen * Math.sin(angle - Math.PI / 6));
-        this.tempContext.moveTo(endX, endY);
-        this.tempContext.lineTo(endX - headlen * Math.cos(angle + Math.PI / 6), endY - headlen * Math.sin(angle + Math.PI / 6));
-        this.tempContext.stroke();
-        this.tempContext.closePath();
+        drawArrow(x, y, endX, endY, this.tempContext);
       } else if (shape.type === 'line') {
         this.tempContext.beginPath();
         this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY);
@@ -725,34 +732,67 @@ class MainComponent extends React.PureComponent {
         func(ev, enclosedElement, { scrollX: scrollX, scrollY: scrollY, scalingFactor: scalingFactor });
       }
     })
-
-
-
   }
 
-  onKeyDown(ev) {
-    if (this.state.selectedTool === 'text') {
-      // Early Return as we dont need to listen while textarea is shown
-      return;
-    }
-    if ((ev.keyCode >= 48 && ev.keyCode <= 57) || (ev.keyCode >= 65 && ev.keyCode <= 90)) {
-      // 48 - 57 number 0 - 9 and 65 - 90 Alphabetys
-
-    } else {
-      // special keys 
-      if (this.state.selectedElement) {
-        // Backspace or delete key
-        if (ev.which === 46 || ev.which === 8) {
-          let shapes = this.state.shapes.filter(shape => shape.id !== this.state.selectedElement.id);
-          this.setState({ shapes }, () => {
-            let { updateDb, updateShape } = this.props;
-            updateDb(this.state.shapes, 'app-state-persist');
-            updateShape(this.state.selectedElement, 'delete');
-            this.redraw();
-          })
-
-        }
+  undo() {
+    let { shapes, performedActions, undoActions } = this.state;
+    if (performedActions && performedActions.length > 0) {
+      let actionsPerformed = [...performedActions];
+      let { isExistingShape = false, isDeletedShape = false, ...lastAddedElement } = actionsPerformed.pop();
+      let originalValueInCaseOfDragging = null;
+      if (isExistingShape) {
+        originalValueInCaseOfDragging = actionsPerformed.pop();
       }
+      let modifiedShapes = [];
+      shapes.forEach(shape => {
+        if (shape.id !== lastAddedElement.id) {
+          modifiedShapes.push(shape);
+        } else {
+          if (isExistingShape) {
+            modifiedShapes.push(originalValueInCaseOfDragging);
+          }
+        }
+      })
+      if (isDeletedShape) {
+        modifiedShapes.push(lastAddedElement);
+      }
+      let updatedUndoActions = undoActions.concat({ ...lastAddedElement, isExistingShape });
+      console.log(updatedUndoActions);
+      this.setState({ shapes: modifiedShapes, performedActions: actionsPerformed, undoActions: updatedUndoActions }, () => {
+        let { updateDb, updateShape } = this.props;
+        updateDb(this.state.shapes, 'app-state-persist');
+        updateShape(isExistingShape ? originalValueInCaseOfDragging : lastAddedElement, isExistingShape ? 'update' : isDeletedShape ? 'add' : 'delete');
+        this.redraw();
+      })
+    }
+  }
+
+  redo() {
+    let { undoActions, shapes, performedActions: originalPerformedActions } = this.state;
+    if (undoActions && undoActions.length > 0) {
+      let undoTobeModified = [...undoActions];
+      let { isExistingShape, ...shapeToBeAdded } = undoTobeModified.pop();
+      let originalShapes = [...shapes];
+      let updatedShapes = [];
+      if (isExistingShape) {
+        originalShapes.forEach(shape => {
+          if (shape.id === shapeToBeAdded.id) {
+            updatedShapes.push(shapeToBeAdded)
+          } else {
+            updatedShapes.push(shape);
+          }
+        });
+      } else {
+        updatedShapes = [...originalShapes, shapeToBeAdded];
+      }
+
+      let performedActions = getUpdatedPerformedActions(originalPerformedActions, [shapeToBeAdded]);
+      this.setState({ shapes: updatedShapes, performedActions, undoActions: [...undoTobeModified] }, () => {
+        let { updateDb, updateShape } = this.props;
+        updateDb(this.state.shapes, 'app-state-persist');
+        updateShape(shapeToBeAdded, isExistingShape ? 'update' : 'add');
+        this.redraw();
+      })
     }
   }
 
@@ -892,7 +932,7 @@ class MainComponent extends React.PureComponent {
   }
 
   onEmptyCanvas() {
-    this.setState({ shapes: [], showModal: null, disableScroll: false }, () => {
+    this.setState({ shapes: [], showModal: null, disableScroll: false, performedActions: [], undoActions: [] }, () => {
       let { updateDb } = this.props;
       updateDb([], 'app-state-persist');
       this.redraw();
@@ -902,9 +942,10 @@ class MainComponent extends React.PureComponent {
 
   deleteShape() {
     if (this.state.selectedElement) {
-      let { selectedElement } = this.state;
+      let { selectedElement, performedActions: originalPerformedActions } = this.state;
       let shapes = this.state.shapes.filter(shape => shape.id !== selectedElement.id);
-      this.setState({ shapes, selectedElement: null }, () => {
+      let performedActions = getUpdatedPerformedActions(originalPerformedActions, [{ ...selectedElement, isDeletedShape: true }]);
+      this.setState({ shapes, selectedElement: null, performedActions }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
         updateShape(selectedElement, 'delete');
@@ -918,10 +959,12 @@ class MainComponent extends React.PureComponent {
   render() {
     let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes, lineWidth, selectedElement } = this.state;
     let { backLink } = this.props;
+    let cursorType = `${selectedTool === 'select' || selectedElement !== null ? `move` : 'crosshair'}`
     return (
       <div
-        style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: `${selectedTool === 'select' ? `url('../assets/cursor.svg')` : 'crosshair'}` }}
+        style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: cursorType }}
       >
+        <ShortcutKeys disableShortcut={selectedTool === 'text'} keyMapping={this.keyMapping} />
         <div id="wrapper" >
           <div id="blackboardPlaceholder">
             <canvas id="drawingCanvas" ref={this.mainCanvas} width={canvasWidth} height={canvasHeight}>
@@ -951,7 +994,7 @@ class MainComponent extends React.PureComponent {
         <HintComponent />
         <ConfigTool downloadImage={this.downloadAsImage} deleteCanvas={this.onDeleteCanvas} shareLink={this.onShareLink} togglePreferences={this.togglePreferences} />
         <TextTool />
-        <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} />
+        <ZoomContainer zoomRange={scalingFactor} zoomOut={this.zoomOut} zoomIn={this.zoomIn} resetZoom={this.resetZoom} />
         <PrintPreview
           onCancel={this.onModalClose}
           showPreview={showModal === 'downloadImage'}

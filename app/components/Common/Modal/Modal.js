@@ -18,7 +18,6 @@ const Modal = ({ show, close, title, children, onClickOutsideClose = true }) => 
   let modalRef = useRef(null);
   function closeModal() {
     if (onClickOutsideClose) {
-      debugger;
       modalRef.current.classList.add('exit-animation');
       requestAnimationFrame(() => {
         afterTransition(modalRef.current).then(() => {

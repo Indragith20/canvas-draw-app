@@ -1,3 +1,4 @@
+import { drawArrow } from "../utils/drawArrow.js";
 import { drawDiamond, drawText } from "../utils/drawShapes.js";
 
 class MoveTool {
@@ -24,8 +25,11 @@ class MoveTool {
     this.startX = e._x;
     this.startY = e._y;
     // Temp Check. Need to adopt to all this.elements. doing this for rectangle check initial.
-    this.diffX = Math.abs(this.element.x - this.startX);
-    this.diffY = Math.abs(this.element.y - e.y);
+    this.diffX = this.element.x - this.startX;
+    this.diffY = this.element.y - this.startY;
+    e._x = e._x + this.diffX;
+    e._y = e._y + this.diffY;
+    console.log('dioff', this.diffX, this.diffY);
     this.drawExisitingElementOnTemp();
   }
 
@@ -129,17 +133,14 @@ class MoveTool {
     if (!this.started) {
       return;
     }
+    e._x = e._x + this.diffX;
+    e._y = e._y + this.diffY;
     e.stopPropagation();
     if (this.element.type === 'rectangle') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       this.tempContext.strokeRect(e._x, e._y, this.element.width, this.element.height);
     } else if (this.element.type === 'arrow') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-      let headlen = 10;
-      let diffX = Math.abs(this.element.x - e._x);
-      let diffY = Math.abs(this.element.y - e._y);
-      let x = this.element.x + diffX;
-      let y = this.element.y + diffY;
       let endX;
       let endY;
       if (this.element.endX > this.element.x) {
@@ -153,19 +154,7 @@ class MoveTool {
       } else {
         endY = e._y - this.element.height;
       }
-
-
-      let dx = endX - x;
-      let dy = endY - y;
-      let angle = Math.atan2(dy, dx);
-      this.tempContext.beginPath();
-      this.tempContext.moveTo(e._x, e._y)
-      this.tempContext.lineTo(endX, endY);
-      this.tempContext.lineTo(endX - headlen * Math.cos(angle - Math.PI / 6), endY - headlen * Math.sin(angle - Math.PI / 6));
-      this.tempContext.moveTo(endX, endY);
-      this.tempContext.lineTo(endX - headlen * Math.cos(angle + Math.PI / 6), endY - headlen * Math.sin(angle + Math.PI / 6));
-      this.tempContext.stroke();
-      this.tempContext.closePath();
+      drawArrow(e._x, e._y, endX, endY, this.tempContext);
     } else if (this.element.type === 'line') {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       let endX;
@@ -209,18 +198,8 @@ class MoveTool {
     if (this.element.type === 'rectangle') {
       this.tempContext.strokeRect(this.element.x, this.element.y, this.element.width, this.element.height);
     } else if (this.element.type === 'arrow') {
-      let headlen = 10;
-      let dx = this.element.endX - this.element.x;
-      let dy = this.element.endY - this.element.y;
-      let angle = Math.atan2(dy, dx);
-      this.tempContext.beginPath();
-      this.tempContext.moveTo(this.element.x, this.element.y)
-      this.tempContext.lineTo(this.element.endX, this.element.endY);
-      this.tempContext.lineTo(this.element.endX - headlen * Math.cos(angle - Math.PI / 6), this.element.endY - headlen * Math.sin(angle - Math.PI / 6));
-      this.tempContext.moveTo(this.element.endX, this.element.endY);
-      this.tempContext.lineTo(this.element.endX - headlen * Math.cos(angle + Math.PI / 6), this.element.endY - headlen * Math.sin(angle + Math.PI / 6));
-      this.tempContext.stroke();
-      this.tempContext.closePath();
+      let { x, y, endX, endY } = this.element;
+      drawArrow(x, y, endX, endY, this.tempContext);
     } else if (this.element.type === 'line') {
       this.tempContext.beginPath();
       this.tempContext.moveTo(this.element.x, this.element.y);

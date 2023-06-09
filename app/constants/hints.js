@@ -3,6 +3,7 @@ export const HintsList = [
   "Click and drag, release when you're finished",
   "Tip: Double-click anywhere to add text with the selection tool",
   "Tip: Mouse Wheel to finish editing the text",
-  "Select any shape and press Delete to remove the drawen one"
+  "Select any shape and press Delete to remove the drawen one",
+  "ctrl+Z to undo action"
 ]
 
