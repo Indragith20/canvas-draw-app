@@ -25,6 +25,7 @@ import { CollaboratorsLinks } from './Collaborators/Collaborators';
 import HintComponent, { HintComponentLinks } from './Hint/HintComponent';
 import PreferencePopup, { PreferencePopupLinks } from './PreferencePopup/PreferencePopup';
 import { drawArrow } from './utils/drawArrow';
+import ShortcutKeys from './ShortcutKeys/ShortcutKeys';
 
 export function MainComponentStyles() {
   return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...PreferencePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), ...HintComponentLinks(), { rel: 'stylesheet', href: styles }];
@@ -52,6 +53,7 @@ let eventTypeMapping = {
   'touchmove': 'mousemove',
   'touchend': 'mouseup'
 }
+
 
 let baseConfig = {
   scalingFactor: 1,
@@ -88,7 +90,6 @@ class MainComponent extends React.PureComponent {
     this.changeToOneScalingFactor = this.changeToOneScalingFactor.bind(this);
     this.changeFromOneScalingFactor = this.changeFromOneScalingFactor.bind(this);
     this.changeToTextTool = this.changeToTextTool.bind(this);
-    this.onKeyDown = this.onKeyDown.bind(this);
     this.onDocumentClick = this.onDocumentClick.bind(this);
     this.resetDraggingValues = this.resetDraggingValues.bind(this);
     this.onWheelMove = this.onWheelMove.bind(this);
@@ -136,13 +137,13 @@ class MainComponent extends React.PureComponent {
     this.DELTA_TIME_THRESHOLD_MS = 700;
     this.TOUCH_MOVE_THRESHOLD = 10;
 
-    // To emulate scroll behaviour
-    // this.state.scrollX = 0;
-    // this.state.scrollY = 0;
 
-    // for generating image
-
-
+    this.keyMapping = {
+      'ctrl+z': this.undo,
+      'ctrl+shift+z': this.redo,
+      'backspace': this.deleteShape,
+      'delete': this.deleteShape
+    }
   }
 
 
@@ -207,7 +208,6 @@ class MainComponent extends React.PureComponent {
     }
 
     this.tempCanvas.current.addEventListener('dblclick', this.changeToTextTool, false);
-    document.addEventListener('keydown', this.onKeyDown, false);
     this.tempCanvas.current.addEventListener('click', this.onDocumentClick, false);
     this.tempCanvas.current.addEventListener('wheel', this.onWheelMove, false);
 
@@ -225,7 +225,6 @@ class MainComponent extends React.PureComponent {
     this.tempCanvas.current.removeEventListener('touchmove', this.onTouchMove, false);
     this.tempCanvas.current.removeEventListener('touchend', this.onTouchEnd, false);
     this.tempCanvas.current.removeEventListener('dblclick', this.changeToTextTool, false);
-    document.removeEventListener('keydown', this.onKeyDown, false);
     this.tempCanvas.current.removeEventListener('click', this.onDocumentClick, false);
     this.tempCanvas.current.removeEventListener('wheel', this.onWheelMove, false);
     window.removeEventListener('resize', this.onResize);
@@ -733,55 +732,13 @@ class MainComponent extends React.PureComponent {
         func(ev, enclosedElement, { scrollX: scrollX, scrollY: scrollY, scalingFactor: scalingFactor });
       }
     })
-
-
-
   }
-
-  onKeyDown(ev) {
-    if (this.state.selectedTool === 'text') {
-      // Early Return as we dont need to listen while textarea is shown
-      return;
-    }
-    if ((ev.keyCode >= 48 && ev.keyCode <= 57) || (ev.keyCode >= 65 && ev.keyCode <= 90)) {
-      // 48 - 57 number 0 - 9 and 65 - 90 Alphabetys  
-      let ctrlKeyPressed = ev.ctrlKey || ev.metaKey;
-
-      if (ctrlKeyPressed && ev.keyCode === 90) {
-        if (ev.shiftKey) {
-          console.log('perform redo action');
-          this.redo();
-        } else {
-          console.log("perform undo action");
-          this.undo();
-        }
-
-      }
-    } else {
-      // special keys 
-      console.log(ev.keyCode);
-      if (this.state.selectedElement) {
-        // Backspace or delete key
-        if (ev.which === 46 || ev.which === 8) {
-          let shapes = this.state.shapes.filter(shape => shape.id !== this.state.selectedElement.id);
-          this.setState({ shapes }, () => {
-            let { updateDb, updateShape } = this.props;
-            updateDb(this.state.shapes, 'app-state-persist');
-            updateShape(this.state.selectedElement, 'delete');
-            this.redraw();
-          })
-
-        }
-      }
-    }
-  }
-
 
   undo() {
     let { shapes, performedActions, undoActions } = this.state;
     if (performedActions && performedActions.length > 0) {
       let actionsPerformed = [...performedActions];
-      let { isExistingShape = false, ...lastAddedElement } = actionsPerformed.pop();
+      let { isExistingShape = false, isDeletedShape = false, ...lastAddedElement } = actionsPerformed.pop();
       let originalValueInCaseOfDragging = null;
       if (isExistingShape) {
         originalValueInCaseOfDragging = actionsPerformed.pop();
@@ -796,12 +753,15 @@ class MainComponent extends React.PureComponent {
           }
         }
       })
+      if (isDeletedShape) {
+        modifiedShapes.push(lastAddedElement);
+      }
       let updatedUndoActions = undoActions.concat({ ...lastAddedElement, isExistingShape });
       console.log(updatedUndoActions);
       this.setState({ shapes: modifiedShapes, performedActions: actionsPerformed, undoActions: updatedUndoActions }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
-        updateShape(isExistingShape ? originalValueInCaseOfDragging : lastAddedElement, isExistingShape ? 'update' : 'delete');
+        updateShape(isExistingShape ? originalValueInCaseOfDragging : lastAddedElement, isExistingShape ? 'update' : isDeletedShape ? 'add' : 'delete');
         this.redraw();
       })
     }
@@ -972,7 +932,7 @@ class MainComponent extends React.PureComponent {
   }
 
   onEmptyCanvas() {
-    this.setState({ shapes: [], showModal: null, disableScroll: false }, () => {
+    this.setState({ shapes: [], showModal: null, disableScroll: false, performedActions: [], undoActions: [] }, () => {
       let { updateDb } = this.props;
       updateDb([], 'app-state-persist');
       this.redraw();
@@ -982,9 +942,10 @@ class MainComponent extends React.PureComponent {
 
   deleteShape() {
     if (this.state.selectedElement) {
-      let { selectedElement } = this.state;
+      let { selectedElement, performedActions: originalPerformedActions } = this.state;
       let shapes = this.state.shapes.filter(shape => shape.id !== selectedElement.id);
-      this.setState({ shapes, selectedElement: null }, () => {
+      let performedActions = getUpdatedPerformedActions(originalPerformedActions, [{ ...selectedElement, isDeletedShape: true }]);
+      this.setState({ shapes, selectedElement: null, performedActions }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
         updateShape(selectedElement, 'delete');
@@ -1003,6 +964,7 @@ class MainComponent extends React.PureComponent {
       <div
         style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: cursorType }}
       >
+        <ShortcutKeys disableShortcut={selectedTool === 'text'} keyMapping={this.keyMapping} />
         <div id="wrapper" >
           <div id="blackboardPlaceholder">
             <canvas id="drawingCanvas" ref={this.mainCanvas} width={canvasWidth} height={canvasHeight}>
