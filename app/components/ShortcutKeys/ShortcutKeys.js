@@ -1,14 +1,6 @@
 import React, { useEffect } from 'react';
 
-
-const defaultkeyMapping = {
-  'ctrl+s': () => { console.log('save callback truggerd') },
-  'ctrl+z': () => { console.log('undo action trigger keymapping') },
-  'ctrl+shift+z': () => { console.log('redo action trigger keymapping') },
-  'backspace': () => { console.log('Backspace action trigger keymapping') }
-}
-
-function ShortcutKeys({ disableShortcut, keyMapping = defaultkeyMapping }) {
+function ShortcutKeys({ disableShortcut, keyMapping }) {
 
   useEffect(() => {
     function onKeydown(ev) {
@@ -31,14 +23,12 @@ function ShortcutKeys({ disableShortcut, keyMapping = defaultkeyMapping }) {
 
 
       const keyPressed = keyCombo.join('+').toLowerCase();
-      console.log(keyMapping[keyPressed]);
       if (keyMapping[keyPressed]) {
         console.log('Insdie')
         keyMapping[keyPressed]();
       }
 
 
-      console.log("keyCombo", keyCombo.join('+'), "code", ev.code);
     }
     document.addEventListener('keydown', onKeydown);
 

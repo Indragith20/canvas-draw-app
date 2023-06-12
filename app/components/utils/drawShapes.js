@@ -170,4 +170,20 @@ function getBufferedCoords(shapes) {
 }
 
 
-export { drawDiamond, drawText, getMinMaxCoords, getBufferedCoords, htmlTagParser };
+function drawLine(x, y, endX, endY, ctx) {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+  ctx.closePath();
+}
+
+
+function drawCircle(x, y, radius, ctx) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, 2 * Math.PI);
+  ctx.stroke();
+}
+
+
+export { drawDiamond, drawText, getMinMaxCoords, getBufferedCoords, htmlTagParser, drawLine, drawCircle };

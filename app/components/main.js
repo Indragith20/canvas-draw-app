@@ -12,7 +12,7 @@ import Line from './Shapes/Line';
 import MoveTool from './Shapes/MoveTool';
 import Rect from './Shapes/Rectangle';
 import TextTool from './TextTool/TextTool';
-import { drawDiamond, drawText } from './utils/drawShapes';
+import { drawCircle, drawDiamond, drawLine, drawText } from './utils/drawShapes';
 import { getChalkRectValues, getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
 import UserActivity from './UserActivity/UserActivity';
@@ -116,6 +116,7 @@ class MainComponent extends React.PureComponent {
     this.togglePreferences = this.togglePreferences.bind(this);
     this.undo = this.undo.bind(this);
     this.redo = this.redo.bind(this);
+    this.restoreContext = this.restoreContext.bind(this);
 
     //this.idb = new Idb();
 
@@ -141,6 +142,7 @@ class MainComponent extends React.PureComponent {
     this.keyMapping = {
       'ctrl+z': this.undo,
       'ctrl+shift+z': this.redo,
+      'ctrl+shift+p': this.togglePreferences,
       'backspace': this.deleteShape,
       'delete': this.deleteShape
     }
@@ -631,47 +633,36 @@ class MainComponent extends React.PureComponent {
       return;
     }
     let { selectedTheme } = this.props;
-    this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
-    this.tempContext.restore();
-    this.tempContext.setLineDash([]);
+    this.restoreContext(this.tempContext, this.tempCanvas.current.width, this.tempCanvas.current.height);
     this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
     this.tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
     this.tempContext.lineWidth = lineWidth;
 
-    shapes.forEach(shape => {
+    shapes.forEach(originalShape => {
+      let shape = {
+        ...originalShape,
+        x: this.changeFromOneScalingFactor(originalShape.x) + scrollX,
+        y: this.changeFromOneScalingFactor(originalShape.y) + scrollY,
+        endX: this.changeFromOneScalingFactor(originalShape.endX) + scrollX,
+        endY: this.changeFromOneScalingFactor(originalShape.endY) + scrollY,
+      }
       if (shape.type === 'rectangle') {
-        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height), [10]);
+        this.tempContext.strokeRect(shape.x, shape.y, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height), [10]);
       } else if (shape.type === 'arrow') {
-        let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
-        let endX = this.changeFromOneScalingFactor(shape.endX) + scrollX;
-        let endY = this.changeFromOneScalingFactor(shape.endY) + scrollY;
-        drawArrow(x, y, endX, endY, this.tempContext);
+        drawArrow(shape.x, shape.y, shape.endX, shape.endY, this.tempContext);
       } else if (shape.type === 'line') {
-        this.tempContext.beginPath();
-        this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY);
-        this.tempContext.lineTo(this.changeFromOneScalingFactor(shape.endX) + scrollX, this.changeFromOneScalingFactor(shape.endY) + scrollY);
-        this.tempContext.stroke();
-        this.tempContext.closePath();
+        drawLine(shape.x, shape.y, shape.endX, shape.endY, this.tempContext);
       } else if (shape.type === 'text') {
         let color = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
-        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), baseLineHeight, color, baseFontSize);
+        drawText(shape.textContent, this.tempContext, shape.x, shape.y, this.changeFromOneScalingFactor(shape.width), baseLineHeight, color, baseFontSize);
       } else if (shape.type === 'circle') {
-        let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
-        this.tempContext.beginPath();
-        this.tempContext.arc(x, y, this.changeFromOneScalingFactor(shape.radius), 0, 2 * Math.PI);
-        this.tempContext.stroke();
+        drawCircle(shape.x, shape.y, this.changeFromOneScalingFactor(shape.radius), this.tempContext);
       } else if (shape.type === 'diamond') {
-        let xCenter = this.changeFromOneScalingFactor(shape.x) + scrollX;
-        let yCenter = this.changeFromOneScalingFactor(shape.y) + scrollY;
-        let size = this.changeFromOneScalingFactor(shape.x - shape.endX);
-        drawDiamond(xCenter, yCenter, size, this.tempContext);
+        let size = this.changeFromOneScalingFactor(originalShape.x - originalShape.endX);
+        drawDiamond(shape.x, shape.y, size, this.tempContext);
       } else if (shape.type === 'chalk') {
-        let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
         this.tempContext.beginPath();
-        this.tempContext.moveTo(x, y);
+        this.tempContext.moveTo(shape.x, shape.y);
         shape.drawPoints.forEach(point => {
           this.tempContext.lineTo(this.changeFromOneScalingFactor(point.x) + scrollX, this.changeFromOneScalingFactor(point.y) + scrollY)
         });
@@ -684,9 +675,14 @@ class MainComponent extends React.PureComponent {
     // clear the present canvas
     this.mainContext.clearRect(0, 0, this.mainCanvas.current.width, this.mainCanvas.current.height);
     this.mainContext.drawImage(this.tempCanvas.current, 0, 0);
-    this.tempContext.restore();
-    this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
+    this.restoreContext(this.tempContext, this.tempCanvas.current.width, this.tempCanvas.current.height);
+  }
 
+
+  restoreContext(ctx, width, height) {
+    ctx.restore();
+    ctx.setLineDash([]);
+    ctx.clearRect(0, 0, width, height);
   }
 
   clearSelectedElement() {

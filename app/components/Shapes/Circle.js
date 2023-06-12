@@ -1,3 +1,4 @@
+import { drawCircle } from "../utils/drawShapes.js";
 import { getDistance } from "../utils/getElementsAtPosition.js";
 
 class Circle {
@@ -50,9 +51,7 @@ class Circle {
     if (this.started) {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       let radius = getDistance(this.startX, this.startY, e._x, e._y);
-      this.tempContext.beginPath();
-      this.tempContext.arc(this.startX, this.startY, radius, 0, 2 * Math.PI);
-      this.tempContext.stroke();
+      drawCircle(this.startX, this.startY, radius, this.tempContext);
     }
   }
 }
