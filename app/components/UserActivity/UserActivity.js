@@ -11,7 +11,13 @@ export function UserActivityLinks() {
 }
 
 
-const userColorCodes = ['#ccdef5', '#cedecc', '#fdf6df', '#eee2fa', '#faf0b7', '#dadef9', '#f7d5bb'];
+//const userColorCodes = ['#ccdef5', '#cedecc', '#fdf6df', '#eee2fa', '#faf0b7', '#dadef9', '#f7d5bb'];
+const userColorCodes = ["#FF38D1",
+  "#8263FF",
+  "#0095FF",
+  "#00B874",
+  "#FF3168",
+  "#FFAB03"]
 function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape, removeShape, deleteAllShapes, baseLineHeight, baseFontSize }) {
   const userActivityCanvasRef = useRef(null);
   const userActivityContext = useRef(null);
@@ -35,17 +41,20 @@ function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape
       let x = changeFromOneScalingFactor(users.current[user].x, scalingFactor) + scrollX;
       let y = changeFromOneScalingFactor(users.current[user].y, scalingFactor) + scrollY;
       userActivityContext.current.strokeStyle = users.current[user].color ? users.current[user].color : 'red';
-      userActivityContext.current.lineWidth = "2"
+      userActivityContext.current.fillStyle = users.current[user].color ? users.current[user].color : 'red';
+      userActivityContext.current.lineWidth = "1"
       userActivityContext.current.beginPath();
-      userActivityContext.current.moveTo(x, y);
-      userActivityContext.current.lineTo(x - 15, y - 15);
-      userActivityContext.current.lineTo(x - 10, y);
-      userActivityContext.current.lineTo(x - 15, y - 15);
-      userActivityContext.current.lineTo(x, y - 10);
-      userActivityContext.current.moveTo(x, y);
-      drawText(users.current[user].name, userActivityContext.current, x + 10, y + 10, 40, baseLineHeight, users.current[user].color ? users.current[user].color : 'red', 14)
-      userActivityContext.current.strokeRect(x + 5, y + 5, userActivityContext.current.measureText(users.current[user].name).width + 10, 20);
-      userActivityContext.current.stroke();
+      userActivityContext.current.moveTo(x - 7, y - 7);
+      userActivityContext.current.lineTo(x, y + 10);
+      userActivityContext.current.lineTo(x + 10, y);
+
+      userActivityContext.current.fill();
+      //userActivityContext.current.closePath();
+
+
+      drawText(users.current[user].name, userActivityContext.current, x + 5, y + 5, 40, baseLineHeight, users.current[user].color ? users.current[user].color : 'red', 14)
+      // userActivityContext.current.strokeRect(x + 5, y + 5, userActivityContext.current.measureText(users.current[user].name).width + 10, 30);
+      // userActivityContext.current.stroke();
 
     }))
   }, [baseLineHeight, scalingFactor, scrollX, scrollY, theme, redraw])

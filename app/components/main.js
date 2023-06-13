@@ -117,6 +117,7 @@ class MainComponent extends React.PureComponent {
     this.undo = this.undo.bind(this);
     this.redo = this.redo.bind(this);
     this.restoreContext = this.restoreContext.bind(this);
+    this.afterUpdateScalingFactor = this.afterUpdateScalingFactor.bind(this);
 
     //this.idb = new Idb();
 
@@ -235,6 +236,13 @@ class MainComponent extends React.PureComponent {
     }
   }
 
+  afterUpdateScalingFactor() {
+    let { scalingFactor } = this.state;
+    let { updateDb } = this.props;
+    updateDb(scalingFactor, 'scalingFactor');
+    this.redraw();
+  }
+
 
   zoomIn(e) {
     e.stopPropagation();
@@ -251,18 +259,12 @@ class MainComponent extends React.PureComponent {
         baseFontSize,
         baseLineHeight
       }
-    }, () => {
-      this.props.updateDb(scalingFactor, 'scalingFactor');
-      this.redraw();
-    });
+    }, this.afterUpdateScalingFactor);
   }
 
   resetZoom(e) {
     e.stopPropagation();
-    this.setState({ ...baseConfig }, () => {
-      this.props.updateDb(1, 'scalingFactor');
-      this.redraw();
-    });
+    this.setState({ ...baseConfig }, this.afterUpdateScalingFactor);
   }
 
   zoomOut(e) {
@@ -280,10 +282,7 @@ class MainComponent extends React.PureComponent {
         baseFontSize,
         baseLineHeight
       }
-    }, () => {
-      this.props.updateDb(scalingFactor, 'scalingFactor');
-      this.redraw();
-    });
+    }, this.afterUpdateScalingFactor);
   }
 
 
@@ -300,10 +299,9 @@ class MainComponent extends React.PureComponent {
         // For storing the shapes. we are generating ids.
         if (!id) {
           //this.id = this.id + 1;
-          this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, uuidv4(), selectedTheme);
-        } else {
-          this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, id, selectedTheme);
+          id = uuidv4();
         }
+        this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, id, selectedTheme);
 
         // clear the tempCanvas
         this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
@@ -312,9 +310,7 @@ class MainComponent extends React.PureComponent {
   }
 
   onResize(e) {
-    this.setState({ canvasWidth: window.visualViewport.width, canvasHeight: window.visualViewport.height }, () => {
-      this.redraw();
-    })
+    this.setState({ canvasWidth: window.visualViewport.width, canvasHeight: window.visualViewport.height }, this.redraw)
   }
 
   onTouchStart(ev) {
@@ -407,13 +403,6 @@ class MainComponent extends React.PureComponent {
   }
 
   onEvent(ev) {
-    // if (ev.type === 'touchend') {
-    //   ev._x = ev.changedTouches[0].clientX;
-    //   ev._y = ev.changedTouches[0].clientY;
-    // } else {
-    //   ev._x = ev.x || ev.touches[0].clientX;
-    //   ev._y = ev.y || ev.touches[0].clientY;
-    // }
     ev._x = ev.x;
     ev._y = ev.y;
 
@@ -849,7 +838,7 @@ class MainComponent extends React.PureComponent {
     let x = this.changeFromOneScalingFactor(elementX) + scrollX;
     let y = this.changeFromOneScalingFactor(elementY) + scrollY;
     this.tempContext.setLineDash([6]);
-    this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(width), this.changeFromOneScalingFactor(height));
+    this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(width) + 10, this.changeFromOneScalingFactor(height) + 10);
   }
 
   onWheelMove(e) {
