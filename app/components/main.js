@@ -12,7 +12,7 @@ import Line from './Shapes/Line';
 import MoveTool from './Shapes/MoveTool';
 import Rect from './Shapes/Rectangle';
 import TextTool from './TextTool/TextTool';
-import { drawDiamond, drawText } from './utils/drawShapes';
+import { drawCircle, drawDiamond, drawLine, drawText } from './utils/drawShapes';
 import { getChalkRectValues, getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
 import UserActivity from './UserActivity/UserActivity';
@@ -116,6 +116,12 @@ class MainComponent extends React.PureComponent {
     this.togglePreferences = this.togglePreferences.bind(this);
     this.undo = this.undo.bind(this);
     this.redo = this.redo.bind(this);
+    this.restoreContext = this.restoreContext.bind(this);
+    this.afterUpdateScalingFactor = this.afterUpdateScalingFactor.bind(this);
+    this.detectDragging = this.detectDragging.bind(this);
+    this.initializeMoveTool = this.initializeMoveTool.bind(this);
+    this.onMoveElement = this.onMoveElement.bind(this);
+
 
     //this.idb = new Idb();
 
@@ -129,7 +135,6 @@ class MainComponent extends React.PureComponent {
     // To check whether the user is dragging.
     this.mouseXPosition = null;
     this.mouseYPosition = null;
-    this.isUserDragging = false;
     this.draggingElement = null;
 
     // touch events
@@ -141,6 +146,7 @@ class MainComponent extends React.PureComponent {
     this.keyMapping = {
       'ctrl+z': this.undo,
       'ctrl+shift+z': this.redo,
+      'ctrl+shift+p': this.togglePreferences,
       'backspace': this.deleteShape,
       'delete': this.deleteShape
     }
@@ -233,6 +239,13 @@ class MainComponent extends React.PureComponent {
     }
   }
 
+  afterUpdateScalingFactor() {
+    let { scalingFactor } = this.state;
+    let { updateDb } = this.props;
+    updateDb(scalingFactor, 'scalingFactor');
+    this.redraw();
+  }
+
 
   zoomIn(e) {
     e.stopPropagation();
@@ -249,18 +262,12 @@ class MainComponent extends React.PureComponent {
         baseFontSize,
         baseLineHeight
       }
-    }, () => {
-      this.props.updateDb(scalingFactor, 'scalingFactor');
-      this.redraw();
-    });
+    }, this.afterUpdateScalingFactor);
   }
 
   resetZoom(e) {
     e.stopPropagation();
-    this.setState({ ...baseConfig }, () => {
-      this.props.updateDb(1, 'scalingFactor');
-      this.redraw();
-    });
+    this.setState({ ...baseConfig }, this.afterUpdateScalingFactor);
   }
 
   zoomOut(e) {
@@ -278,10 +285,7 @@ class MainComponent extends React.PureComponent {
         baseFontSize,
         baseLineHeight
       }
-    }, () => {
-      this.props.updateDb(scalingFactor, 'scalingFactor');
-      this.redraw();
-    });
+    }, this.afterUpdateScalingFactor);
   }
 
 
@@ -298,10 +302,9 @@ class MainComponent extends React.PureComponent {
         // For storing the shapes. we are generating ids.
         if (!id) {
           //this.id = this.id + 1;
-          this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, uuidv4(), selectedTheme);
-        } else {
-          this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, id, selectedTheme);
+          id = uuidv4();
         }
+        this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, id, selectedTheme);
 
         // clear the tempCanvas
         this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
@@ -310,9 +313,7 @@ class MainComponent extends React.PureComponent {
   }
 
   onResize(e) {
-    this.setState({ canvasWidth: window.visualViewport.width, canvasHeight: window.visualViewport.height }, () => {
-      this.redraw();
-    })
+    this.setState({ canvasWidth: window.visualViewport.width, canvasHeight: window.visualViewport.height }, this.redraw)
   }
 
   onTouchStart(ev) {
@@ -404,22 +405,10 @@ class MainComponent extends React.PureComponent {
     }
   }
 
-  onEvent(ev) {
-    // if (ev.type === 'touchend') {
-    //   ev._x = ev.changedTouches[0].clientX;
-    //   ev._y = ev.changedTouches[0].clientY;
-    // } else {
-    //   ev._x = ev.x || ev.touches[0].clientX;
-    //   ev._y = ev.y || ev.touches[0].clientY;
-    // }
-    ev._x = ev.x;
-    ev._y = ev.y;
 
-    let { mouseMove } = this.props;
-    let { selectedTool, scrollX, scrollY, shapes } = this.state;
-    mouseMove({ x: this.changeToOneScalingFactor(ev.x - scrollX), y: this.changeToOneScalingFactor(ev.y - scrollY) })
-    // let isUserDragging = false;
-
+  detectDragging(ev) {
+    let { selectedTool } = this.state;
+    let isUserDragging = false;
     if (selectedTool === 'select') {
       if (ev.type === 'mousedown' || ev.type === 'touchstart') {
         this.mouseXPosition = ev._x;
@@ -429,84 +418,96 @@ class MainComponent extends React.PureComponent {
           let diffX = Math.abs(this.mouseXPosition - ev._x);
           let diffY = Math.abs(this.mouseYPosition - ev._y);
           if (diffX > 20 || diffY > 20) {
-            this.isUserDragging = true;
+            isUserDragging = true;
           }
         }
       } else {
-        this.isUserDragging = false;
+        isUserDragging = false;
         this.mouseXPosition = null;
         this.mouseYPosition = null;
       }
-
-
     } else {
-      this.isUserDragging = false;
+      isUserDragging = false;
       this.mouseXPosition = null;
       this.mouseYPosition = null;
     }
-    // Get the tool's event handler. 
 
-    if (this.isUserDragging) {
-      // Handlinng the case for move
-      //this.selectedTool = 'move';
-      // since we are moving across the canvas. we need to take into the account of scrollx and scrolly values
+    return isUserDragging;
+  }
 
-      ///CHANGE ???
-      // ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
-      // ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
-      ///CHANGE ??? Moved inside condition
-      if (!this.draggingElement) {
-        ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
-        ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
-        // First case of move tool -> User just selected the element.events should be mousedown
-        let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - scrollX), this.changeToOneScalingFactor(this.mouseYPosition - scrollY), shapes);
-        if (elementSelected) {
-          let updatedShapes = shapes.filter(shape => shape.id !== elementSelected.id);
-          //redrawig without element selected
-          this.setState({ shapes: updatedShapes, selectedTool: 'move', selectedElement: elementSelected }, () => {
-            let { shapes, scalingFactor, selectedElement } = this.state;
-            let { selectedTheme } = this.props;
-            let { updateDb } = this.props;
-            updateDb(shapes, 'app-state-persist');
-            this.redraw();
-            this.draggingElement = elementSelected;
-            this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
-            //modifyig the selectedElement
-            let modifiedSelectedElement = {
-              ...selectedElement,
-              x: this.changeFromOneScalingFactor(selectedElement.x),
-              y: this.changeFromOneScalingFactor(selectedElement.y),
-              endX: this.changeFromOneScalingFactor(selectedElement.endX),
-              endY: this.changeFromOneScalingFactor(selectedElement.endY),
-              startX: this.changeFromOneScalingFactor(selectedElement.startX),
-              startY: this.changeFromOneScalingFactor(selectedElement.startY),
-              radius: this.changeFromOneScalingFactor(selectedElement.radius),
-              width: selectedElement.width ? this.changeFromOneScalingFactor(selectedElement.width) : null,
-              height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
-              scalingFactor: scalingFactor
-            }
-            this.tool = new MoveTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement, selectedTheme);
-            // element is present. we need to call movetool
-            this.tool[eventTypeMapping['mousedown']](ev);
-          })
-        }
 
-        // ?? 
-      } else if (this.mouseXPosition !== null && this.mouseYPosition !== null) {
-        // events are mousemove or mouseup. Need to check whether this condition is required
-        if (ev.type === 'mousemove' || ev.type === 'mouseup') {
-          // movetool instace should already by present
-          if (this.tool) {
-            this.tool[eventTypeMapping[ev.type]](ev);
-            if (ev.type === 'mouseup') {
-              this.isUserDragging = false;
-              this.mouseXPosition = null;
-              this.mouseYPosition = null;
-            }
+  initializeMoveTool(elementSelected, ev) {
+    let { shapes, scalingFactor, selectedElement } = this.state;
+    let { selectedTheme } = this.props;
+    let { updateDb } = this.props;
+    updateDb(shapes, 'app-state-persist');
+    this.redraw();
+    this.draggingElement = elementSelected;
+    this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
+    //modifyig the selectedElement
+    let modifiedSelectedElement = {
+      ...selectedElement,
+      x: this.changeFromOneScalingFactor(selectedElement.x),
+      y: this.changeFromOneScalingFactor(selectedElement.y),
+      endX: this.changeFromOneScalingFactor(selectedElement.endX),
+      endY: this.changeFromOneScalingFactor(selectedElement.endY),
+      startX: this.changeFromOneScalingFactor(selectedElement.startX),
+      startY: this.changeFromOneScalingFactor(selectedElement.startY),
+      radius: this.changeFromOneScalingFactor(selectedElement.radius),
+      width: selectedElement.width ? this.changeFromOneScalingFactor(selectedElement.width) : null,
+      height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
+      scalingFactor: scalingFactor
+    }
+    this.tool = new MoveTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement, selectedTheme, scalingFactor);
+    // element is present. we need to call movetool
+    this.tool[eventTypeMapping['mousedown']](ev);
+  }
 
+  onMoveElement(ev) {
+    console.log('Move Element Called');
+    let { shapes, scrollX, scrollY } = this.state;
+    if (!this.draggingElement) {
+      ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
+      ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
+      // First case of move tool -> User just selected the element.events should be mousedown
+      let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - scrollX), this.changeToOneScalingFactor(this.mouseYPosition - scrollY), shapes);
+      console.log("elementSelected", elementSelected)
+      if (elementSelected) {
+        let updatedShapes = shapes.filter(shape => shape.id !== elementSelected.id);
+        //redrawig without element selected
+        this.setState({ shapes: updatedShapes, selectedTool: 'move', selectedElement: elementSelected }, () => {
+          this.initializeMoveTool(elementSelected, ev);
+        })
+      }
+    } else if (this.mouseXPosition !== null && this.mouseYPosition !== null) {
+      if (ev.type === 'mousemove' || ev.type === 'mouseup') {
+        // movetool instace should already by present
+        if (this.tool) {
+          this.tool[eventTypeMapping[ev.type]](ev);
+          if (ev.type === 'mouseup') {
+            this.isUserDragging = false;
+            this.mouseXPosition = null;
+            this.mouseYPosition = null;
           }
+
         }
       }
+    }
+  }
+
+  onEvent(ev) {
+    ev._x = ev.x;
+    ev._y = ev.y;
+
+    let { mouseMove } = this.props;
+    let { scrollX, scrollY } = this.state;
+    mouseMove({ x: this.changeToOneScalingFactor(ev.x - scrollX), y: this.changeToOneScalingFactor(ev.y - scrollY) })
+    // let isUserDragging = false;
+
+    let isUserDragging = this.detectDragging(ev);
+    console.log(isUserDragging);
+    if (isUserDragging) {
+      this.onMoveElement(ev);
     } else if (this.tool) {
       let func = this.tool[eventTypeMapping[ev.type]];
       if (func) {
@@ -631,47 +632,36 @@ class MainComponent extends React.PureComponent {
       return;
     }
     let { selectedTheme } = this.props;
-    this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
-    this.tempContext.restore();
-    this.tempContext.setLineDash([]);
+    this.restoreContext(this.tempContext, this.tempCanvas.current.width, this.tempCanvas.current.height);
     this.tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
     this.tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
     this.tempContext.lineWidth = lineWidth;
 
-    shapes.forEach(shape => {
+    shapes.forEach(originalShape => {
+      let shape = {
+        ...originalShape,
+        x: this.changeFromOneScalingFactor(originalShape.x) + scrollX,
+        y: this.changeFromOneScalingFactor(originalShape.y) + scrollY,
+        endX: this.changeFromOneScalingFactor(originalShape.endX) + scrollX,
+        endY: this.changeFromOneScalingFactor(originalShape.endY) + scrollY,
+      }
       if (shape.type === 'rectangle') {
-        this.tempContext.strokeRect(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height), [10]);
+        this.tempContext.strokeRect(shape.x, shape.y, this.changeFromOneScalingFactor(shape.width), this.changeFromOneScalingFactor(shape.height), [10]);
       } else if (shape.type === 'arrow') {
-        let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
-        let endX = this.changeFromOneScalingFactor(shape.endX) + scrollX;
-        let endY = this.changeFromOneScalingFactor(shape.endY) + scrollY;
-        drawArrow(x, y, endX, endY, this.tempContext);
+        drawArrow(shape.x, shape.y, shape.endX, shape.endY, this.tempContext);
       } else if (shape.type === 'line') {
-        this.tempContext.beginPath();
-        this.tempContext.moveTo(this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY);
-        this.tempContext.lineTo(this.changeFromOneScalingFactor(shape.endX) + scrollX, this.changeFromOneScalingFactor(shape.endY) + scrollY);
-        this.tempContext.stroke();
-        this.tempContext.closePath();
+        drawLine(shape.x, shape.y, shape.endX, shape.endY, this.tempContext);
       } else if (shape.type === 'text') {
         let color = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
-        drawText(shape.textContent, this.tempContext, this.changeFromOneScalingFactor(shape.x) + scrollX, this.changeFromOneScalingFactor(shape.y) + scrollY, this.changeFromOneScalingFactor(shape.width), baseLineHeight, color, baseFontSize);
+        drawText(shape.textContent, this.tempContext, shape.x, shape.y, this.changeFromOneScalingFactor(shape.width), baseLineHeight, color, baseFontSize);
       } else if (shape.type === 'circle') {
-        let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
-        this.tempContext.beginPath();
-        this.tempContext.arc(x, y, this.changeFromOneScalingFactor(shape.radius), 0, 2 * Math.PI);
-        this.tempContext.stroke();
+        drawCircle(shape.x, shape.y, this.changeFromOneScalingFactor(shape.radius), this.tempContext);
       } else if (shape.type === 'diamond') {
-        let xCenter = this.changeFromOneScalingFactor(shape.x) + scrollX;
-        let yCenter = this.changeFromOneScalingFactor(shape.y) + scrollY;
-        let size = this.changeFromOneScalingFactor(shape.x - shape.endX);
-        drawDiamond(xCenter, yCenter, size, this.tempContext);
+        let size = this.changeFromOneScalingFactor(originalShape.x - originalShape.endX);
+        drawDiamond(shape.x, shape.y, size, this.tempContext);
       } else if (shape.type === 'chalk') {
-        let x = this.changeFromOneScalingFactor(shape.x) + scrollX;
-        let y = this.changeFromOneScalingFactor(shape.y) + scrollY;
         this.tempContext.beginPath();
-        this.tempContext.moveTo(x, y);
+        this.tempContext.moveTo(shape.x, shape.y);
         shape.drawPoints.forEach(point => {
           this.tempContext.lineTo(this.changeFromOneScalingFactor(point.x) + scrollX, this.changeFromOneScalingFactor(point.y) + scrollY)
         });
@@ -684,9 +674,14 @@ class MainComponent extends React.PureComponent {
     // clear the present canvas
     this.mainContext.clearRect(0, 0, this.mainCanvas.current.width, this.mainCanvas.current.height);
     this.mainContext.drawImage(this.tempCanvas.current, 0, 0);
-    this.tempContext.restore();
-    this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
+    this.restoreContext(this.tempContext, this.tempCanvas.current.width, this.tempCanvas.current.height);
+  }
 
+
+  restoreContext(ctx, width, height) {
+    ctx.restore();
+    ctx.setLineDash([]);
+    ctx.clearRect(0, 0, width, height);
   }
 
   clearSelectedElement() {
@@ -853,7 +848,7 @@ class MainComponent extends React.PureComponent {
     let x = this.changeFromOneScalingFactor(elementX) + scrollX;
     let y = this.changeFromOneScalingFactor(elementY) + scrollY;
     this.tempContext.setLineDash([6]);
-    this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(width), this.changeFromOneScalingFactor(height));
+    this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(width) + 10, this.changeFromOneScalingFactor(height) + 10);
   }
 
   onWheelMove(e) {
@@ -879,7 +874,6 @@ class MainComponent extends React.PureComponent {
   }
 
   resetDraggingValues() {
-    this.isUserDragging = false;
     this.draggingElement = null;
     this.mouseXPosition = null;
     this.mouseYPosition = null;

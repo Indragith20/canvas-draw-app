@@ -1,3 +1,5 @@
+import { drawLine } from "../utils/drawShapes";
+
 class Line {
   constructor(tempCanvas, tempContext, callback, id) {
     this.id = id;
@@ -47,11 +49,7 @@ class Line {
       return;
     }
     this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
-    this.tempContext.beginPath();
-    this.tempContext.moveTo(this.startX, this.startY);
-    this.tempContext.lineTo(e._x, e._y);
-    this.tempContext.stroke();
-    this.tempContext.closePath();
+    drawLine(this.startX, this.startY, e._x, e._y, this.tempContext);
   }
 }
 
