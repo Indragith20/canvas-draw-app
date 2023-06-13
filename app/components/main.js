@@ -118,6 +118,10 @@ class MainComponent extends React.PureComponent {
     this.redo = this.redo.bind(this);
     this.restoreContext = this.restoreContext.bind(this);
     this.afterUpdateScalingFactor = this.afterUpdateScalingFactor.bind(this);
+    this.detectDragging = this.detectDragging.bind(this);
+    this.initializeMoveTool = this.initializeMoveTool.bind(this);
+    this.onMoveElement = this.onMoveElement.bind(this);
+
 
     //this.idb = new Idb();
 
@@ -131,7 +135,6 @@ class MainComponent extends React.PureComponent {
     // To check whether the user is dragging.
     this.mouseXPosition = null;
     this.mouseYPosition = null;
-    this.isUserDragging = false;
     this.draggingElement = null;
 
     // touch events
@@ -402,15 +405,10 @@ class MainComponent extends React.PureComponent {
     }
   }
 
-  onEvent(ev) {
-    ev._x = ev.x;
-    ev._y = ev.y;
 
-    let { mouseMove } = this.props;
-    let { selectedTool, scrollX, scrollY, shapes } = this.state;
-    mouseMove({ x: this.changeToOneScalingFactor(ev.x - scrollX), y: this.changeToOneScalingFactor(ev.y - scrollY) })
-    // let isUserDragging = false;
-
+  detectDragging(ev) {
+    let { selectedTool } = this.state;
+    let isUserDragging = false;
     if (selectedTool === 'select') {
       if (ev.type === 'mousedown' || ev.type === 'touchstart') {
         this.mouseXPosition = ev._x;
@@ -420,84 +418,96 @@ class MainComponent extends React.PureComponent {
           let diffX = Math.abs(this.mouseXPosition - ev._x);
           let diffY = Math.abs(this.mouseYPosition - ev._y);
           if (diffX > 20 || diffY > 20) {
-            this.isUserDragging = true;
+            isUserDragging = true;
           }
         }
       } else {
-        this.isUserDragging = false;
+        isUserDragging = false;
         this.mouseXPosition = null;
         this.mouseYPosition = null;
       }
-
-
     } else {
-      this.isUserDragging = false;
+      isUserDragging = false;
       this.mouseXPosition = null;
       this.mouseYPosition = null;
     }
-    // Get the tool's event handler. 
 
-    if (this.isUserDragging) {
-      // Handlinng the case for move
-      //this.selectedTool = 'move';
-      // since we are moving across the canvas. we need to take into the account of scrollx and scrolly values
+    return isUserDragging;
+  }
 
-      ///CHANGE ???
-      // ev._x = this.changeToOneScalingFactor(ev.x - this.state.scrollX);
-      // ev._y = this.changeToOneScalingFactor(ev.y - this.state.scrollY);
-      ///CHANGE ??? Moved inside condition
-      if (!this.draggingElement) {
-        ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
-        ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
-        // First case of move tool -> User just selected the element.events should be mousedown
-        let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - scrollX), this.changeToOneScalingFactor(this.mouseYPosition - scrollY), shapes);
-        if (elementSelected) {
-          let updatedShapes = shapes.filter(shape => shape.id !== elementSelected.id);
-          //redrawig without element selected
-          this.setState({ shapes: updatedShapes, selectedTool: 'move', selectedElement: elementSelected }, () => {
-            let { shapes, scalingFactor, selectedElement } = this.state;
-            let { selectedTheme } = this.props;
-            let { updateDb } = this.props;
-            updateDb(shapes, 'app-state-persist');
-            this.redraw();
-            this.draggingElement = elementSelected;
-            this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
-            //modifyig the selectedElement
-            let modifiedSelectedElement = {
-              ...selectedElement,
-              x: this.changeFromOneScalingFactor(selectedElement.x),
-              y: this.changeFromOneScalingFactor(selectedElement.y),
-              endX: this.changeFromOneScalingFactor(selectedElement.endX),
-              endY: this.changeFromOneScalingFactor(selectedElement.endY),
-              startX: this.changeFromOneScalingFactor(selectedElement.startX),
-              startY: this.changeFromOneScalingFactor(selectedElement.startY),
-              radius: this.changeFromOneScalingFactor(selectedElement.radius),
-              width: selectedElement.width ? this.changeFromOneScalingFactor(selectedElement.width) : null,
-              height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
-              scalingFactor: scalingFactor
-            }
-            this.tool = new MoveTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement, selectedTheme);
-            // element is present. we need to call movetool
-            this.tool[eventTypeMapping['mousedown']](ev);
-          })
-        }
 
-        // ?? 
-      } else if (this.mouseXPosition !== null && this.mouseYPosition !== null) {
-        // events are mousemove or mouseup. Need to check whether this condition is required
-        if (ev.type === 'mousemove' || ev.type === 'mouseup') {
-          // movetool instace should already by present
-          if (this.tool) {
-            this.tool[eventTypeMapping[ev.type]](ev);
-            if (ev.type === 'mouseup') {
-              this.isUserDragging = false;
-              this.mouseXPosition = null;
-              this.mouseYPosition = null;
-            }
+  initializeMoveTool(elementSelected, ev) {
+    let { shapes, scalingFactor, selectedElement } = this.state;
+    let { selectedTheme } = this.props;
+    let { updateDb } = this.props;
+    updateDb(shapes, 'app-state-persist');
+    this.redraw();
+    this.draggingElement = elementSelected;
+    this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
+    //modifyig the selectedElement
+    let modifiedSelectedElement = {
+      ...selectedElement,
+      x: this.changeFromOneScalingFactor(selectedElement.x),
+      y: this.changeFromOneScalingFactor(selectedElement.y),
+      endX: this.changeFromOneScalingFactor(selectedElement.endX),
+      endY: this.changeFromOneScalingFactor(selectedElement.endY),
+      startX: this.changeFromOneScalingFactor(selectedElement.startX),
+      startY: this.changeFromOneScalingFactor(selectedElement.startY),
+      radius: this.changeFromOneScalingFactor(selectedElement.radius),
+      width: selectedElement.width ? this.changeFromOneScalingFactor(selectedElement.width) : null,
+      height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
+      scalingFactor: scalingFactor
+    }
+    this.tool = new MoveTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement, selectedTheme, scalingFactor);
+    // element is present. we need to call movetool
+    this.tool[eventTypeMapping['mousedown']](ev);
+  }
 
+  onMoveElement(ev) {
+    console.log('Move Element Called');
+    let { shapes, scrollX, scrollY } = this.state;
+    if (!this.draggingElement) {
+      ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
+      ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
+      // First case of move tool -> User just selected the element.events should be mousedown
+      let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - scrollX), this.changeToOneScalingFactor(this.mouseYPosition - scrollY), shapes);
+      console.log("elementSelected", elementSelected)
+      if (elementSelected) {
+        let updatedShapes = shapes.filter(shape => shape.id !== elementSelected.id);
+        //redrawig without element selected
+        this.setState({ shapes: updatedShapes, selectedTool: 'move', selectedElement: elementSelected }, () => {
+          this.initializeMoveTool(elementSelected, ev);
+        })
+      }
+    } else if (this.mouseXPosition !== null && this.mouseYPosition !== null) {
+      if (ev.type === 'mousemove' || ev.type === 'mouseup') {
+        // movetool instace should already by present
+        if (this.tool) {
+          this.tool[eventTypeMapping[ev.type]](ev);
+          if (ev.type === 'mouseup') {
+            this.isUserDragging = false;
+            this.mouseXPosition = null;
+            this.mouseYPosition = null;
           }
+
         }
       }
+    }
+  }
+
+  onEvent(ev) {
+    ev._x = ev.x;
+    ev._y = ev.y;
+
+    let { mouseMove } = this.props;
+    let { scrollX, scrollY } = this.state;
+    mouseMove({ x: this.changeToOneScalingFactor(ev.x - scrollX), y: this.changeToOneScalingFactor(ev.y - scrollY) })
+    // let isUserDragging = false;
+
+    let isUserDragging = this.detectDragging(ev);
+    console.log(isUserDragging);
+    if (isUserDragging) {
+      this.onMoveElement(ev);
     } else if (this.tool) {
       let func = this.tool[eventTypeMapping[ev.type]];
       if (func) {
@@ -864,7 +874,6 @@ class MainComponent extends React.PureComponent {
   }
 
   resetDraggingValues() {
-    this.isUserDragging = false;
     this.draggingElement = null;
     this.mouseXPosition = null;
     this.mouseYPosition = null;

@@ -1,8 +1,9 @@
 import { drawArrow } from "../utils/drawArrow.js";
 import { drawDiamond, drawText } from "../utils/drawShapes.js";
+import { changeFromOneScalingFactor } from "../utils/redrawCanvas.js";
 
 class MoveTool {
-  constructor(tempCanvas, tempContext, callback, element, theme) {
+  constructor(tempCanvas, tempContext, callback, element, theme, scalingFactor) {
     this.id = element.id;
     this.started = false;
     this.startX = null;
@@ -17,16 +18,18 @@ class MoveTool {
     this.mousemove = this.mouseMove.bind(this);
     this.element = element;
     this.selectedTheme = theme;
+    this.scalingFactor = scalingFactor;
     //this.drawExisitingElementOnTemp();
   }
-
   mouseDown(e) {
     this.started = true;
     this.startX = e._x;
     this.startY = e._y;
     // Temp Check. Need to adopt to all this.elements. doing this for rectangle check initial.
-    this.diffX = this.element.x - this.startX;
-    this.diffY = this.element.y - this.startY;
+    let modX = changeFromOneScalingFactor(this.startX, this.scalingFactor);
+    let modY = changeFromOneScalingFactor(this.startY, this.scalingFactor);
+    this.diffX = this.element.x - modX;
+    this.diffY = this.element.y - modY;
     e._x = e._x + this.diffX;
     e._y = e._y + this.diffY;
     console.log('dioff', this.diffX, this.diffY);
