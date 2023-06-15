@@ -464,14 +464,12 @@ class MainComponent extends React.PureComponent {
   }
 
   onMoveElement(ev) {
-    console.log('Move Element Called');
     let { shapes, scrollX, scrollY } = this.state;
     if (!this.draggingElement) {
       ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
       ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
       // First case of move tool -> User just selected the element.events should be mousedown
       let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - scrollX), this.changeToOneScalingFactor(this.mouseYPosition - scrollY), shapes);
-      console.log("elementSelected", elementSelected)
       if (elementSelected) {
         let updatedShapes = shapes.filter(shape => shape.id !== elementSelected.id);
         //redrawig without element selected
@@ -505,7 +503,6 @@ class MainComponent extends React.PureComponent {
     // let isUserDragging = false;
 
     let isUserDragging = this.detectDragging(ev);
-    console.log(isUserDragging);
     if (isUserDragging) {
       this.onMoveElement(ev);
     } else if (this.tool) {
@@ -610,7 +607,6 @@ class MainComponent extends React.PureComponent {
 
       //let filteredShapes = shapes.filter(shape => shape.id !== drawenImage.id);
       let performedActions = getUpdatedPerformedActions(this.state.performedActions, isExistingShape ? [{ ...this.draggingElement }, { ...modifiedImage, isExistingShape: true }] : [modifiedImage]);
-      console.log(performedActions);
       this.setState({ shapes: [...filteredShapes, modifiedImage], performedActions, selectedElement: null }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
@@ -752,7 +748,6 @@ class MainComponent extends React.PureComponent {
         modifiedShapes.push(lastAddedElement);
       }
       let updatedUndoActions = undoActions.concat({ ...lastAddedElement, isExistingShape });
-      console.log(updatedUndoActions);
       this.setState({ shapes: modifiedShapes, performedActions: actionsPerformed, undoActions: updatedUndoActions }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
