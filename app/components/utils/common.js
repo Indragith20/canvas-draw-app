@@ -47,3 +47,33 @@ export function getUpdatedPerformedActions(originalPerformedActions, shapeToBeAd
   performedActions = performedActions.concat([...shapeToBeAdded]);
   return performedActions;
 }
+
+export function getEdges(element) {
+  let bufferLimit = 5;
+  if (element.type === 'rectangle') {
+    // topLeft, topMiddle, topRight, bottomRight, bottomMiddle, bottomLeft, leftMiddle, rightMiddle
+    return [
+      [element.x - bufferLimit, element.y - bufferLimit],
+      [(element.x + (element.width / 2)), element.y - bufferLimit],
+      [element.endX + bufferLimit, element.y - bufferLimit],
+      [element.endX + bufferLimit, element.endY + bufferLimit],
+      [(element.endX - (element.width / 2)), element.endY + bufferLimit],
+      [element.x - bufferLimit, element.endY + bufferLimit],
+      [element.x - bufferLimit, element.y + (element.height / 2)],
+      [element.endX + bufferLimit, element.endY - (element.height / 2)]
+    ]
+  } else {
+    return [];
+  }
+}
+
+export const CURSOR_BIDIRECTIONAL_MAPPING = {
+  0: 'nwse-resize',
+  1: 'ns-resize',
+  2: 'nesw-resize',
+  3: 'nwse-resize',
+  4: 'ns-resize',
+  5: 'nesw-resize',
+  6: 'ew-resize',
+  7: 'ew-resize'
+}

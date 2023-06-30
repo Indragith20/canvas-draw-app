@@ -20,12 +20,13 @@ import PrintPreview, { PrintPreviewLinks } from './PrintPreview/PrintPreview';
 import ShareLink, { ShareLinks } from './ShareLink/ShareLink';
 import DeletePopup, { DeletePopupLinks } from './DeleteCanvasPopup/DeletePopup';
 import BackIcon, { BackIconStyles } from './BackIcon/BackIcon';
-import { getUpdatedPerformedActions, isTouchDevice } from './utils/common';
+import { CURSOR_BIDIRECTIONAL_MAPPING, getEdges, getUpdatedPerformedActions, isTouchDevice } from './utils/common';
 import { CollaboratorsLinks } from './Collaborators/Collaborators';
 import HintComponent, { HintComponentLinks } from './Hint/HintComponent';
 import PreferencePopup, { PreferencePopupLinks } from './PreferencePopup/PreferencePopup';
 import { drawArrow } from './utils/drawArrow';
 import ShortcutKeys from './ShortcutKeys/ShortcutKeys';
+import ResizeTool from './Shapes/ResizeTool';
 
 export function MainComponentStyles() {
   return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...PreferencePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), ...HintComponentLinks(), { rel: 'stylesheet', href: styles }];
@@ -41,7 +42,7 @@ let tools = {
   text: DrawText,
   circle: Circle,
   diamond: Diamond,
-  select: 'select'
+  select: ResizeTool
 };
 
 let eventTypeMapping = {
@@ -121,12 +122,14 @@ class MainComponent extends React.PureComponent {
     this.detectDragging = this.detectDragging.bind(this);
     this.initializeMoveTool = this.initializeMoveTool.bind(this);
     this.onMoveElement = this.onMoveElement.bind(this);
+    this.updateCursorType = this.updateCursorType.bind(this);
 
 
     //this.idb = new Idb();
 
     this.mainCanvas = React.createRef();
     this.tempCanvas = React.createRef();
+    this.mainContainerRef = React.createRef();
 
 
     // sequeunce id 
@@ -149,7 +152,10 @@ class MainComponent extends React.PureComponent {
       'ctrl+shift+p': this.togglePreferences,
       'backspace': this.deleteShape,
       'delete': this.deleteShape
-    }
+    };
+
+
+    this.edgesForResize = [];
   }
 
 
@@ -506,6 +512,7 @@ class MainComponent extends React.PureComponent {
     if (isUserDragging) {
       this.onMoveElement(ev);
     } else if (this.tool) {
+      this.updateCursorType(ev);
       let func = this.tool[eventTypeMapping[ev.type]];
       if (func) {
         func(ev);
@@ -514,8 +521,11 @@ class MainComponent extends React.PureComponent {
   }
 
   onClickTool(e) {
+    this.resetDraggingValues();
     this.updateTool(e.currentTarget.id);
   }
+
+
 
   changeToOneScalingFactor(coords) {
     return coords / this.state.scalingFactor;
@@ -675,13 +685,21 @@ class MainComponent extends React.PureComponent {
 
 
   restoreContext(ctx, width, height) {
+    let { selectedTheme } = this.props;
+    let { lineWidth } = this.state;
     ctx.restore();
+    ctx.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
+    ctx.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
+    ctx.lineWidth = lineWidth;
     ctx.setLineDash([]);
     ctx.clearRect(0, 0, width, height);
   }
 
   clearSelectedElement() {
     if (this.state.selectedElement) {
+      this.restoreContext(this.tempContext, this.tempCanvas.width, this.tempCanvas.height);
+      this.edgesForResize = [];
+      this.tool = null;
       this.setState({ selectedElement: null });
     }
   }
@@ -802,9 +820,11 @@ class MainComponent extends React.PureComponent {
     }
 
     if (selectedTool === 'select') {
+
       this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
       let selectedElement = getElementsAtPosition(ev._x, ev._y, shapes);
       if (selectedElement) {
+        this.tool = new ResizeTool(this.tempCanvas, this.tempContext, this.imgUpdate, selectedElement.id, selectedElement);
         this.setState({ selectedElement: selectedElement }, () => {
           let { selectedElement } = this.state;
           if (selectedElement.type === 'rectangle') {
@@ -814,12 +834,13 @@ class MainComponent extends React.PureComponent {
             let { startX, startY, width, height } = selectedElement;
             this.strokeOuterRect(startX, startY, width, height);
           } else if (selectedElement.type === 'circle') {
-            let x = this.changeFromOneScalingFactor(selectedElement.x) + scrollX;
-            let y = this.changeFromOneScalingFactor(selectedElement.y) + scrollY;
-            this.tempContext.setLineDash([6]);
-            this.tempContext.beginPath();
-            this.tempContext.arc(x, y, this.changeFromOneScalingFactor(selectedElement.radius) + 10, 0, 2 * Math.PI);
-            this.tempContext.stroke();
+            // let x = this.changeFromOneScalingFactor(selectedElement.x) + scrollX;
+            // let y = this.changeFromOneScalingFactor(selectedElement.y) + scrollY;
+            // this.tempContext.setLineDash([6]);
+            // this.tempContext.beginPath();
+            // this.tempContext.arc(x, y, this.changeFromOneScalingFactor(selectedElement.radius) + 10, 0, 2 * Math.PI);
+            // this.tempContext.stroke();
+            this.strokeOuterRect(selectedElement.x - selectedElement.radius, selectedElement.y - selectedElement.radius, selectedElement.radius * 2, selectedElement.radius * 2);
           } else if (selectedElement.type === 'diamond') {
             let { startX, startY, width, height } = selectedElement;
             this.strokeOuterRect(startX, startY, width, height);
@@ -842,8 +863,29 @@ class MainComponent extends React.PureComponent {
     let { scrollX, scrollY } = this.state;
     let x = this.changeFromOneScalingFactor(elementX) + scrollX;
     let y = this.changeFromOneScalingFactor(elementY) + scrollY;
-    this.tempContext.setLineDash([6]);
-    this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(width) + 10, this.changeFromOneScalingFactor(height) + 10);
+    let scaledWidth = this.changeFromOneScalingFactor(width);
+    let scaledHeight = this.changeFromOneScalingFactor(height);
+    let edges = getEdges({
+      type: 'rectangle',
+      x: x,
+      y: y,
+      endX: x + scaledWidth,
+      endY: y + scaledHeight,
+      width: scaledWidth,
+      height: scaledHeight
+    });
+    this.edgesForResize = edges;
+    //this.tempContext.setLineDash([5]);
+    this.tempContext.lineWidth = 2;
+    this.tempContext.strokeStyle = "#9b9ef3";
+    this.tempContext.strokeRect(x - 5, y - 5, scaledWidth + 10, scaledHeight + 10);
+    edges.forEach(([x, y]) => {
+      this.tempContext.setLineDash([]);
+      this.tempContext.strokeStyle = "#9b9ef3";
+      this.tempContext.beginPath();
+      this.tempContext.arc(x, y, 5, 0, 2 * Math.PI);
+      this.tempContext.stroke();
+    })
   }
 
   onWheelMove(e) {
@@ -864,6 +906,7 @@ class MainComponent extends React.PureComponent {
         selectedElement: null
       }
     }, () => {
+      this.edgesForResize = [];
       this.redraw();
     })
   }
@@ -943,14 +986,34 @@ class MainComponent extends React.PureComponent {
     }
   }
 
+  updateCursorType(ev) {
+    let { selectedElement, selectedTool } = this.state;
+    if (this.edgesForResize.length > 0) {
+      let isMatchFound = this.edgesForResize.findIndex(([x, y]) => {
+        let diffX = Math.abs(x - ev._x);
+        let diffY = Math.abs(y - ev._y);
+        return diffX < 5 && diffY < 5;
+      });
+      console.log(this.mainContainerRef, isMatchFound)
+      if (isMatchFound >= 0) {
+        this.mainContainerRef.current.style.cursor = CURSOR_BIDIRECTIONAL_MAPPING[isMatchFound]
+      } else {
+        let cursorType = selectedTool === 'select' || selectedElement !== null ? `move` : 'crosshair';
+        this.mainContainerRef.current.style.cursor = cursorType;
+      }
+    }
+  }
+
 
 
   render() {
+    console.log('Edges forr resize', this.edgesForResize);
     let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes, lineWidth, selectedElement } = this.state;
     let { backLink } = this.props;
     let cursorType = `${selectedTool === 'select' || selectedElement !== null ? `move` : 'crosshair'}`
     return (
       <div
+        ref={this.mainContainerRef}
         style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: cursorType }}
       >
         <ShortcutKeys disableShortcut={selectedTool === 'text'} keyMapping={this.keyMapping} />

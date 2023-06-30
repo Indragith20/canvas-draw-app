@@ -50,8 +50,8 @@ class MoveTool {
           y: e._y,
           width: this.element.width,
           height: this.element.height,
-          endX: e._x,
-          endY: e._y
+          endX: e._x + this.element.width,
+          endY: e._y + this.element.height
         });
       } else if (this.element.type === 'arrow') {
         let endX = this.element.endX > this.element.x ? e._x + this.element.width : e._x - this.element.width;

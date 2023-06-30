@@ -16,15 +16,25 @@ class ResizeTool {
   }
 
   getEdges(element) {
+    let bufferLimit = 5;
     if (element.type === 'rectangle') {
       // topLeft, botttomRight, topMiddle
-      return [[element.x, element.y], [element.endX, element.endY], [element.x, element.endY], [element.endX, element.y][element.endX / 2, element.y], [element.x, element.endY / 2]]
+      return [[element.x - bufferLimit, element.y - bufferLimit], [element.endX + bufferLimit, element.endY + bufferLimit], [element.x - bufferLimit, element.endY + bufferLimit], [element.endX + bufferLimit, element.y - bufferLimit],
+      [(element.x + (element.width / 2)), element.y - bufferLimit], [(element.endX - (element.width / 2)), element.endY + bufferLimit],
+      [element.x - bufferLimit, element.y + (element.height / 2)], [element.endX + bufferLimit, element.endY - (element.height / 2)]]
+    } else {
+      return [];
     }
   }
 
   matchEdges(e) {
     let edges = this.getEdges(this.element);
     console.log(edges);
+    let isMatchFound = edges && edges.length > 0 ? edges.find(([x, y]) => {
+      return x === e._x && y === e._y
+    }) : false;
+    console.log(isMatchFound);
+    return isMatchFound;
   }
 
   mouseDown(e) {
