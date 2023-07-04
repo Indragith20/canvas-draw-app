@@ -1,3 +1,5 @@
+import { RESIZE_MAPPING } from "~/constants/resizeMapping";
+
 export function isTouchDevice() {
   if (typeof window === 'undefined') {
     return false;
@@ -68,12 +70,12 @@ export function getEdges(element) {
 }
 
 export const CURSOR_BIDIRECTIONAL_MAPPING = {
-  0: 'nwse-resize',
-  1: 'ns-resize',
-  2: 'nesw-resize',
-  3: 'nwse-resize',
-  4: 'ns-resize',
-  5: 'nesw-resize',
-  6: 'ew-resize',
-  7: 'ew-resize'
+  0: ['nwse-resize', RESIZE_MAPPING.TOP_LEFT],
+  1: ['ns-resize', RESIZE_MAPPING.TOP_MIDDLE],
+  2: ['nesw-resize', RESIZE_MAPPING.TOP_RIGHT],
+  3: ['nwse-resize', RESIZE_MAPPING.BOTTOM_RIGHT],
+  4: ['ns-resize', RESIZE_MAPPING.BOTTOM_MIDDLE],
+  5: ['nesw-resize', RESIZE_MAPPING.BOTTOM_LEFT],
+  6: ['ew-resize', RESIZE_MAPPING.LEFT_MIDDLE],
+  7: ['ew-resize', RESIZE_MAPPING.RIGHT_MIDDLE]
 }
