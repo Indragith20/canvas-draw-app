@@ -503,18 +503,25 @@ class MainComponent extends React.PureComponent {
 
   onResizeElement(ev, cursorPosition) {
     if (cursorPosition !== null || this.isResizing) {
+      let { scrollX, scrollY } = this.state;
+      console.log("scrollX, scrollY", scrollX, scrollY)
+      ev._x = this.changeFromOneScalingFactor(ev.x - scrollX);
+      ev._y = this.changeFromOneScalingFactor(ev.y - scrollY);
+      console.log('origing', ev.x, ev.y);
+      console.log('modified', ev._x, ev._y);
+      console.log('event tyoe', ev.type);
       if (ev.type === 'mousedown') {
         this.isResizing = true;
         let { shapes, selectedElement, scalingFactor } = this.state;
         console.log('Initializing Resize Tool');
         let modifiedSelectedElement = {
           ...selectedElement,
-          x: this.changeFromOneScalingFactor(selectedElement.x),
-          y: this.changeFromOneScalingFactor(selectedElement.y),
-          endX: this.changeFromOneScalingFactor(selectedElement.endX),
-          endY: this.changeFromOneScalingFactor(selectedElement.endY),
-          startX: this.changeFromOneScalingFactor(selectedElement.startX),
-          startY: this.changeFromOneScalingFactor(selectedElement.startY),
+          x: this.changeFromOneScalingFactor(selectedElement.x) + scrollX,
+          y: this.changeFromOneScalingFactor(selectedElement.y) + scrollY,
+          endX: this.changeFromOneScalingFactor(selectedElement.endX) + scrollX,
+          endY: this.changeFromOneScalingFactor(selectedElement.endY) + scrollY,
+          startX: this.changeFromOneScalingFactor(selectedElement.startX) + scrollX,
+          startY: this.changeFromOneScalingFactor(selectedElement.startY) + scrollY,
           radius: this.changeFromOneScalingFactor(selectedElement.radius),
           width: selectedElement.width ? this.changeFromOneScalingFactor(selectedElement.width) : null,
           height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
@@ -531,12 +538,10 @@ class MainComponent extends React.PureComponent {
         this.isResizing = false;
       }
       if (this.tool !== null) {
-        let { scrollX, scrollY } = this.state;
-        ev._x = this.changeToOneScalingFactor(ev._x - scrollX);
-        ev._y = this.changeToOneScalingFactor(ev._y - scrollY);
-        console.log('origing', ev.x, ev.y);
-        console.log('modified', ev._x, ev._y);
-        console.log('event tyoe', ev.type);
+        // let { scrollX, scrollY } = this.state;
+        // ev._x = this.changeToOneScalingFactor(ev._x - scrollX);
+        // ev._y = this.changeToOneScalingFactor(ev._y - scrollY);
+
         let func = this.tool[eventTypeMapping[ev.type]];
         if (func) {
           func(ev);

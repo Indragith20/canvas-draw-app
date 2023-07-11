@@ -28,7 +28,7 @@ class ResizeTool {
       this.started = true;
       this.startX = ev._x;
       this.startY = ev._y;
-      this.drawExisitingElementOnTemp();
+      //this.drawExisitingElementOnTemp();
     }
   }
 
@@ -63,7 +63,17 @@ class ResizeTool {
       case RESIZE_MAPPING.TOP_MIDDLE:
         return { ...element, height: element.height + diffY, y: element.y - diffY };
       case RESIZE_MAPPING.LEFT_MIDDLE:
-        return { ...element, width: element.width + diffX, x: element.x - diffX }
+        return { ...element, width: element.width + diffX, x: element.x - diffX };
+      case RESIZE_MAPPING.RIGHT_MIDDLE:
+        return { ...element, width: element.width - diffX, endX: element.endX - diffX };
+      case RESIZE_MAPPING.BOTTOM_LEFT:
+        return { ...element, height: element.height - diffY, endY: element.endY - diffY, x: element.x - diffX, width: element.width + diffX };
+      case RESIZE_MAPPING.BOTTOM_RIGHT:
+        return { ...element, height: element.height - diffY, endY: element.endY - diffY, endX: element.endX - diffX, width: element.width - diffX };
+      case RESIZE_MAPPING.TOP_LEFT:
+        return { ...element, height: element.height + diffY, y: element.y - diffY, x: element.x - diffX, width: element.width + diffX };
+      case RESIZE_MAPPING.TOP_RIGHT:
+        return { ...element, height: element.height + diffY, y: element.y - diffY, endX: element.endX - diffX, width: element.width - diffX };
       default:
         return element;
     }
