@@ -1,9 +1,11 @@
 import { drawArrow } from "../utils/drawArrow.js";
 import { drawDiamond, drawText } from "../utils/drawShapes.js";
 import { changeFromOneScalingFactor } from "../utils/redrawCanvas.js";
+import DrawShapeOnCanvas from "./DrawShapeOnCanvas.js";
 
-class MoveTool {
+class MoveTool extends DrawShapeOnCanvas {
   constructor(tempCanvas, tempContext, callback, element, theme, scalingFactor) {
+    super();
     this.id = element.id;
     this.started = false;
     this.startX = null;
@@ -19,7 +21,6 @@ class MoveTool {
     this.element = element;
     this.selectedTheme = theme;
     this.scalingFactor = scalingFactor;
-    //this.drawExisitingElementOnTemp();
   }
   mouseDown(e) {
     this.started = true;
@@ -190,37 +191,6 @@ class MoveTool {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
       drawText(this.element.textContent, this.tempContext, e._x, e._y, this.element.width, undefined, color)
-    }
-  }
-
-
-
-
-  drawExisitingElementOnTemp() {
-    //  type === 'rectangle'
-    if (this.element.type === 'rectangle') {
-      this.tempContext.strokeRect(this.element.x, this.element.y, this.element.width, this.element.height);
-    } else if (this.element.type === 'arrow') {
-      let { x, y, endX, endY } = this.element;
-      drawArrow(x, y, endX, endY, this.tempContext);
-    } else if (this.element.type === 'line') {
-      this.tempContext.beginPath();
-      this.tempContext.moveTo(this.element.x, this.element.y);
-      this.tempContext.lineTo(this.element.endX, this.element.endY);
-      this.tempContext.stroke();
-      this.tempContext.closePath();
-    } else if (this.element.type === 'circle') {
-      this.tempContext.beginPath();
-      this.tempContext.arc(this.element.x, this.element.y, this.element.radius, 0, 2 * Math.PI);
-      this.tempContext.stroke();
-    } else if (this.element.type === 'diamond') {
-      let xCenter = this.element.x;
-      let yCenter = this.element.y;
-      let size = this.element.x - this.element.endX;
-      drawDiamond(xCenter, yCenter, size, this.tempContext);
-    } else if (this.element.type === 'text') {
-      let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
-      drawText(this.element.textContent, this.tempContext, this.element.x, this.element.y, this.element.width, undefined, color);
     }
   }
 }

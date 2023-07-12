@@ -1024,6 +1024,8 @@ class MainComponent extends React.PureComponent {
     this.mouseYPosition = null;
     this.selectedTextEle = null;
     this.clearSelectedElement();
+    let { selectedTool } = this.state;
+    this.mainContainerRef.current.style.cursor = selectedTool === 'select' ? 'move' : 'crosshair';
   }
 
 
