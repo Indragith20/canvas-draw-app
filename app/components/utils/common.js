@@ -64,7 +64,20 @@ export function getEdges(element) {
       [element.x - bufferLimit, element.y + (element.height / 2)],
       [element.endX + bufferLimit, element.endY - (element.height / 2)]
     ]
-  } else {
+  } else if (element.type === 'diamond') {
+    // returning null is required for cursor bidrirectional mapping. check for possible reimplementation
+    return [
+      [null, null],
+      [(element.x + (element.width / 2)), element.y - bufferLimit],
+      [null, null],
+      [null, null],
+      [(element.endX - (element.width / 2)), element.endY + bufferLimit],
+      [null, null],
+      [element.x - bufferLimit, element.y + (element.height / 2)],
+      [element.endX + bufferLimit, element.endY - (element.height / 2)]
+    ]
+  }
+  else {
     return [];
   }
 }
