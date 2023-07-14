@@ -20,6 +20,7 @@ class ResizeTool extends DrawShapeOnCanvas {
     this.mousemove = this.mouseMove.bind(this);
     this.getModifiedRect = this.getModifiedRect.bind(this);
     this.getResizeCircleCoords = this.getResizeCircleCoords.bind(this);
+    this.getResizeDiamondCoords = this.getResizeDiamondCoords.bind(this);
     this.element = element;
     console.log('cursor intial posio', cursorPosition)
     this.cursorPositionOnElement = cursorPosition;
@@ -49,10 +50,8 @@ class ResizeTool extends DrawShapeOnCanvas {
         let modifiedElement = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
         this.callback({ ...modifiedElement, startX: modifiedElement.x, startY: modifiedElement.y, id: this.element.id, isResizedElement: true })
       } else if (this.element.type === 'diamond') {
-        let modifiedRect = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
-        let startX = this.startX - (modifiedRect.width / 2);
-        let startY = ev._y - (modifiedRect.width / 2);
-        this.callback({ ...modifiedRect, id: this.element.id, isResizedElement: true, startX, startY, height: modifiedRect.width });
+        let modifiedRect = this.getResizeDiamondCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
+        this.callback({ ...modifiedRect, id: this.element.id, isResizedElement: true, height: modifiedRect.width });
       }
     }
     this.started = false;
@@ -76,6 +75,47 @@ class ResizeTool extends DrawShapeOnCanvas {
         return { ...element, height: element.height + diffY, y: element.y - diffY, x: element.x - diffX, width: element.width + diffX };
       case RESIZE_MAPPING.TOP_RIGHT:
         return { ...element, height: element.height + diffY, y: element.y - diffY, endX: element.endX - diffX, width: element.width - diffX };
+      default:
+        return element;
+    }
+  }
+
+  getResizeDiamondCoords(element, cursorPosition, { diffX, diffY }) {
+    switch (cursorPosition) {
+      case RESIZE_MAPPING.BOTTOM_MIDDLE: {
+        let endX = element.endX - diffY;
+        let width = Math.abs((endX - element.x)) * 2;
+        let height = width;
+        let startY = element.y - (width / 2);
+        let startX = endX - width;
+        return { ...element, width, endX: endX, startX, startY, height };
+      }
+      case RESIZE_MAPPING.TOP_MIDDLE: {
+        let endX = element.endX + diffY;
+        let width = Math.abs((endX - element.x)) * 2;
+        let height = width;
+        let startY = element.y - (width / 2);
+        let startX = endX - width;
+        return { ...element, width, endX: endX, startX, startY, height };
+      }
+
+      case RESIZE_MAPPING.LEFT_MIDDLE: {
+        let endX = element.endX + diffX;
+        let width = Math.abs((endX - element.x)) * 2;
+        let height = width;
+        let startY = element.y - (width / 2);
+        let startX = endX - width;
+        return { ...element, width, endX: endX, startX, startY, height };
+      }
+
+      case RESIZE_MAPPING.RIGHT_MIDDLE: {
+        let endX = element.endX - diffX;
+        let width = Math.abs((endX - element.x)) * 2;
+        let height = width;
+        let startY = element.y - (width / 2);
+        let startX = endX - width;
+        return { ...element, width, endX: endX, startX, startY, height };
+      }
       default:
         return element;
     }
@@ -139,7 +179,7 @@ class ResizeTool extends DrawShapeOnCanvas {
       this.tempContext.stroke();
       this.tempContext.closePath();
     } else if (this.element.type === 'diamond') {
-      let modifiedElement = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
+      let modifiedElement = this.getResizeDiamondCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
       let xCenter = modifiedElement.x;
       let yCenter = modifiedElement.y;
       let size = modifiedElement.x - modifiedElement.endX;

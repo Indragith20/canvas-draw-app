@@ -950,7 +950,7 @@ class MainComponent extends React.PureComponent {
             this.strokeOuterRect(selectedElement.x - selectedElement.radius, selectedElement.y - selectedElement.radius, selectedElement.radius * 2, selectedElement.radius * 2);
           } else if (selectedElement.type === 'diamond') {
             let { startX, startY, width, height } = selectedElement;
-            this.strokeOuterRect(startX, startY, width, height);
+            this.strokeOuterRect(startX, startY, width, height, 'diamond');
           } else if (selectedElement.type === 'text') {
             let { x, y, width, height } = selectedElement;
             this.strokeOuterRect(x, y, width, height);
@@ -966,14 +966,14 @@ class MainComponent extends React.PureComponent {
   }
 
 
-  strokeOuterRect(elementX, elementY, width, height) {
+  strokeOuterRect(elementX, elementY, width, height, elementType = 'rectangle') {
     let { scrollX, scrollY } = this.state;
     let x = this.changeFromOneScalingFactor(elementX) + scrollX;
     let y = this.changeFromOneScalingFactor(elementY) + scrollY;
     let scaledWidth = this.changeFromOneScalingFactor(width);
     let scaledHeight = this.changeFromOneScalingFactor(height);
     let edges = getEdges({
-      type: 'rectangle',
+      type: elementType,
       x: x,
       y: y,
       endX: x + scaledWidth,
@@ -986,7 +986,7 @@ class MainComponent extends React.PureComponent {
     this.tempContext.lineWidth = 2;
     this.tempContext.strokeStyle = "#9b9ef3";
     this.tempContext.strokeRect(x - 5, y - 5, scaledWidth + 10, scaledHeight + 10);
-    edges.forEach(([x, y]) => {
+    edges.filter(([x, y]) => x !== null && y !== null).forEach(([x, y]) => {
       this.tempContext.setLineDash([]);
       this.tempContext.strokeStyle = "#9b9ef3";
       this.tempContext.beginPath();
@@ -1100,6 +1100,9 @@ class MainComponent extends React.PureComponent {
     let position = null;
     if (this.edgesForResize.length > 0) {
       let isMatchFound = this.edgesForResize.findIndex(([x, y]) => {
+        if (x === null || y === null) {
+          return false;
+        }
         let diffX = Math.abs(x - ev._x);
         let diffY = Math.abs(y - ev._y);
         return diffX < 5 && diffY < 5;
