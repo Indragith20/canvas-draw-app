@@ -20,12 +20,13 @@ import PrintPreview, { PrintPreviewLinks } from './PrintPreview/PrintPreview';
 import ShareLink, { ShareLinks } from './ShareLink/ShareLink';
 import DeletePopup, { DeletePopupLinks } from './DeleteCanvasPopup/DeletePopup';
 import BackIcon, { BackIconStyles } from './BackIcon/BackIcon';
-import { getUpdatedPerformedActions, isTouchDevice } from './utils/common';
+import { CURSOR_BIDIRECTIONAL_MAPPING, getEdges, getUpdatedPerformedActions, isTouchDevice } from './utils/common';
 import { CollaboratorsLinks } from './Collaborators/Collaborators';
 import HintComponent, { HintComponentLinks } from './Hint/HintComponent';
 import PreferencePopup, { PreferencePopupLinks } from './PreferencePopup/PreferencePopup';
 import { drawArrow } from './utils/drawArrow';
 import ShortcutKeys from './ShortcutKeys/ShortcutKeys';
+import ResizeTool from './Shapes/ResizeTool';
 
 export function MainComponentStyles() {
   return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...PreferencePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), ...HintComponentLinks(), { rel: 'stylesheet', href: styles }];
@@ -121,12 +122,15 @@ class MainComponent extends React.PureComponent {
     this.detectDragging = this.detectDragging.bind(this);
     this.initializeMoveTool = this.initializeMoveTool.bind(this);
     this.onMoveElement = this.onMoveElement.bind(this);
+    this.onResizeElement = this.onResizeElement.bind(this);
+    this.getCursorPositionAndUpdateCursor = this.getCursorPositionAndUpdateCursor.bind(this);
 
 
     //this.idb = new Idb();
 
     this.mainCanvas = React.createRef();
     this.tempCanvas = React.createRef();
+    this.mainContainerRef = React.createRef();
 
 
     // sequeunce id 
@@ -136,6 +140,7 @@ class MainComponent extends React.PureComponent {
     this.mouseXPosition = null;
     this.mouseYPosition = null;
     this.draggingElement = null;
+    this.isResizing = false;
 
     // touch events
     this.touchStartTimer = null;
@@ -149,7 +154,10 @@ class MainComponent extends React.PureComponent {
       'ctrl+shift+p': this.togglePreferences,
       'backspace': this.deleteShape,
       'delete': this.deleteShape
-    }
+    };
+
+
+    this.edgesForResize = [];
   }
 
 
@@ -464,14 +472,12 @@ class MainComponent extends React.PureComponent {
   }
 
   onMoveElement(ev) {
-    console.log('Move Element Called');
     let { shapes, scrollX, scrollY } = this.state;
     if (!this.draggingElement) {
       ev._x = this.changeToOneScalingFactor(ev.x - scrollX);
       ev._y = this.changeToOneScalingFactor(ev.y - scrollY);
       // First case of move tool -> User just selected the element.events should be mousedown
       let elementSelected = getElementsAtPosition(this.changeToOneScalingFactor(this.mouseXPosition - scrollX), this.changeToOneScalingFactor(this.mouseYPosition - scrollY), shapes);
-      console.log("elementSelected", elementSelected)
       if (elementSelected) {
         let updatedShapes = shapes.filter(shape => shape.id !== elementSelected.id);
         //redrawig without element selected
@@ -495,30 +501,129 @@ class MainComponent extends React.PureComponent {
     }
   }
 
+  onResizeElement(ev, cursorPosition) {
+    if (cursorPosition !== null || this.isResizing) {
+      let { scrollX, scrollY } = this.state;
+      console.log("scrollX, scrollY", scrollX, scrollY)
+      ev._x = this.changeFromOneScalingFactor(ev.x - scrollX);
+      ev._y = this.changeFromOneScalingFactor(ev.y - scrollY);
+      console.log('origing', ev.x, ev.y);
+      console.log('modified', ev._x, ev._y);
+      console.log('event tyoe', ev.type);
+      if (ev.type === 'mousedown') {
+        this.isResizing = true;
+        let { shapes, selectedElement, scalingFactor } = this.state;
+        console.log('Initializing Resize Tool');
+        let modifiedSelectedElement = {
+          ...selectedElement,
+          x: this.changeFromOneScalingFactor(selectedElement.x) + scrollX,
+          y: this.changeFromOneScalingFactor(selectedElement.y) + scrollY,
+          endX: this.changeFromOneScalingFactor(selectedElement.endX) + scrollX,
+          endY: this.changeFromOneScalingFactor(selectedElement.endY) + scrollY,
+          startX: this.changeFromOneScalingFactor(selectedElement.startX) + scrollX,
+          startY: this.changeFromOneScalingFactor(selectedElement.startY) + scrollY,
+          radius: this.changeFromOneScalingFactor(selectedElement.radius),
+          width: selectedElement.width ? this.changeFromOneScalingFactor(selectedElement.width) : null,
+          height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
+          scalingFactor: scalingFactor
+        }
+        this.tool = new ResizeTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement.id, modifiedSelectedElement, cursorPosition);
+        let updatedShapes = shapes.filter(shape => shape.id !== selectedElement.id);
+        //redrawig without element selected
+        this.setState({ shapes: updatedShapes }, () => {
+          this.redraw();
+          this.tool.drawExisitingElementOnTemp();
+        });
+      } else if (ev.type === 'mouseup') {
+        this.isResizing = false;
+      }
+      if (this.tool !== null) {
+        // let { scrollX, scrollY } = this.state;
+        // ev._x = this.changeToOneScalingFactor(ev._x - scrollX);
+        // ev._y = this.changeToOneScalingFactor(ev._y - scrollY);
+
+        let func = this.tool[eventTypeMapping[ev.type]];
+        if (func) {
+          func(ev);
+        }
+      }
+    }
+
+
+  }
+
   onEvent(ev) {
+    // ev._x = ev.x;
+    // ev._y = ev.y;
+
+    // let { mouseMove } = this.props;
+    // let { scrollX, scrollY, selectedElement } = this.state;
+    // mouseMove({ x: this.changeToOneScalingFactor(ev.x - scrollX), y: this.changeToOneScalingFactor(ev.y - scrollY) })
+    // // let isUserDragging = false;
+    // console.log('Main Mouse move called', selectedElement, this.isResizing);
+    // let isUserDragging = this.detectDragging(ev);
+    // console.log('isuser dragging', isUserDragging);
+    // if (isUserDragging) {
+    //   console.log('Inside dragging loop');
+    //   if (this.isResizing) {
+    //     this.onResizeElement(ev);
+    //   } else {
+    //     this.onMoveElement(ev);
+    //   }
+    // } else if (selectedElement !== null) {
+    //   console.log('Inside if loop');
+    //   if (this.isResizing) {
+    //     console.log('calling resize');
+    //     this.onResizeElement(ev);
+    //   } else {
+    //     let cursorPositonOnElement = this.getCursorPositionAndUpdateCursor(ev);
+    //     if (cursorPositonOnElement) {
+    //       ev._cursorPositonOnElement = cursorPositonOnElement;
+    //       this.onResizeElement(ev);
+    //     }
+    //   }
+
+    // } else if (this.tool) {
+    //   console.log('Inside Tool case');
+    //   let func = this.tool[eventTypeMapping[ev.type]];
+    //   if (func) {
+    //     func(ev);
+    //   }
+    // } else {
+    //   console.log('Final Else case')
+    // }
     ev._x = ev.x;
     ev._y = ev.y;
 
     let { mouseMove } = this.props;
-    let { scrollX, scrollY } = this.state;
+    let { scrollX, scrollY, selectedElement } = this.state;
     mouseMove({ x: this.changeToOneScalingFactor(ev.x - scrollX), y: this.changeToOneScalingFactor(ev.y - scrollY) })
     // let isUserDragging = false;
 
-    let isUserDragging = this.detectDragging(ev);
-    console.log(isUserDragging);
+    let isUserDragging = this.isResizing ? false : this.detectDragging(ev);
     if (isUserDragging) {
       this.onMoveElement(ev);
-    } else if (this.tool) {
-      let func = this.tool[eventTypeMapping[ev.type]];
-      if (func) {
-        func(ev);
+    } else {
+      if (this.isResizing) {
+        this.onResizeElement(ev);
+      } else if (this.tool) {
+        let func = this.tool[eventTypeMapping[ev.type]];
+        if (func) {
+          func(ev);
+        }
+      } else if (selectedElement) {
+        let cursorPositonOnElement = this.getCursorPositionAndUpdateCursor(ev);
+        this.onResizeElement(ev, cursorPositonOnElement);
       }
     }
   }
 
   onClickTool(e) {
+    this.resetDraggingValues();
     this.updateTool(e.currentTarget.id);
   }
+
+
 
   changeToOneScalingFactor(coords) {
     return coords / this.state.scalingFactor;
@@ -538,7 +643,7 @@ class MainComponent extends React.PureComponent {
       let { selectedTool } = this.state;
       let { keepLastSelected } = this.props;
 
-      if (selectedTool === 'move' || selectedTool === 'text') {
+      if (selectedTool === 'move' || selectedTool === 'text' || selectedTool === 'select') {
         this.redraw();
         this.setState({ selectedTool: 'select' });
         this.tool = null;
@@ -552,7 +657,10 @@ class MainComponent extends React.PureComponent {
         if (selectedTool !== 'text') { //???
           if (keepLastSelected) {
             let selectedOne = this.tools[selectedTool];
-            this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, uuidv4());
+            if (typeof selectedOne !== 'string') {
+              this.tool = new selectedOne(this.tempCanvas.current, this.tempContext, this.imgUpdate, uuidv4());
+            }
+
           } else {
             this.setState({ selectedTool: 'select' });
             this.tool = null;
@@ -567,7 +675,7 @@ class MainComponent extends React.PureComponent {
 
   imgUpdate(drawenImage) {
     if (drawenImage && drawenImage.type) {
-      let { scrollX, scrollY, scalingFactor, shapes } = this.state;
+      let { scrollX, scrollY, scalingFactor, shapes, selectedElement } = this.state;
       /** TODO: Change this logic to object key value structure */
       let modifiedImage = {
         ...drawenImage,
@@ -608,9 +716,15 @@ class MainComponent extends React.PureComponent {
         isExistingShape = this.selectedTextEle === modifiedImage.id ? true : false;
       }
 
+      // while resizing we might be updating the existing shape
+      if (selectedElement && modifiedImage.isResizedElement) {
+        console.log('Inside Exisiting Shpe')
+        isExistingShape = selectedElement.id === modifiedImage.id ? true : false;
+        delete modifiedImage.isResizedElement;
+      }
+
       //let filteredShapes = shapes.filter(shape => shape.id !== drawenImage.id);
       let performedActions = getUpdatedPerformedActions(this.state.performedActions, isExistingShape ? [{ ...this.draggingElement }, { ...modifiedImage, isExistingShape: true }] : [modifiedImage]);
-      console.log(performedActions);
       this.setState({ shapes: [...filteredShapes, modifiedImage], performedActions, selectedElement: null }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
@@ -679,13 +793,21 @@ class MainComponent extends React.PureComponent {
 
 
   restoreContext(ctx, width, height) {
+    let { selectedTheme } = this.props;
+    let { lineWidth } = this.state;
     ctx.restore();
+    ctx.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
+    ctx.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
+    ctx.lineWidth = lineWidth;
     ctx.setLineDash([]);
     ctx.clearRect(0, 0, width, height);
   }
 
   clearSelectedElement() {
     if (this.state.selectedElement) {
+      this.restoreContext(this.tempContext, this.tempCanvas.width, this.tempCanvas.height);
+      this.edgesForResize = [];
+      this.tool = null;
       this.setState({ selectedElement: null });
     }
   }
@@ -752,7 +874,6 @@ class MainComponent extends React.PureComponent {
         modifiedShapes.push(lastAddedElement);
       }
       let updatedUndoActions = undoActions.concat({ ...lastAddedElement, isExistingShape });
-      console.log(updatedUndoActions);
       this.setState({ shapes: modifiedShapes, performedActions: actionsPerformed, undoActions: updatedUndoActions }, () => {
         let { updateDb, updateShape } = this.props;
         updateDb(this.state.shapes, 'app-state-persist');
@@ -807,6 +928,7 @@ class MainComponent extends React.PureComponent {
     }
 
     if (selectedTool === 'select') {
+
       this.tempContext.clearRect(0, 0, this.tempCanvas.current.width, this.tempCanvas.current.height);
       let selectedElement = getElementsAtPosition(ev._x, ev._y, shapes);
       if (selectedElement) {
@@ -819,12 +941,13 @@ class MainComponent extends React.PureComponent {
             let { startX, startY, width, height } = selectedElement;
             this.strokeOuterRect(startX, startY, width, height);
           } else if (selectedElement.type === 'circle') {
-            let x = this.changeFromOneScalingFactor(selectedElement.x) + scrollX;
-            let y = this.changeFromOneScalingFactor(selectedElement.y) + scrollY;
-            this.tempContext.setLineDash([6]);
-            this.tempContext.beginPath();
-            this.tempContext.arc(x, y, this.changeFromOneScalingFactor(selectedElement.radius) + 10, 0, 2 * Math.PI);
-            this.tempContext.stroke();
+            // let x = this.changeFromOneScalingFactor(selectedElement.x) + scrollX;
+            // let y = this.changeFromOneScalingFactor(selectedElement.y) + scrollY;
+            // this.tempContext.setLineDash([6]);
+            // this.tempContext.beginPath();
+            // this.tempContext.arc(x, y, this.changeFromOneScalingFactor(selectedElement.radius) + 10, 0, 2 * Math.PI);
+            // this.tempContext.stroke();
+            this.strokeOuterRect(selectedElement.x - selectedElement.radius, selectedElement.y - selectedElement.radius, selectedElement.radius * 2, selectedElement.radius * 2);
           } else if (selectedElement.type === 'diamond') {
             let { startX, startY, width, height } = selectedElement;
             this.strokeOuterRect(startX, startY, width, height);
@@ -847,8 +970,29 @@ class MainComponent extends React.PureComponent {
     let { scrollX, scrollY } = this.state;
     let x = this.changeFromOneScalingFactor(elementX) + scrollX;
     let y = this.changeFromOneScalingFactor(elementY) + scrollY;
-    this.tempContext.setLineDash([6]);
-    this.tempContext.strokeRect(x - 5, y - 5, this.changeFromOneScalingFactor(width) + 10, this.changeFromOneScalingFactor(height) + 10);
+    let scaledWidth = this.changeFromOneScalingFactor(width);
+    let scaledHeight = this.changeFromOneScalingFactor(height);
+    let edges = getEdges({
+      type: 'rectangle',
+      x: x,
+      y: y,
+      endX: x + scaledWidth,
+      endY: y + scaledHeight,
+      width: scaledWidth,
+      height: scaledHeight
+    });
+    this.edgesForResize = edges;
+    //this.tempContext.setLineDash([5]);
+    this.tempContext.lineWidth = 2;
+    this.tempContext.strokeStyle = "#9b9ef3";
+    this.tempContext.strokeRect(x - 5, y - 5, scaledWidth + 10, scaledHeight + 10);
+    edges.forEach(([x, y]) => {
+      this.tempContext.setLineDash([]);
+      this.tempContext.strokeStyle = "#9b9ef3";
+      this.tempContext.beginPath();
+      this.tempContext.arc(x, y, 5, 0, 2 * Math.PI);
+      this.tempContext.stroke();
+    })
   }
 
   onWheelMove(e) {
@@ -869,6 +1013,7 @@ class MainComponent extends React.PureComponent {
         selectedElement: null
       }
     }, () => {
+      this.edgesForResize = [];
       this.redraw();
     })
   }
@@ -879,6 +1024,8 @@ class MainComponent extends React.PureComponent {
     this.mouseYPosition = null;
     this.selectedTextEle = null;
     this.clearSelectedElement();
+    let { selectedTool } = this.state;
+    this.mainContainerRef.current.style.cursor = selectedTool === 'select' ? 'move' : 'crosshair';
   }
 
 
@@ -948,6 +1095,27 @@ class MainComponent extends React.PureComponent {
     }
   }
 
+  getCursorPositionAndUpdateCursor(ev) {
+    let { selectedElement, selectedTool } = this.state;
+    let position = null;
+    if (this.edgesForResize.length > 0) {
+      let isMatchFound = this.edgesForResize.findIndex(([x, y]) => {
+        let diffX = Math.abs(x - ev._x);
+        let diffY = Math.abs(y - ev._y);
+        return diffX < 5 && diffY < 5;
+      });
+      if (isMatchFound >= 0) {
+        let [cursor, cursorPositionOnElement] = CURSOR_BIDIRECTIONAL_MAPPING[isMatchFound];
+        position = cursorPositionOnElement;
+        this.mainContainerRef.current.style.cursor = cursor;
+      } else {
+        let cursorType = selectedTool === 'select' || selectedElement !== null ? `move` : 'crosshair';
+        this.mainContainerRef.current.style.cursor = cursorType;
+      }
+    }
+    return position;
+  }
+
 
 
   render() {
@@ -956,6 +1124,7 @@ class MainComponent extends React.PureComponent {
     let cursorType = `${selectedTool === 'select' || selectedElement !== null ? `move` : 'crosshair'}`
     return (
       <div
+        ref={this.mainContainerRef}
         style={{ '--font-size': `${baseFontSize}px`, '--line-height': `${baseLineHeight}px`, cursor: cursorType }}
       >
         <ShortcutKeys disableShortcut={selectedTool === 'text'} keyMapping={this.keyMapping} />

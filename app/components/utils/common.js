@@ -1,3 +1,5 @@
+import { RESIZE_MAPPING } from "~/constants/resizeMapping";
+
 export function isTouchDevice() {
   if (typeof window === 'undefined') {
     return false;
@@ -46,4 +48,34 @@ export function getUpdatedPerformedActions(originalPerformedActions, shapeToBeAd
   }
   performedActions = performedActions.concat([...shapeToBeAdded]);
   return performedActions;
+}
+
+export function getEdges(element) {
+  let bufferLimit = 5;
+  if (element.type === 'rectangle') {
+    // topLeft, topMiddle, topRight, bottomRight, bottomMiddle, bottomLeft, leftMiddle, rightMiddle
+    return [
+      [element.x - bufferLimit, element.y - bufferLimit],
+      [(element.x + (element.width / 2)), element.y - bufferLimit],
+      [element.endX + bufferLimit, element.y - bufferLimit],
+      [element.endX + bufferLimit, element.endY + bufferLimit],
+      [(element.endX - (element.width / 2)), element.endY + bufferLimit],
+      [element.x - bufferLimit, element.endY + bufferLimit],
+      [element.x - bufferLimit, element.y + (element.height / 2)],
+      [element.endX + bufferLimit, element.endY - (element.height / 2)]
+    ]
+  } else {
+    return [];
+  }
+}
+
+export const CURSOR_BIDIRECTIONAL_MAPPING = {
+  0: ['nwse-resize', RESIZE_MAPPING.TOP_LEFT],
+  1: ['ns-resize', RESIZE_MAPPING.TOP_MIDDLE],
+  2: ['nesw-resize', RESIZE_MAPPING.TOP_RIGHT],
+  3: ['nwse-resize', RESIZE_MAPPING.BOTTOM_RIGHT],
+  4: ['ns-resize', RESIZE_MAPPING.BOTTOM_MIDDLE],
+  5: ['nesw-resize', RESIZE_MAPPING.BOTTOM_LEFT],
+  6: ['ew-resize', RESIZE_MAPPING.LEFT_MIDDLE],
+  7: ['ew-resize', RESIZE_MAPPING.RIGHT_MIDDLE]
 }
