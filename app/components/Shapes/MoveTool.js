@@ -1,5 +1,5 @@
 import { drawArrow } from "../utils/drawArrow.js";
-import { drawDiamond, drawText } from "../utils/drawShapes.js";
+import { drawDiamond, drawFreeShape, drawText } from "../utils/drawShapes.js";
 import { changeFromOneScalingFactor } from "../utils/redrawCanvas.js";
 import DrawShapeOnCanvas from "./DrawShapeOnCanvas.js";
 
@@ -126,6 +126,18 @@ class MoveTool extends DrawShapeOnCanvas {
           width: Number(this.element.width),
           height: this.element.height
         });
+      } else if (this.element.type === 'chalk') {
+        let diffBetweenPoints = { x: this.element.x - e._x, y: this.element.y - e._y }
+        this.callback({
+          ...this.element,
+          id: this.id,
+          type: 'chalk',
+          x: e._x,
+          y: e._y,
+          drawPoints: this.element.drawPoints.map(point => {
+            return [point.x - diffBetweenPoints.x, point.y - diffBetweenPoints.y];
+          })
+        });
       }
 
       this.started = false;
@@ -190,6 +202,18 @@ class MoveTool extends DrawShapeOnCanvas {
       this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
       let color = this.selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
       drawText(this.element.textContent, this.tempContext, e._x, e._y, this.element.width, undefined, color)
+    } else if (this.element.type === 'chalk') {
+      this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+      let diffBetweenPoints = { x: this.element.x - e._x, y: this.element.y - e._y }
+      let modifiedShape = {
+        ...this.element,
+        x: e._x,
+        y: e._y,
+        drawPoints: this.element.drawPoints.map(point => {
+          return { x: point.x - diffBetweenPoints.x, y: point.y - diffBetweenPoints.y };
+        })
+      };
+      drawFreeShape(this.tempContext, modifiedShape);
     }
   }
 }

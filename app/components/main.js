@@ -12,7 +12,7 @@ import Line from './Shapes/Line';
 import MoveTool from './Shapes/MoveTool';
 import Rect from './Shapes/Rectangle';
 import TextTool from './TextTool/TextTool';
-import { drawCircle, drawDiamond, drawLine, drawText } from './utils/drawShapes';
+import { drawCircle, drawDiamond, drawFreeShape, drawLine, drawText } from './utils/drawShapes';
 import { getChalkRectValues, getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
 import UserActivity from './UserActivity/UserActivity';
@@ -445,7 +445,7 @@ class MainComponent extends React.PureComponent {
 
 
   initializeMoveTool(elementSelected, ev) {
-    let { shapes, scalingFactor, selectedElement } = this.state;
+    let { shapes, scalingFactor, selectedElement, scrollX, scrollY } = this.state;
     let { selectedTheme } = this.props;
     let { updateDb } = this.props;
     updateDb(shapes, 'app-state-persist');
@@ -465,6 +465,14 @@ class MainComponent extends React.PureComponent {
       width: selectedElement.width ? this.changeFromOneScalingFactor(selectedElement.width) : null,
       height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
       scalingFactor: scalingFactor
+    }
+    if (modifiedSelectedElement.type === 'chalk') {
+      modifiedSelectedElement = {
+        ...modifiedSelectedElement,
+        drawPoints: modifiedSelectedElement.drawPoints.map(point => {
+          return { x: this.changeFromOneScalingFactor(point.x), y: this.changeFromOneScalingFactor(point.y) }
+        })
+      }
     }
     this.tool = new MoveTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement, selectedTheme, scalingFactor);
     // element is present. we need to call movetool
@@ -512,7 +520,7 @@ class MainComponent extends React.PureComponent {
         let { shapes, selectedElement, scalingFactor } = this.state;
         let modifiedSelectedElement = {
           ...selectedElement,
-          x: this.changeFromOneScalingFactor(selectedElement.x) + scrollX,
+          x: this.changeFromOneScalingFactor(selectedElement.x),
           y: this.changeFromOneScalingFactor(selectedElement.y) + scrollY,
           endX: this.changeFromOneScalingFactor(selectedElement.endX) + scrollX,
           endY: this.changeFromOneScalingFactor(selectedElement.endY) + scrollY,
@@ -769,13 +777,13 @@ class MainComponent extends React.PureComponent {
         let size = this.changeFromOneScalingFactor(originalShape.x - originalShape.endX);
         drawDiamond(shape.x, shape.y, size, this.tempContext);
       } else if (shape.type === 'chalk') {
-        this.tempContext.beginPath();
-        this.tempContext.moveTo(shape.x, shape.y);
-        shape.drawPoints.forEach(point => {
-          this.tempContext.lineTo(this.changeFromOneScalingFactor(point.x) + scrollX, this.changeFromOneScalingFactor(point.y) + scrollY)
-        });
-        this.tempContext.stroke();
-        this.tempContext.closePath();
+        let modifiedShape = {
+          ...shape,
+          drawPoints: shape.drawPoints.map(point => {
+            return { x: this.changeFromOneScalingFactor(point.x) + scrollX, y: this.changeFromOneScalingFactor(point.y) + scrollY };
+          })
+        }
+        drawFreeShape(this.tempContext, modifiedShape);
       }
     });
 

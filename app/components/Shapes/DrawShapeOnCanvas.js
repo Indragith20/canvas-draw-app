@@ -1,6 +1,6 @@
 import { getEdges } from "../utils/common";
 import { drawArrow } from "../utils/drawArrow";
-import { drawDiamond, drawText } from "../utils/drawShapes";
+import { drawDiamond, drawFreeShape, drawText } from "../utils/drawShapes";
 
 class DrawShapeOnCanvas {
   constructor() {
@@ -58,6 +58,9 @@ class DrawShapeOnCanvas {
     } else if (this.element.type === 'text') {
       let color = this.selectedTheme === 'dark' ? '#FFFFFF' : '#000000';
       drawText(this.element.textContent, this.tempContext, this.element.x, this.element.y, this.element.width, undefined, color);
+    } else if (this.element.type === 'chalk') {
+      console.log('Drawing exiositing element on temp');
+      drawFreeShape(this.tempContext, this.element);
     }
   }
 

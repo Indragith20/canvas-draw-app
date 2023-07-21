@@ -186,4 +186,15 @@ function drawCircle(x, y, radius, ctx) {
 }
 
 
-export { drawDiamond, drawText, getMinMaxCoords, getBufferedCoords, htmlTagParser, drawLine, drawCircle };
+function drawFreeShape(ctx, shape) {
+  ctx.beginPath();
+  ctx.moveTo(shape.x, shape.y);
+  shape.drawPoints.forEach(point => {
+    ctx.lineTo(point.x, point.y)
+  });
+  ctx.stroke();
+  ctx.closePath();
+}
+
+
+export { drawDiamond, drawText, getMinMaxCoords, getBufferedCoords, htmlTagParser, drawLine, drawCircle, drawFreeShape };
