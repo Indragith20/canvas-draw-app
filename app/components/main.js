@@ -608,14 +608,15 @@ class MainComponent extends React.PureComponent {
     if (isUserDragging) {
       this.onMoveElement(ev);
     } else {
-      if (this.isResizing) {
+      // Temp Hack: Not allowing free drawn shape and text to be resized
+      if (this.isResizing && (selectedElement.type !== 'text' || selectedElement.type === 'chalk')) {
         this.onResizeElement(ev);
       } else if (this.tool) {
         let func = this.tool[eventTypeMapping[ev.type]];
         if (func) {
           func(ev);
         }
-      } else if (selectedElement) {
+      } else if (selectedElement && (selectedElement.type !== 'text' || selectedElement.type === 'chalk')) {
         let cursorPositonOnElement = this.getCursorPositionAndUpdateCursor(ev);
         this.onResizeElement(ev, cursorPositonOnElement);
       }
@@ -956,10 +957,10 @@ class MainComponent extends React.PureComponent {
             this.strokeOuterRect(startX, startY, width, height, 'diamond');
           } else if (selectedElement.type === 'text') {
             let { x, y, width, height } = selectedElement;
-            this.strokeOuterRect(x, y, width, height);
+            this.strokeOuterRect(x, y, width, height, 'text');
           } else if (selectedElement.type === 'chalk') {
             let [minX, minY, maxX, maxY] = getChalkRectValues(selectedElement.drawPoints);
-            this.strokeOuterRect(minX, minY, maxX - minX, maxY - minY);
+            this.strokeOuterRect(minX, minY, maxX - minX, maxY - minY, 'chalk');
           }
         })
       } else {
