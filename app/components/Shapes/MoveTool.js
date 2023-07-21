@@ -33,7 +33,6 @@ class MoveTool extends DrawShapeOnCanvas {
     this.diffY = this.element.y - modY;
     e._x = e._x + this.diffX;
     e._y = e._y + this.diffY;
-    console.log('dioff', this.diffX, this.diffY);
     this.drawExisitingElementOnTemp();
   }
 

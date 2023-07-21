@@ -4,7 +4,7 @@ import { drawDiamond, drawText } from '../utils/drawShapes';
 import DrawShapeOnCanvas from './DrawShapeOnCanvas';
 
 class ResizeTool extends DrawShapeOnCanvas {
-  constructor(tempCanvas, tempContext, callback, id, element, cursorPosition) {
+  constructor(tempCanvas, tempContext, callback, id, element, cursorPosition, { selectedTheme, lineWidth }) {
     super();
     this.id = id;
     this.started = false;
@@ -22,8 +22,9 @@ class ResizeTool extends DrawShapeOnCanvas {
     this.getResizeCircleCoords = this.getResizeCircleCoords.bind(this);
     this.getResizeDiamondCoords = this.getResizeDiamondCoords.bind(this);
     this.element = element;
-    console.log('cursor intial posio', cursorPosition)
     this.cursorPositionOnElement = cursorPosition;
+    this.selectedTheme = selectedTheme;
+    this.lineWidth = lineWidth;
   }
 
   mouseDown(ev) {
@@ -32,11 +33,11 @@ class ResizeTool extends DrawShapeOnCanvas {
       this.startX = ev._x;
       this.startY = ev._y;
       //this.drawExisitingElementOnTemp();
+      this.strokeOuterRect(this.element.x, this.element.y, this.element.width, this.element.height);
     }
   }
 
   mouseUp(ev) {
-    console.log('mouse up called');
     if (this.started) {
       let diffX = this.startX - ev._x;
       let diffY = this.startY - ev._y;
@@ -153,23 +154,28 @@ class ResizeTool extends DrawShapeOnCanvas {
     if (!this.started) {
       return;
     }
-    console.log('Mouse move', this.cursorPositionOnElement);
     let diffX = this.startX - ev._x;
     let diffY = this.startY - ev._y;
+    this.restoreContext();
     this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
     if (this.element.type === 'rectangle') {
       let modifiedElement = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
       this.tempContext.beginPath();
       this.tempContext.strokeRect(modifiedElement.x, modifiedElement.y, modifiedElement.width, modifiedElement.height);
+      this.tempContext.closePath();
+      this.strokeOuterRect(modifiedElement.x, modifiedElement.y, modifiedElement.width, modifiedElement.height)
     } else if (this.element.type === 'circle') {
       let modifiedElement = this.getResizeCircleCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
       this.tempContext.beginPath();
       this.tempContext.arc(modifiedElement.x, modifiedElement.y, modifiedElement.radius, 0, 2 * Math.PI);
       this.tempContext.stroke();
+      this.tempContext.closePath();
+      this.strokeOuterRect(modifiedElement.x - modifiedElement.radius, modifiedElement.y - modifiedElement.radius, modifiedElement.radius * 2, modifiedElement.radius * 2)
     } else if (this.element.type === 'arrow') {
       let modifiedElement = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
       let { x, y, endX, endY } = modifiedElement;
       drawArrow(x, y, endX, endY, this.tempContext);
+      this.strokeOuterRect(modifiedElement.x, modifiedElement.y, modifiedElement.width, modifiedElement.height);
     } else if (this.element.type === 'line') {
       let modifiedElement = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
       let { x, y, endX, endY } = modifiedElement;
@@ -178,12 +184,14 @@ class ResizeTool extends DrawShapeOnCanvas {
       this.tempContext.lineTo(endX, endY);
       this.tempContext.stroke();
       this.tempContext.closePath();
+      this.strokeOuterRect(modifiedElement.x, modifiedElement.y, modifiedElement.width, modifiedElement.height);
     } else if (this.element.type === 'diamond') {
       let modifiedElement = this.getResizeDiamondCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
       let xCenter = modifiedElement.x;
       let yCenter = modifiedElement.y;
       let size = modifiedElement.x - modifiedElement.endX;
       drawDiamond(xCenter, yCenter, size, this.tempContext);
+      this.strokeOuterRect(modifiedElement.startX, modifiedElement.startY, modifiedElement.width, modifiedElement.height, 'diamond');
     }
   }
 }

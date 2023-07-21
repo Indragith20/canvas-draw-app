@@ -503,17 +503,13 @@ class MainComponent extends React.PureComponent {
 
   onResizeElement(ev, cursorPosition) {
     if (cursorPosition !== null || this.isResizing) {
-      let { scrollX, scrollY } = this.state;
-      console.log("scrollX, scrollY", scrollX, scrollY)
+      let { scrollX, scrollY, lineWidth } = this.state;
+      let { selectedTheme } = this.props;
       ev._x = this.changeFromOneScalingFactor(ev.x - scrollX);
       ev._y = this.changeFromOneScalingFactor(ev.y - scrollY);
-      console.log('origing', ev.x, ev.y);
-      console.log('modified', ev._x, ev._y);
-      console.log('event tyoe', ev.type);
       if (ev.type === 'mousedown') {
         this.isResizing = true;
         let { shapes, selectedElement, scalingFactor } = this.state;
-        console.log('Initializing Resize Tool');
         let modifiedSelectedElement = {
           ...selectedElement,
           x: this.changeFromOneScalingFactor(selectedElement.x) + scrollX,
@@ -527,7 +523,7 @@ class MainComponent extends React.PureComponent {
           height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
           scalingFactor: scalingFactor
         }
-        this.tool = new ResizeTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement.id, modifiedSelectedElement, cursorPosition);
+        this.tool = new ResizeTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement.id, modifiedSelectedElement, cursorPosition, { selectedTheme, lineWidth });
         let updatedShapes = shapes.filter(shape => shape.id !== selectedElement.id);
         //redrawig without element selected
         this.setState({ shapes: updatedShapes }, () => {
@@ -718,7 +714,6 @@ class MainComponent extends React.PureComponent {
 
       // while resizing we might be updating the existing shape
       if (selectedElement && modifiedImage.isResizedElement) {
-        console.log('Inside Exisiting Shpe')
         isExistingShape = selectedElement.id === modifiedImage.id ? true : false;
         delete modifiedImage.isResizedElement;
       }
