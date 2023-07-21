@@ -14,6 +14,11 @@
   --text-area-background: #424242;
 }
 
+body {
+  overscroll-behavior: none;
+  user-select: none;
+}
+
 #wrapper {
   position: relative;
   width: 100%;
