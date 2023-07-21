@@ -12,7 +12,7 @@ import Line from './Shapes/Line';
 import MoveTool from './Shapes/MoveTool';
 import Rect from './Shapes/Rectangle';
 import TextTool from './TextTool/TextTool';
-import { drawCircle, drawDiamond, drawLine, drawText } from './utils/drawShapes';
+import { drawCircle, drawDiamond, drawFreeShape, drawLine, drawText } from './utils/drawShapes';
 import { getChalkRectValues, getElementsAtPosition } from './utils/getElementsAtPosition';
 import ZoomContainer from './ZoomContainer/ZoomContainer';
 import UserActivity from './UserActivity/UserActivity';
@@ -445,7 +445,7 @@ class MainComponent extends React.PureComponent {
 
 
   initializeMoveTool(elementSelected, ev) {
-    let { shapes, scalingFactor, selectedElement } = this.state;
+    let { shapes, scalingFactor, selectedElement, scrollX, scrollY } = this.state;
     let { selectedTheme } = this.props;
     let { updateDb } = this.props;
     updateDb(shapes, 'app-state-persist');
@@ -465,6 +465,14 @@ class MainComponent extends React.PureComponent {
       width: selectedElement.width ? this.changeFromOneScalingFactor(selectedElement.width) : null,
       height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
       scalingFactor: scalingFactor
+    }
+    if (modifiedSelectedElement.type === 'chalk') {
+      modifiedSelectedElement = {
+        ...modifiedSelectedElement,
+        drawPoints: modifiedSelectedElement.drawPoints.map(point => {
+          return { x: this.changeFromOneScalingFactor(point.x), y: this.changeFromOneScalingFactor(point.y) }
+        })
+      }
     }
     this.tool = new MoveTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement, selectedTheme, scalingFactor);
     // element is present. we need to call movetool
@@ -503,20 +511,16 @@ class MainComponent extends React.PureComponent {
 
   onResizeElement(ev, cursorPosition) {
     if (cursorPosition !== null || this.isResizing) {
-      let { scrollX, scrollY } = this.state;
-      console.log("scrollX, scrollY", scrollX, scrollY)
+      let { scrollX, scrollY, lineWidth } = this.state;
+      let { selectedTheme } = this.props;
       ev._x = this.changeFromOneScalingFactor(ev.x - scrollX);
       ev._y = this.changeFromOneScalingFactor(ev.y - scrollY);
-      console.log('origing', ev.x, ev.y);
-      console.log('modified', ev._x, ev._y);
-      console.log('event tyoe', ev.type);
       if (ev.type === 'mousedown') {
         this.isResizing = true;
         let { shapes, selectedElement, scalingFactor } = this.state;
-        console.log('Initializing Resize Tool');
         let modifiedSelectedElement = {
           ...selectedElement,
-          x: this.changeFromOneScalingFactor(selectedElement.x) + scrollX,
+          x: this.changeFromOneScalingFactor(selectedElement.x),
           y: this.changeFromOneScalingFactor(selectedElement.y) + scrollY,
           endX: this.changeFromOneScalingFactor(selectedElement.endX) + scrollX,
           endY: this.changeFromOneScalingFactor(selectedElement.endY) + scrollY,
@@ -527,7 +531,7 @@ class MainComponent extends React.PureComponent {
           height: selectedElement.height ? this.changeFromOneScalingFactor(selectedElement.height) : null,
           scalingFactor: scalingFactor
         }
-        this.tool = new ResizeTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement.id, modifiedSelectedElement, cursorPosition);
+        this.tool = new ResizeTool(this.tempCanvas.current, this.tempContext, this.imgUpdate, modifiedSelectedElement.id, modifiedSelectedElement, cursorPosition, { selectedTheme, lineWidth });
         let updatedShapes = shapes.filter(shape => shape.id !== selectedElement.id);
         //redrawig without element selected
         this.setState({ shapes: updatedShapes }, () => {
@@ -604,14 +608,15 @@ class MainComponent extends React.PureComponent {
     if (isUserDragging) {
       this.onMoveElement(ev);
     } else {
-      if (this.isResizing) {
+      // Temp Hack: Not allowing free drawn shape and text to be resized
+      if (this.isResizing && (selectedElement.type !== 'text' || selectedElement.type === 'chalk')) {
         this.onResizeElement(ev);
       } else if (this.tool) {
         let func = this.tool[eventTypeMapping[ev.type]];
         if (func) {
           func(ev);
         }
-      } else if (selectedElement) {
+      } else if (selectedElement && (selectedElement.type !== 'text' || selectedElement.type === 'chalk')) {
         let cursorPositonOnElement = this.getCursorPositionAndUpdateCursor(ev);
         this.onResizeElement(ev, cursorPositonOnElement);
       }
@@ -718,7 +723,6 @@ class MainComponent extends React.PureComponent {
 
       // while resizing we might be updating the existing shape
       if (selectedElement && modifiedImage.isResizedElement) {
-        console.log('Inside Exisiting Shpe')
         isExistingShape = selectedElement.id === modifiedImage.id ? true : false;
         delete modifiedImage.isResizedElement;
       }
@@ -774,13 +778,13 @@ class MainComponent extends React.PureComponent {
         let size = this.changeFromOneScalingFactor(originalShape.x - originalShape.endX);
         drawDiamond(shape.x, shape.y, size, this.tempContext);
       } else if (shape.type === 'chalk') {
-        this.tempContext.beginPath();
-        this.tempContext.moveTo(shape.x, shape.y);
-        shape.drawPoints.forEach(point => {
-          this.tempContext.lineTo(this.changeFromOneScalingFactor(point.x) + scrollX, this.changeFromOneScalingFactor(point.y) + scrollY)
-        });
-        this.tempContext.stroke();
-        this.tempContext.closePath();
+        let modifiedShape = {
+          ...shape,
+          drawPoints: shape.drawPoints.map(point => {
+            return { x: this.changeFromOneScalingFactor(point.x) + scrollX, y: this.changeFromOneScalingFactor(point.y) + scrollY };
+          })
+        }
+        drawFreeShape(this.tempContext, modifiedShape);
       }
     });
 
@@ -953,10 +957,10 @@ class MainComponent extends React.PureComponent {
             this.strokeOuterRect(startX, startY, width, height, 'diamond');
           } else if (selectedElement.type === 'text') {
             let { x, y, width, height } = selectedElement;
-            this.strokeOuterRect(x, y, width, height);
+            this.strokeOuterRect(x, y, width, height, 'text');
           } else if (selectedElement.type === 'chalk') {
             let [minX, minY, maxX, maxY] = getChalkRectValues(selectedElement.drawPoints);
-            this.strokeOuterRect(minX, minY, maxX - minX, maxY - minY);
+            this.strokeOuterRect(minX, minY, maxX - minX, maxY - minY, 'chalk');
           }
         })
       } else {

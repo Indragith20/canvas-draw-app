@@ -24,7 +24,6 @@ function ShortcutKeys({ disableShortcut, keyMapping }) {
 
       const keyPressed = keyCombo.join('+').toLowerCase();
       if (keyMapping[keyPressed]) {
-        console.log('Insdie')
         keyMapping[keyPressed]();
       }
 

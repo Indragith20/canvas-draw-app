@@ -1,3 +1,22 @@
+function isPointInsideShape(point, shape) {
+  const [x, y] = point;
+  const n = shape.length;
+  let count = 0;
+
+  for (let i = 0; i < n; i++) {
+    const { x: x1, y: y1 } = shape[i];
+    const { x: x2, y: y2 } = shape[(i + 1) % n];
+
+    if ((y1 <= y && y < y2) || (y2 <= y && y < y1)) {
+      if (x < x1 + ((y - y1) * (x2 - x1)) / (y2 - y1)) {
+        count++;
+      }
+    }
+  }
+
+  return count % 2 === 1;
+}
+
 function getElementsAtPosition(x, y, shapes) {
   let returnElement = null;
   let diffX = null;
@@ -108,33 +127,7 @@ function getElementsAtPosition(x, y, shapes) {
         }
       } else if (shape.type === 'chalk') {
         // Implement divide and conquer ??
-        let isMatched = false
-        // shape.drawPoints.reduce((prev, curr) => {
-        //   if ((prev.x < x && x > curr.x) && (prev.y < y && y > curr.y)) {
-        //     isMatched = true;
-        //   }
-        // }, { x: 0, y: 0 });
-        for (let i = 0; i < shape.drawPoints.length - 1; i++) {
-          // let lessX = shape.drawPoints[i].x;
-          // let greatX = shape.drawPoints[i + 1] ? shape.drawPoints[i + 1].x : shape.drawPoints[0]
-          let isIncreasingX = shape.drawPoints[i].x <= shape.drawPoints[i + 1].x;
-          let isIncreasingY = shape.drawPoints[i].y <= shape.drawPoints[i + 1].y;
-          let firstCondition, secondCondition;
-          if (isIncreasingX) {
-            firstCondition = (shape.drawPoints[i].x <= x && x <= shape.drawPoints[i + 1].x);
-          } else {
-            firstCondition = (shape.drawPoints[i].x >= x && x >= shape.drawPoints[i + 1].x)
-          }
-          if (isIncreasingY) {
-            secondCondition = (shape.drawPoints[i].y <= y && y <= shape.drawPoints[i + 1].y);
-          } else {
-            secondCondition = (shape.drawPoints[i].y >= y && y >= shape.drawPoints[i + 1].y);
-          }
-          if (firstCondition && secondCondition) {
-
-            isMatched = true;
-          }
-        }
+        let isMatched = isPointInsideShape([x, y], shape.drawPoints);
         if (isMatched) {
           returnElement = shape;
         }
