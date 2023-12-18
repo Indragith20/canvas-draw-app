@@ -36,7 +36,7 @@ initRedisConnection();
 
 
 io.on('connection', (socket) => {
-  console.log("Socket connection established", socket);
+  console.log("Socket connection established");
   onSocketConnect(socket, io);
 });
 

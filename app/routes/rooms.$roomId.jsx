@@ -28,7 +28,6 @@ export const links = () => [
 
 export async function loader({ request, params }) {
   if (params.roomId) {
-    console.log('Inside RoomId Loader', params.roomId);
     try {
       let [roomDetails, data] = await Promise.all([
         getRoomDetails(params.roomId),
