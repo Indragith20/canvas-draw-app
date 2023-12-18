@@ -56,7 +56,7 @@ jobs:
           field: 'app'
 
       - name: 🐳 Set up Docker Buildx
-        uses: docker/setup-buildx-action@latest
+        uses: docker/setup-buildx-action@v3
 
       # Setup cache
       - name: ⚡️ Cache Docker layers
