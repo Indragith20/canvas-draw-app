@@ -47,7 +47,8 @@ export default function Profile() {
   const [editMode, setEditMode] = useState(false);
   const fetcher = useFetcher();
 
-  function onClickSubmit() {
+  function onClickSubmit(e) {
+    e.preventDefault();
     let formData = new FormData();
     formData.set('userName', name);
     formData.set('userId', userData.id);

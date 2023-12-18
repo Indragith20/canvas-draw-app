@@ -55,7 +55,8 @@ export default function EnterRoom() {
   const [room, setRoom] = useState('');
   const fetcher = useFetcher();
 
-  function onClickSubmit() {
+  function onClickSubmit(e) {
+    e.preventDefault();
     let formData = new FormData();
     formData.set('userName', userData.name);
     formData.set('userId', userData.id);

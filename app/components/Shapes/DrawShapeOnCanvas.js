@@ -59,7 +59,6 @@ class DrawShapeOnCanvas {
       let color = this.selectedTheme === 'dark' ? '#FFFFFF' : '#000000';
       drawText(this.element.textContent, this.tempContext, this.element.x, this.element.y, this.element.width, undefined, color);
     } else if (this.element.type === 'chalk') {
-      console.log('Drawing exiositing element on temp');
       drawFreeShape(this.tempContext, this.element);
     }
   }

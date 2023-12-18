@@ -40,8 +40,6 @@ function emitData(io, socket, key, data) {
 
 function onSocketConnect(socket, io) {
 
-
-  console.log('Inside Socket Connect');
   socket.emit('confirmation', 'connected!');
 
   socket.on('event', (data) => {
@@ -64,7 +62,6 @@ function onSocketConnect(socket, io) {
 
   socket.on('setliveuser', (data) => {
     if (data.roomId) {
-      console.log('Setting Live User');
       setDataForCaching(data.roomId, 'liveUserFetchNeeded', 'true');
       emitData(io, socket, 'setliveuser', data);
       addLiveUsers(data.roomId, socket.id, data.userDetails);
@@ -74,7 +71,6 @@ function onSocketConnect(socket, io) {
 
   socket.on('removeliveuser', (data) => {
     if (data.roomId) {
-      console.log('Removing Live User');
       emitData(io, socket, 'removeliveuser', data);
       removeLiveUsers(socket.id);
 
