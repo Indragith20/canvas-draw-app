@@ -21,12 +21,12 @@ jobs:
         uses: styfle/cancel-workflow-action@0.10.0
 
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '>=18'
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
