@@ -1010,6 +1010,7 @@ class MainComponent extends React.PureComponent {
     // this.state.scrollX = this.state.scrollX - e.deltaX;
     // this.state.scrollY = this.state.scrollY - e.deltaY;
     // this.redraw();
+    console.log(e.deltaX, e.deltaY);
     this.setState(prevstate => {
       return {
         scrollX: prevstate.scrollX - e.deltaX,

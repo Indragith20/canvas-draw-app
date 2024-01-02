@@ -5,6 +5,10 @@ export function changeFromOneScalingFactor(coords, scalingFactor) {
   return coords * scalingFactor;
 }
 
+export function changeToOneScalingFactor(coords, scalingFactor) {
+  return coords / scalingFactor;
+}
+
 export function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedTheme, baseLineHeight, baseFontSize, scalingFactor, canvasWidth, canvasHeight, lineWidth }) {
   tempContext.clearRect(0, 0, canvasWidth, canvasHeight);
   tempContext.restore();
