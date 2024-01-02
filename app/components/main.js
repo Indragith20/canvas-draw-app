@@ -376,8 +376,8 @@ class MainComponent extends React.PureComponent {
       let deltaX = ev.targetTouches[0].clientX - this.touchStartX;
       let deltaY = ev.targetTouches[0].clientY - this.touchStartY;
       //let thresholdedDelta = this.onTouchMoveThreshold(deltaX, deltaY);
-      ev.deltaX = deltaX;
-      ev.deltaY = deltaY;
+      ev.deltaX = -(deltaX);
+      ev.deltaY = -(deltaY);
       if (selectedTool === 'select') {
         this.onWheelMove(ev);
       } else {
