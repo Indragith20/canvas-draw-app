@@ -116,7 +116,6 @@ function changeCoordsForMoveTool(selectedElement, scalingFactor) {
 }
 
 function restoreContext(ctx, width, height, selectedTheme, lineWidth) {
-  console.log('Restoring context');
   ctx.restore();
   ctx.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
   ctx.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';

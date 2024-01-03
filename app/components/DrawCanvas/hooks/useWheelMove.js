@@ -1,41 +1,31 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { UPDATE_SCROLL_REGION } from '../DrawAreaContext';
+import useEventListener from './useEventListener';
 
 function useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool }) {
 
-  let dpr = 1;
+  let dpr = useRef(window.devicePixelRatio || 1);
 
-  if (typeof window !== 'undefined') {
-    dpr = window.devicePixelRatio || 1
-  }
-
-  const onWheelMove = useCallback((e) => {
+  function onWheelMove(e) {
     if (disableScroll) {
       return;
     }
 
     if (selectedTool === 'text') {
       // Drawing text on canvas before scroll move
+      console.log(tool.current);
       tool.current['onBlur']();
     }
     dispatch({
       type: UPDATE_SCROLL_REGION,
       payload: {
-        deltaX: e.deltaX / dpr,
-        deltaY: e.deltaY / dpr
+        deltaX: e.deltaX / dpr.current,
+        deltaY: e.deltaY / dpr.current
       }
     });
-  }, [disableScroll, dispatch, selectedTool, tool, dpr]);
+  }
 
-  useEffect(() => {
-    let canvasRef = tempCanvas.current;
-
-    canvasRef.addEventListener('wheel', onWheelMove, false);
-
-    return () => {
-      canvasRef.addEventListener('wheel', onWheelMove, false);
-    }
-  }, [tempCanvas, onWheelMove]);
+  useEventListener('wheel', onWheelMove, tempCanvas, false);
 }
 
 export default useWheelMove

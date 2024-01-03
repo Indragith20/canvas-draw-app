@@ -4,6 +4,8 @@ import { changeFromOneScalingFactor, changeToOneScalingFactor } from '~/componen
 import { UPDATE_CANVAS_AREA } from '../DrawAreaContext';
 import { getEdges } from '~/components/utils/common';
 import { restoreContext } from '../utils';
+import useEventListener from './useEventListener';
+import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 
 function getEdgesForSelectedElement(elementX, elementY, width, height, state, elementType = 'rectangle') {
   let { scrollX, scrollY, scalingFactor } = state;
@@ -44,7 +46,7 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
 
   let edgesForResize = useRef([]);
 
-  const clearSelectedElement = useCallback(() => {
+  function clearSelectedElement() {
     if (selectedElement) {
       let tempContext = tempCanvas.current.getContext('2d');
       restoreContext(tempContext, tempCanvas.current.width, tempCanvas.current.height, selectedTheme, lineWidth);
@@ -57,9 +59,9 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
         }
       })
     }
-  }, [dispatch, selectedElement, tempCanvas, tool, selectedTheme, lineWidth])
+  }
 
-  const onDocumentClick = useCallback((ev) => {
+  function onDocumentClick(ev) {
     ev._x = changeToOneScalingFactor(ev.x - scrollX, scalingFactor);
     ev._y = changeToOneScalingFactor(ev.y - scrollY, scalingFactor);
 
@@ -84,20 +86,9 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
         clearSelectedElement();
       }
     }
-  }, [scrollX, scrollY, selectedTool, shapes, dispatch, scalingFactor, tool, clearSelectedElement]);
+  }
 
-
-  useEffect(() => {
-    let canvasRef = tempCanvas.current;
-    console.log('updated');
-    canvasRef.addEventListener('click', onDocumentClick, false);
-    return () => {
-      canvasRef.removeEventListener('click', onDocumentClick, false);
-    }
-  }, [onDocumentClick, tempCanvas]);
-
-
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (selectedElement && selectedTool === 'select') {
       let tempContext = tempCanvas.current.getContext('2d');
       tempContext.clearRect(0, 0, tempCanvas.current.width, tempCanvas.current.height);
@@ -136,6 +127,8 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
     }
   }, [selectedElement, selectedTool, scrollX, scrollY, scalingFactor, tempCanvas]);
 
+
+  useEventListener('click', onDocumentClick, tempCanvas, false);
 
   return edgesForResize;
 }

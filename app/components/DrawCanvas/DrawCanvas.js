@@ -15,6 +15,8 @@ import { getChalkRectValues, getElementsAtPosition } from '../utils/getElementsA
 import MoveTool from '../Shapes/MoveTool';
 import useClickHandler from './hooks/useClickHandler';
 import useWheelMove from './hooks/useWheelMove';
+import useResize from './hooks/useResize';
+import useTextTool from './hooks/useTextTool';
 
 let eventTypeMapping = {
   'mouseup': 'mouseup',
@@ -176,7 +178,6 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove })
 
   useEffect(() => {
     if (tempCanvas.current && tempCanvas.current.width > 0 && tempCanvas.current.height > 0) {
-      console.log('Inside', selectedTheme);
       let tempContext = tempCanvas.current.getContext('2d');
       let mainContext = mainCanvas.current.getContext('2d');
       tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';// Default line color. 
@@ -229,20 +230,20 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove })
 
   useEffect(() => {
     if (selectedTool === 'select') {
-      console.log('Inside Select tool', tools);
       tool.current = null;
-    } else if (selectedTool !== 'move') {
+    } else if (selectedTool !== 'move' && selectedTool !== 'text') {
       let tempContext = tempCanvas.current.getContext('2d');
       let toolSelected = tools.current[selectedTool];
       tool.current = new toolSelected(tempCanvas.current, tempContext, imgUpdate, uuidv4());
-      console.log('selected tool', tool.current);
     }
   }, [selectedTool, imgUpdate]);
 
   // NOTE: selectedtool in click handler and wheel move. If possible refactor the early return
 
   let edgesForResize = useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, selectedTool, shapes, selectedElement, selectedTheme, lineWidth, dispatch });
-  useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool })
+  useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool });
+  useTextTool({ scrollX, scrollY, shapes, scalingFactor, tool, tempCanvas, selectedTheme, imgUpdate, dispatch })
+  useResize({ dispatch });
 
   return (
     <React.Fragment>

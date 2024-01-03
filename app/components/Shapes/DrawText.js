@@ -1,5 +1,6 @@
 class DrawText {
   constructor(tempCanvas, tempContext, callback, id, selectedTheme) {
+    console.trace('Draw Text Intialized', id)
     this.started = false;
 
     this.id = id;
@@ -137,6 +138,7 @@ class DrawText {
       // this.textBoxContainer.style.height = this.height + 'px';
     }
     this.tetxtareaClientStyle = this.textBox.getBoundingClientRect();
+    console.log('Inside dbl click', this.tetxtareaClientStyle)
   }
 }
 
