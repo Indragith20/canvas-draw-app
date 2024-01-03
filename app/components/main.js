@@ -147,6 +147,7 @@ class MainComponent extends React.PureComponent {
     this.DELTA_TIME_THRESHOLD_MS = 700;
     this.TOUCH_MOVE_THRESHOLD = 10;
 
+    this.dpr = null;
 
     this.keyMapping = {
       'ctrl+z': this.undo,
@@ -168,7 +169,7 @@ class MainComponent extends React.PureComponent {
 
 
   componentDidMount() {
-
+    this.dpr = window.devicePixelRatio || 1;
     this.setState({ canvasWidth: window.innerWidth, canvasHeight: window.innerHeight }, () => {
       this.redraw();
     });
@@ -374,9 +375,9 @@ class MainComponent extends React.PureComponent {
     if (ev.targetTouches.length === 1) {
       let deltaX = ev.targetTouches[0].clientX - this.touchStartX;
       let deltaY = ev.targetTouches[0].clientY - this.touchStartY;
-      let thresholdedDelta = this.onTouchMoveThreshold(deltaX, deltaY);
-      ev.deltaX = thresholdedDelta.x;
-      ev.deltaY = thresholdedDelta.y;
+      //let thresholdedDelta = this.onTouchMoveThreshold(deltaX, deltaY);
+      ev.deltaX = -(deltaX);
+      ev.deltaY = -(deltaY);
       if (selectedTool === 'select') {
         this.onWheelMove(ev);
       } else {
@@ -1010,11 +1011,12 @@ class MainComponent extends React.PureComponent {
     // this.state.scrollX = this.state.scrollX - e.deltaX;
     // this.state.scrollY = this.state.scrollY - e.deltaY;
     // this.redraw();
-    console.log(e.deltaX, e.deltaY);
+    let deltaX = e.deltaX / this.dpr;
+    let deltaY = e.deltaY / this.dpr;
     this.setState(prevstate => {
       return {
-        scrollX: prevstate.scrollX - e.deltaX,
-        scrollY: prevstate.scrollY - e.deltaY,
+        scrollX: prevstate.scrollX - deltaX,
+        scrollY: prevstate.scrollY - deltaY,
         selectedElement: null
       }
     }, () => {
