@@ -201,6 +201,10 @@ function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTh
     })
   }
 
+  function updateCursorType(cursor) {
+    mainContainerRef.current.style.cursor = cursor;
+  }
+
   let { baseFontSize, baseLineHeight, selectedTool, canvasWidth, canvasHeight, scalingFactor, scrollX, scrollY, showModal, shapes, lineWidth, selectedElement } = state;
   let cursorType = `${selectedTool === 'select' || selectedElement !== null ? `move` : 'crosshair'}`
 
@@ -213,7 +217,7 @@ function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTh
         {/* <ShortcutKeys disableShortcut={selectedTool === 'text'} keyMapping={keyMapping} /> */}
         <div id="wrapper" >
           <div id="blackboardPlaceholder">
-            <DrawCanvas selectedTheme={selectedTheme} updateShape={updateShape} keepLastSelected={keepLastSelected} mouseMove={mouseMove} />
+            <DrawCanvas selectedTheme={selectedTheme} updateShape={updateShape} keepLastSelected={keepLastSelected} mouseMove={mouseMove} updateCursorType={updateCursorType} />
             <UserActivity
               width={canvasWidth}
               height={canvasHeight}

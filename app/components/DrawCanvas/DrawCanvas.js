@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { changeToOneScalingFactor, printCanvas } from '../utils/redrawCanvas';
+import { changeFromOneScalingFactor, changeToOneScalingFactor, printCanvas } from '../utils/redrawCanvas';
 import DrawAreaContext, { UPDATE_CANVAS_AREA, UPDATE_SELECTED_TOOL } from './DrawAreaContext';
 import Chalk from '../Shapes/Chalk';
 import Line from '../Shapes/Line';
@@ -10,13 +10,15 @@ import DrawText from '../Shapes/DrawText';
 import Circle from '../Shapes/Circle';
 import Diamond from '../Shapes/Diamond';
 import { getUpdatedPerformedActions } from '../utils/common';
-import { changeCoordsForMoveTool, changeDrawenImageCoords, checkAndGetFilteredShapes, detectDragging, drawOuterRect, getEdgesForSelectedElement, restoreContext } from './utils';
-import { getChalkRectValues, getElementsAtPosition } from '../utils/getElementsAtPosition';
+import { changeCoordsForMoveTool, changeCoordsForResizeTool, changeDrawenImageCoords, checkAndGetFilteredShapes, detectDragging, getCursorPositionAndType, restoreContext } from './utils';
+import { getElementsAtPosition } from '../utils/getElementsAtPosition';
 import MoveTool from '../Shapes/MoveTool';
 import useClickHandler from './hooks/useClickHandler';
 import useWheelMove from './hooks/useWheelMove';
 import useResize from './hooks/useResize';
 import useTextTool from './hooks/useTextTool';
+import ResizeTool from '../Shapes/ResizeTool';
+import useMouseOrTouchEvents from './hooks/useMouseOrTouchEvents';
 
 let eventTypeMapping = {
   'mouseup': 'mouseup',
@@ -43,7 +45,7 @@ let toolsSupported = {
 
 
 
-function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove }) {
+function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, updateCursorType }) {
 
   let mainCanvas = useRef(null);
   let tempCanvas = useRef(null);
@@ -66,6 +68,9 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove })
     lineWidth, baseLineHeight, baseFontSize,
     canvasHeight, canvasWidth, disableScroll
   } = state;
+
+  // NOTE: selectedtool in click handler and wheel move. If possible refactor the early return
+  let edgesForResize = useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, selectedTool, shapes, selectedElement, selectedTheme, lineWidth, dispatch });
 
 
   const drawImage = useCallback(() => {
@@ -117,7 +122,7 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove })
     }
   }, [dispatch, drawImage, state, updateShape])
 
-  const onMoveElement = useCallback((ev, currentCanvasState) => {
+  function onMoveElement(ev, currentCanvasState) {
     let { shapes, scrollX, scrollY, scalingFactor, selectedTheme } = currentCanvasState;
     if (!draggingElement.current) {
       ev._x = changeToOneScalingFactor(ev.x - scrollX, scalingFactor);
@@ -148,9 +153,40 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove })
         }
       }
     }
-  }, [dispatch, imgUpdate]);
+  };
 
-  const onEvent = useCallback((ev) => {
+  function onResizeElement(ev, cursorPosition) {
+    if (cursorPosition !== null || isResizing.current) {
+      ev._x = changeFromOneScalingFactor(ev.x - scrollX, scalingFactor);
+      ev._y = changeFromOneScalingFactor(ev.y - scrollY, scalingFactor);
+      if (ev.type === 'mousedown') {
+        isResizing.current = true;
+        let modifiedSelectedElement = changeCoordsForResizeTool(selectedElement, scalingFactor, { scrollX, scrollY });
+        let tempContext = tempCanvas.current.getContext('2d');
+        tool.current = new ResizeTool(tempCanvas.current, tempContext, imgUpdate, modifiedSelectedElement.id, modifiedSelectedElement, cursorPosition, { selectedTheme, lineWidth });
+        let updatedShapes = shapes.filter(shape => shape.id !== selectedElement.id);
+        dispatch({
+          type: UPDATE_CANVAS_AREA,
+          payload: {
+            shapes: updatedShapes
+          }
+        });
+        tool.current.drawExisitingElementOnTemp();
+
+
+      } else if (ev.type === 'mouseup') {
+        isResizing.current = false;
+      }
+      if (tool.current !== null) {
+        let func = tool.current[eventTypeMapping[ev.type]];
+        if (func) {
+          func(ev);
+        }
+      }
+    }
+  };
+
+  function onEvent(ev) {
     ev._x = ev.x;
     ev._y = ev.y;
 
@@ -163,18 +199,19 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove })
     } else {
       // Temp Hack: Not allowing free drawn shape and text to be resized
       if (isResizing.current && (selectedElement.type !== 'text' || selectedElement.type === 'chalk')) {
-        //this.onResizeElement(ev);
+        onResizeElement(ev);
       } else if (tool.current) {
         let func = tool.current[eventTypeMapping[ev.type]];
         if (func) {
           func(ev);
         }
       } else if (selectedElement && (selectedElement.type !== 'text' || selectedElement.type === 'chalk')) {
-        // let cursorPositonOnElement = this.getCursorPositionAndUpdateCursor(ev);
-        // this.onResizeElement(ev, cursorPositonOnElement);
+        let { position: cursorPositonOnElement, cursorType } = getCursorPositionAndType(ev, { edgesForResize, selectedElement, selectedTool });
+        updateCursorType(cursorType)
+        onResizeElement(ev, cursorPositonOnElement);
       }
     }
-  }, [mouseMove, onMoveElement, state, selectedTheme])
+  };
 
   useEffect(() => {
     if (tempCanvas.current && tempCanvas.current.width > 0 && tempCanvas.current.height > 0) {
@@ -205,22 +242,6 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove })
   }
 
 
-  useEffect(() => {
-
-    let canvasRef = tempCanvas.current;
-
-    canvasRef.addEventListener('mousedown', onEvent, false);
-    canvasRef.addEventListener('mousemove', onEvent, false);
-    canvasRef.addEventListener('mouseup', onEvent, false);
-
-
-    return () => {
-      canvasRef.removeEventListener('mousedown', onEvent, false);
-      canvasRef.removeEventListener('mousemove', onEvent, false);
-      canvasRef.removeEventListener('mouseup', onEvent, false);
-    }
-  }, [onEvent]);
-
 
   useEffect(() => {
     let tempContext = tempCanvas.current.getContext('2d');
@@ -229,18 +250,18 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove })
 
 
   useEffect(() => {
-    if (selectedTool === 'select') {
+    if (selectedTool === 'select' && !isResizing.current) {
       tool.current = null;
-    } else if (selectedTool !== 'move' && selectedTool !== 'text') {
+    } else if (selectedTool !== 'move' && selectedTool !== 'text' && !isResizing.current) {
       let tempContext = tempCanvas.current.getContext('2d');
       let toolSelected = tools.current[selectedTool];
       tool.current = new toolSelected(tempCanvas.current, tempContext, imgUpdate, uuidv4());
     }
   }, [selectedTool, imgUpdate]);
 
-  // NOTE: selectedtool in click handler and wheel move. If possible refactor the early return
 
-  let edgesForResize = useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, selectedTool, shapes, selectedElement, selectedTheme, lineWidth, dispatch });
+  useMouseOrTouchEvents({ tempCanvas, onEvent });
+
   useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool });
   useTextTool({ scrollX, scrollY, shapes, scalingFactor, tool, tempCanvas, selectedTheme, imgUpdate, dispatch })
   useResize({ dispatch });

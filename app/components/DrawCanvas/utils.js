@@ -1,3 +1,4 @@
+import { CURSOR_BIDIRECTIONAL_MAPPING } from '../utils/common';
 import { changeFromOneScalingFactor, changeToOneScalingFactor } from '../utils/redrawCanvas';
 
 
@@ -115,6 +116,34 @@ function changeCoordsForMoveTool(selectedElement, scalingFactor) {
   return modifiedSelectedElement;
 }
 
+function changeCoordsForResizeTool(selectedElement, scalingFactor, { scrollX, scrollY }) {
+  let modifiedSelectedElement = {
+    ...selectedElement,
+    x: changeFromOneScalingFactor(selectedElement.x, scalingFactor) + scrollX,
+    y: changeFromOneScalingFactor(selectedElement.y, scalingFactor) + scrollY,
+    endX: changeFromOneScalingFactor(selectedElement.endX, scalingFactor) + scrollX,
+    endY: changeFromOneScalingFactor(selectedElement.endY, scalingFactor) + scrollY,
+    startX: changeFromOneScalingFactor(selectedElement.startX, scalingFactor) + scrollX,
+    startY: changeFromOneScalingFactor(selectedElement.startY, scalingFactor) + scrollY,
+    radius: changeFromOneScalingFactor(selectedElement.radius, scalingFactor),
+    width: selectedElement.width ? changeFromOneScalingFactor(selectedElement.width, scalingFactor) : null,
+    height: selectedElement.height ? changeFromOneScalingFactor(selectedElement.height, scalingFactor) : null,
+    scalingFactor: scalingFactor
+  }
+
+  // TODO: Once finalized how to resize free drawn shape we need to work on this
+  // if (modifiedSelectedElement.type === 'chalk') {
+  //   modifiedSelectedElement = {
+  //     ...modifiedSelectedElement,
+  //     drawPoints: modifiedSelectedElement.drawPoints.map(point => {
+  //       return { x: changeFromOneScalingFactor(point.x, scalingFactor), y: changeFromOneScalingFactor(point.y, scalingFactor) }
+  //     })
+  //   }
+  //}
+
+  return modifiedSelectedElement;
+}
+
 function restoreContext(ctx, width, height, selectedTheme, lineWidth) {
   ctx.restore();
   ctx.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
@@ -125,4 +154,35 @@ function restoreContext(ctx, width, height, selectedTheme, lineWidth) {
 }
 
 
-export { changeDrawenImageCoords, checkAndGetFilteredShapes, detectDragging, changeCoordsForMoveTool, restoreContext };
+function getCursorPositionAndType(ev, { edgesForResize, selectedTool, selectedElement }) {
+  let position = null;
+  let cursorType = null;
+  if (edgesForResize.current.length > 0) {
+    let isMatchFound = edgesForResize.current.findIndex(([x, y]) => {
+      if (x === null || y === null) {
+        return false;
+      }
+      let diffX = Math.abs(x - ev._x);
+      let diffY = Math.abs(y - ev._y);
+      return diffX < 5 && diffY < 5;
+    });
+    if (isMatchFound >= 0) {
+      let [cursor, cursorPositionOnElement] = CURSOR_BIDIRECTIONAL_MAPPING[isMatchFound];
+      position = cursorPositionOnElement;
+      cursorType = cursor;
+    } else {
+      cursorType = selectedTool === 'select' || selectedElement !== null ? `move` : 'crosshair';
+    }
+  }
+  return { position, cursorType };
+}
+
+export {
+  changeDrawenImageCoords,
+  checkAndGetFilteredShapes,
+  detectDragging,
+  changeCoordsForMoveTool,
+  changeCoordsForResizeTool,
+  restoreContext,
+  getCursorPositionAndType
+};

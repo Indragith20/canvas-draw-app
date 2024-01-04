@@ -21,6 +21,7 @@ class ResizeTool extends DrawShapeOnCanvas {
     this.getModifiedRect = this.getModifiedRect.bind(this);
     this.getResizeCircleCoords = this.getResizeCircleCoords.bind(this);
     this.getResizeDiamondCoords = this.getResizeDiamondCoords.bind(this);
+    this.getArrowLineCoords = this.getArrowLineCoords.bind(this);
     this.element = element;
     this.cursorPositionOnElement = cursorPosition;
     this.selectedTheme = selectedTheme;
@@ -48,8 +49,8 @@ class ResizeTool extends DrawShapeOnCanvas {
         let modifiedCircle = this.getResizeCircleCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
         this.callback({ ...modifiedCircle, id: this.element.id, isResizedElement: true });
       } else if (this.element.type === 'arrow' || this.element.type === 'line') {
-        let modifiedElement = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
-        this.callback({ ...modifiedElement, startX: modifiedElement.x, startY: modifiedElement.y, id: this.element.id, isResizedElement: true })
+        let modifiedElement = this.getArrowLineCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
+        this.callback({ ...modifiedElement, startX: Math.min(modifiedElement.x, modifiedElement.endX), startY: Math.min(modifiedElement.y, modifiedElement.endY), id: this.element.id, isResizedElement: true })
       } else if (this.element.type === 'diamond') {
         let modifiedRect = this.getResizeDiamondCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
         this.callback({ ...modifiedRect, id: this.element.id, isResizedElement: true, height: modifiedRect.width });
@@ -72,6 +73,67 @@ class ResizeTool extends DrawShapeOnCanvas {
         return { ...element, height: element.height - diffY, endY: element.endY - diffY, x: element.x - diffX, width: element.width + diffX };
       case RESIZE_MAPPING.BOTTOM_RIGHT:
         return { ...element, height: element.height - diffY, endY: element.endY - diffY, endX: element.endX - diffX, width: element.width - diffX };
+      case RESIZE_MAPPING.TOP_LEFT:
+        return { ...element, height: element.height + diffY, y: element.y - diffY, x: element.x - diffX, width: element.width + diffX };
+      case RESIZE_MAPPING.TOP_RIGHT:
+        return { ...element, height: element.height + diffY, y: element.y - diffY, endX: element.endX - diffX, width: element.width - diffX };
+      default:
+        return element;
+    }
+  }
+
+  getArrowLineCoords(element, cursorPosition, { diffX, diffY }) {
+    switch (cursorPosition) {
+      case RESIZE_MAPPING.BOTTOM_MIDDLE:
+        return { ...element, height: element.height - diffY, endY: element.endY - diffY };
+      case RESIZE_MAPPING.TOP_MIDDLE:
+        let y = element.y - diffY;
+        return { ...element, height: element.height + diffY, y, startY: Math.min(y, element.endY) };
+      case RESIZE_MAPPING.LEFT_MIDDLE: {
+        let endX = element.endX;
+        let x = element.x;
+        if (x > endX) {
+          endX = endX - diffX;
+        } else {
+          x = x - diffX;
+        }
+        return { ...element, width: element.width + diffX, x, endX, startX: Math.min(endX, x) };
+      }
+      case RESIZE_MAPPING.RIGHT_MIDDLE: {
+        let endX = element.endX;
+        let x = element.x;
+        if (x > endX) {
+          endX = endX - diffX;
+
+        } else {
+          x = x - diffX;
+        }
+        return { ...element, width: element.width - diffX, x, endX, startX: Math.min(endX, x) };
+      }
+      case RESIZE_MAPPING.BOTTOM_LEFT: {
+        let endX = element.endX;
+        let x = element.x;
+        if (x > endX) {
+          endX = endX - diffX;
+        } else {
+          x = x - diffX;
+        }
+        return { ...element, height: element.height - diffY, endY: element.endY - diffY, x, endX, startX: Math.min(endX, x), width: element.width + diffX };
+      }
+
+      case RESIZE_MAPPING.BOTTOM_RIGHT: {
+        let endX = element.endX;
+        let x = element.x;
+        if (x > endX) {
+          x = x + diffX;
+
+        } else {
+          endX = endX + diffX;
+        }
+        //return { ...element, height: element.height - diffY, endY: element.endY - diffY, x, endX, startX: Math.min(endX, x), width: element.width - diffX };
+        return { ...element, height: element.height - diffY, endY: element.endY - diffY, endX: element.endX - diffX, width: element.width - diffX };
+      }
+
       case RESIZE_MAPPING.TOP_LEFT:
         return { ...element, height: element.height + diffY, y: element.y - diffY, x: element.x - diffX, width: element.width + diffX };
       case RESIZE_MAPPING.TOP_RIGHT:
@@ -172,10 +234,10 @@ class ResizeTool extends DrawShapeOnCanvas {
       this.tempContext.closePath();
       this.strokeOuterRect(modifiedElement.x - modifiedElement.radius, modifiedElement.y - modifiedElement.radius, modifiedElement.radius * 2, modifiedElement.radius * 2)
     } else if (this.element.type === 'arrow') {
-      let modifiedElement = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
-      let { x, y, endX, endY } = modifiedElement;
+      let modifiedElement = this.getArrowLineCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
+      let { x, y, endX, endY, startX, startY } = modifiedElement;
       drawArrow(x, y, endX, endY, this.tempContext);
-      this.strokeOuterRect(modifiedElement.x, modifiedElement.y, modifiedElement.width, modifiedElement.height);
+      this.strokeOuterRect(startX, startY, modifiedElement.width, modifiedElement.height);
     } else if (this.element.type === 'line') {
       let modifiedElement = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
       let { x, y, endX, endY } = modifiedElement;

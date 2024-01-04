@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { getChalkRectValues, getElementsAtPosition } from '~/components/utils/getElementsAtPosition';
 import { changeFromOneScalingFactor, changeToOneScalingFactor } from '~/components/utils/redrawCanvas';
 import { UPDATE_CANVAS_AREA } from '../DrawAreaContext';
 import { getEdges } from '~/components/utils/common';
 import { restoreContext } from '../utils';
 import useEventListener from './useEventListener';
-import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 
 function getEdgesForSelectedElement(elementX, elementY, width, height, state, elementType = 'rectangle') {
   let { scrollX, scrollY, scalingFactor } = state;
@@ -71,10 +70,9 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
       tool.current['onBlur']();
       return;
     }
-    console.log("selectedTool", selectedTool)
     if (selectedTool === 'select') {
-
       let selectedElement = getElementsAtPosition(ev._x, ev._y, shapes);
+      console.log("selectedEle", selectedElement);
       if (selectedElement) {
         dispatch({
           type: UPDATE_CANVAS_AREA,
@@ -88,7 +86,7 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
     }
   }
 
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     if (selectedElement && selectedTool === 'select') {
       let tempContext = tempCanvas.current.getContext('2d');
       tempContext.clearRect(0, 0, tempCanvas.current.width, tempCanvas.current.height);
