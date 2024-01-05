@@ -17,7 +17,9 @@ const userColorCodes = ["#FF38D1",
   "#0095FF",
   "#00B874",
   "#FF3168",
-  "#FFAB03"]
+  "#FFAB03"
+];
+
 function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape, removeShape, deleteAllShapes, baseLineHeight, baseFontSize }) {
   const userActivityCanvasRef = useRef(null);
   const userActivityContext = useRef(null);
@@ -100,7 +102,7 @@ function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape
     socket.on('deleteAllShapes', deleteAllShapes);
     socket.on('setliveuser', onLiveUserAdded);
     socket.on('removeliveuser', onRemoveLiveUser);
-
+    console.log('Listener added');
     return () => {
       socket.off('mousemove', onMouseMove);
       socket.off('updateshape', onUpdateShape);

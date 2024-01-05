@@ -1,6 +1,6 @@
 import { RESIZE_MAPPING } from '~/constants/resizeMapping';
 import { drawArrow } from '../utils/drawArrow';
-import { drawDiamond, drawText } from '../utils/drawShapes';
+import { drawDiamond } from '../utils/drawShapes';
 import DrawShapeOnCanvas from './DrawShapeOnCanvas';
 
 class ResizeTool extends DrawShapeOnCanvas {
@@ -103,10 +103,9 @@ class ResizeTool extends DrawShapeOnCanvas {
         let endX = element.endX;
         let x = element.x;
         if (x > endX) {
-          endX = endX - diffX;
-
-        } else {
           x = x - diffX;
+        } else {
+          endX = endX - diffX;
         }
         return { ...element, width: element.width - diffX, x, endX, startX: Math.min(endX, x) };
       }
@@ -125,19 +124,36 @@ class ResizeTool extends DrawShapeOnCanvas {
         let endX = element.endX;
         let x = element.x;
         if (x > endX) {
-          x = x + diffX;
-
+          x = x - diffX;
         } else {
-          endX = endX + diffX;
+          endX = endX - diffX;
         }
-        //return { ...element, height: element.height - diffY, endY: element.endY - diffY, x, endX, startX: Math.min(endX, x), width: element.width - diffX };
-        return { ...element, height: element.height - diffY, endY: element.endY - diffY, endX: element.endX - diffX, width: element.width - diffX };
+        return { ...element, height: element.height - diffY, endY: element.endY - diffY, x, endX, startX: Math.min(endX, x), width: element.width - diffX };
       }
 
-      case RESIZE_MAPPING.TOP_LEFT:
-        return { ...element, height: element.height + diffY, y: element.y - diffY, x: element.x - diffX, width: element.width + diffX };
-      case RESIZE_MAPPING.TOP_RIGHT:
-        return { ...element, height: element.height + diffY, y: element.y - diffY, endX: element.endX - diffX, width: element.width - diffX };
+      case RESIZE_MAPPING.TOP_LEFT: {
+        let endX = element.endX;
+        let x = element.x;
+        if (x > endX) {
+          endX = endX - diffX;
+        } else {
+          x = x - diffX;
+        }
+        let y = element.y - diffY;
+        return { ...element, height: element.height + diffY, y, x, endX, startX: Math.min(x, endX), startY: Math.min(y, element.endY), width: element.width + diffX };
+      }
+      case RESIZE_MAPPING.TOP_RIGHT: {
+        let endX = element.endX;
+        let x = element.x;
+        if (x > endX) {
+          x = x - diffX;
+        } else {
+          endX = endX - diffX;
+        }
+        let y = element.y - diffY;
+        return { ...element, height: element.height + diffY, y, x, endX, startX: Math.min(x, endX), startY: Math.min(y, element.endY), width: element.width - diffX };
+      }
+
       default:
         return element;
     }
@@ -239,14 +255,14 @@ class ResizeTool extends DrawShapeOnCanvas {
       drawArrow(x, y, endX, endY, this.tempContext);
       this.strokeOuterRect(startX, startY, modifiedElement.width, modifiedElement.height);
     } else if (this.element.type === 'line') {
-      let modifiedElement = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
-      let { x, y, endX, endY } = modifiedElement;
+      let modifiedElement = this.getArrowLineCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
+      let { x, y, endX, endY, startX, startY } = modifiedElement;
       this.tempContext.beginPath();
       this.tempContext.moveTo(x, y);
       this.tempContext.lineTo(endX, endY);
       this.tempContext.stroke();
       this.tempContext.closePath();
-      this.strokeOuterRect(modifiedElement.x, modifiedElement.y, modifiedElement.width, modifiedElement.height);
+      this.strokeOuterRect(startX, startY, modifiedElement.width, modifiedElement.height);
     } else if (this.element.type === 'diamond') {
       let modifiedElement = this.getResizeDiamondCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
       let xCenter = modifiedElement.x;

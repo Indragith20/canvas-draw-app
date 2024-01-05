@@ -30,4 +30,4 @@ function HintComponent() {
   )
 }
 
-export default HintComponent;
+export default React.memo(HintComponent);

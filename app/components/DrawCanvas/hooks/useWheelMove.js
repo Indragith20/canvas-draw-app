@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { UPDATE_SCROLL_REGION } from '../DrawAreaContext';
 import useEventListener from './useEventListener';
 
 function useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool }) {
 
-  let dpr = useRef(window.devicePixelRatio || 1);
+  let dpr = useRef(typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1);
 
   function onWheelMove(e) {
     if (disableScroll) {
@@ -25,7 +25,9 @@ function useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool 
     });
   }
 
-  useEventListener('wheel', onWheelMove, tempCanvas, false);
+  useEventListener('wheel', onWheelMove, tempCanvas, { passive: true });
+
+  return onWheelMove;
 }
 
 export default useWheelMove

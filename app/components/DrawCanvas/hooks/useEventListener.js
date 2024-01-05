@@ -1,6 +1,14 @@
 import { useEffect, useRef } from 'react'
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect'
 
+
+const canUseDOM = !!(
+  typeof window !== 'undefined' &&
+  window.document &&
+  window.document.createElement
+);
+
+
 function useEventListener(
   eventName,
   handler,
@@ -15,7 +23,9 @@ function useEventListener(
 
   useEffect(() => {
     // Define the listening target
-    const targetElement = element?.current ?? window
+    if (!canUseDOM) return; // Skip if not running in the browser
+
+    const targetElement = element?.current ?? window;
 
     if (!(targetElement && targetElement.addEventListener)) return
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import DrawText from '~/components/Shapes/DrawText';
 import { getElementsAtPosition } from '~/components/utils/getElementsAtPosition';
@@ -61,6 +61,8 @@ function useTextTool({ scrollX, scrollY, shapes, scalingFactor, tool, tempCanvas
   }
 
   useEventListener('dblclick', changeToTextTool, tempCanvas, false);
+
+  return changeToTextTool;
 }
 
 export default useTextTool;

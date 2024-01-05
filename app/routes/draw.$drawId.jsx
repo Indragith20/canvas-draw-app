@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 import ErrorBoundaryStyles from '../styles/errorBoundary.css';
 
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
-import MainComponent, { MainComponentStyles } from '~/components/main';
+import MainComponent, { MainComponentStyles } from '~/components/main-revamped';
 import { SelectToolLinks } from '~/components/SelectTool/SelectTool';
 import { TextToolLinks } from '~/components/TextTool/TextTool';
 import { ZoomContainerLinks } from '~/components/ZoomContainer/ZoomContainer';
