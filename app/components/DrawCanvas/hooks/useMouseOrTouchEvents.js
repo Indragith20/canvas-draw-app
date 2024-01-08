@@ -18,6 +18,7 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, onWheelMove, selectedTool,
   }
 
   function onTouchStart(ev) {
+    ev.preventDefault();
     if (ev.targetTouches.length === 1) {
       touchStartX = ev.targetTouches[0].clientX;
       touchStartY = ev.targetTouches[0].clientY;
@@ -30,6 +31,7 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, onWheelMove, selectedTool,
   }
 
   function onTouchEnd(ev) {
+    ev.preventDefault();
     if (ev.changedTouches.length === 1) {
       if (touchStartTimer === null) {
         touchStartTimer = setTimeout(() => {
@@ -75,9 +77,9 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, onWheelMove, selectedTool,
   useEventListener('mousemove', filterEvent, tempCanvas, false);
   useEventListener('mouseup', filterEvent, tempCanvas, false);
 
-  useEventListener('touchstart', onTouchStart, tempCanvas, { passive: true });
-  useEventListener('touchmove', onTouchMove, tempCanvas, { passive: true });
-  useEventListener('touchend', onTouchEnd, tempCanvas, { passive: true });
+  useEventListener('touchstart', onTouchStart, tempCanvas, false);
+  useEventListener('touchmove', onTouchMove, tempCanvas, false);
+  useEventListener('touchend', onTouchEnd, tempCanvas, false);
 }
 
 export default useMouseOrTouchEvents;
