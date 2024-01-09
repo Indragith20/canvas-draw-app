@@ -21,8 +21,9 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
   function onTouchStart(ev) {
     ev.preventDefault();
     if (ev.targetTouches.length === 1) {
-      touchStartX = ev.targetTouches[0].clientX;
-      touchStartY = ev.targetTouches[0].clientY;
+      console.log('Touch Start Event Called');
+      touchStartX.current = ev.targetTouches[0].clientX;
+      touchStartY.current = ev.targetTouches[0].clientY;
       ev.x = ev.targetTouches[0].clientX;
       ev.y = ev.targetTouches[0].clientY;
       onEvent(ev);
@@ -35,15 +36,17 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
   function onTouchEnd(ev) {
     ev.preventDefault();
     if (ev.changedTouches.length === 1) {
-      if (touchStartTimer === null) {
-        touchStartTimer = setTimeout(() => {
-          touchStartTimer = null;
+      if (touchStartTimer.current === null) {
+        touchStartTimer.current = setTimeout(() => {
+          touchStartTimer.current = null;
         }, DELTA_TIME_THRESHOLD_MS);
         ev.x = ev.changedTouches[0].clientX;
         ev.y = ev.changedTouches[0].clientY;
+        console.log('Touch End Event Called');
         onEvent(ev);
       } else {
-        if ((Math.abs(ev.changedTouches[0].clientX - touchStartX) < 10) && (Math.abs(ev.changedTouches[0].clientY - touchStartY) < 10)) {
+        console.log('else case');
+        if ((Math.abs(ev.changedTouches[0].clientX - touchStartX.current) < 10) && (Math.abs(ev.changedTouches[0].clientY - touchStartY.current) < 10)) {
           ev.preventDefault();
           ev.x = ev.changedTouches[0].clientX;
           ev.y = ev.changedTouches[0].clientY;
@@ -62,6 +65,7 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
     if (selectedTool === 'text') {
       tool.current['onBlur']();
     }
+    console.log('dispatching', e.deltaX / dpr.current, e.deltaY / dpr.current)
     dispatch({
       type: UPDATE_SCROLL_REGION,
       payload: {
@@ -74,8 +78,8 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
   function onTouchMove(ev) {
     ev.preventDefault();
     if (ev.targetTouches.length === 1) {
-      let deltaX = ev.targetTouches[0].clientX - touchStartX;
-      let deltaY = ev.targetTouches[0].clientY - touchStartY;
+      let deltaX = ev.targetTouches[0].clientX - touchStartX.current;
+      let deltaY = ev.targetTouches[0].clientY - touchStartY.current;
       ev.deltaX = -(deltaX);
       ev.deltaY = -(deltaY);
       if (selectedTool === 'select') {
