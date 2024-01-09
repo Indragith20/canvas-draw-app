@@ -75,13 +75,17 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
     });
   }
 
+  function clamp(value) {
+    return Math.min(Math.max(value, -5), 5);
+  };
+
   function onTouchMove(ev) {
     ev.preventDefault();
     if (ev.targetTouches.length === 1) {
       let deltaX = ev.targetTouches[0].clientX - touchStartX.current;
       let deltaY = ev.targetTouches[0].clientY - touchStartY.current;
-      ev.deltaX = -(Math.min(Math.abs(deltaX), 5));
-      ev.deltaY = -(Math.min(Math.abs(deltaY), 5));
+      ev.deltaX = -(clamp(deltaX));
+      ev.deltaY = -(clamp(deltaY));
       if (selectedTool === 'select') {
         onWheelMove(ev);
       } else {
