@@ -76,7 +76,7 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
   }
 
   function clamp(value) {
-    return Math.min(Math.max(value, -5), 5);
+    return Math.min(Math.max(value, -10), 10);
   };
 
   function onTouchMove(ev) {
