@@ -2,9 +2,10 @@ import { isTouchDevice } from '~/components/utils/common';
 import useEventListener from './useEventListener';
 import { useRef } from 'react';
 import throttle from '~/components/utils/throttle';
+import { UPDATE_SCROLL_REGION } from '../DrawAreaContext';
 
-function useMouseOrTouchEvents({ tempCanvas, onEvent, onWheelMove, selectedTool, changeToTextTool }) {
-
+function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, changeToTextTool, tool, disableScroll }) {
+  let dpr = useRef(typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1);
   let touchStartX = useRef(null);
   let touchStartY = useRef(null);
   let touchStartTimer = useRef(null);
@@ -25,9 +26,10 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, onWheelMove, selectedTool,
       ev.x = ev.targetTouches[0].clientX;
       ev.y = ev.targetTouches[0].clientY;
       onEvent(ev);
-    } else {
-      onEvent(ev);
     }
+    //  else {
+    //   onEvent(ev);
+    // }
   }
 
   function onTouchEnd(ev) {
@@ -52,6 +54,23 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, onWheelMove, selectedTool,
     }
   }
 
+  function onWheelMove(e) {
+    if (disableScroll) {
+      return;
+    }
+
+    if (selectedTool === 'text') {
+      tool.current['onBlur']();
+    }
+    dispatch({
+      type: UPDATE_SCROLL_REGION,
+      payload: {
+        deltaX: e.deltaX / dpr.current,
+        deltaY: e.deltaY / dpr.current
+      }
+    });
+  }
+
   function onTouchMove(ev) {
     ev.preventDefault();
     if (ev.targetTouches.length === 1) {
@@ -67,9 +86,10 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, onWheelMove, selectedTool,
         onEvent(ev);
       }
 
-    } else {
-      onEvent(ev);
-    }
+    } 
+    // else {
+    //   onEvent(ev);
+    // }
   };
 
 

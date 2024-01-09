@@ -12,8 +12,6 @@ function useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool 
     }
 
     if (selectedTool === 'text') {
-      // Drawing text on canvas before scroll move
-      console.log(tool.current);
       tool.current['onBlur']();
     }
     dispatch({

@@ -263,11 +263,11 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
 
 
 
-  let onWheelMove = useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool });
+  useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool });
 
   let changeToTextTool = useTextTool({ scrollX, scrollY, shapes, scalingFactor, tool, tempCanvas, selectedTheme, imgUpdate, dispatch })
   useResize({ dispatch });
-  useMouseOrTouchEvents({ tempCanvas, onEvent, onWheelMove, changeToTextTool, selectedTool });
+  useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, changeToTextTool, tool, disableScroll });
 
   return (
     <React.Fragment>
