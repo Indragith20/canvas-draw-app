@@ -87,8 +87,8 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
       let deltaY = ev.targetTouches[0].clientY - touchStartY.current;
       touchStartX.current = ev.targetTouches[0].clientX;
       touchStartY.current = ev.targetTouches[0].clientY;
-      ev.deltaX = -(clamp(deltaX));
-      ev.deltaY = -(clamp(deltaY));
+      ev.deltaX = -(deltaX);
+      ev.deltaY = -(deltaY);
       if (selectedTool === 'select') {
         onWheelMove(ev);
       } else {
