@@ -69,15 +69,11 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
     dispatch({
       type: UPDATE_SCROLL_REGION,
       payload: {
-        deltaX: e.deltaX / dpr.current,
-        deltaY: e.deltaY / dpr.current
+        deltaX: e.deltaX * dpr.current,
+        deltaY: e.deltaY * dpr.current
       }
     });
   }
-
-  function clamp(value) {
-    return Math.min(Math.max(value, -50), 50);
-  };
 
   function onTouchMove(ev) {
     ev.preventDefault();
