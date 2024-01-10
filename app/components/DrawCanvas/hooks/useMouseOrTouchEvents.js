@@ -9,16 +9,21 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
   let touchStartY = useRef(null);
   let touchStartTimer = useRef(null);
   let DELTA_TIME_THRESHOLD_MS = 700;
+  let touchIdentifier = useRef(null);
   let lastTouchTime = useRef(0);
 
 
   function handleClickDetection(ev) {
+    if (ev.changedTouches.length === 1) {
+      touchIdentifier.current = ev.changedTouches[0].identifier;
+    }
 
     const currentTime = Date.now();
     const timeSinceLastTouch = currentTime - lastTouchTime.current;
 
     if (timeSinceLastTouch <= 300) {
       // Double click detected
+      ev.preventDefault();
       ev.x = ev.changedTouches[0].clientX;;
       ev.y = ev.changedTouches[0].clientY;
       changeToTextTool(ev);
