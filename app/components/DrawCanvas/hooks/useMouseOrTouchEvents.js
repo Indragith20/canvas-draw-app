@@ -1,7 +1,6 @@
 import { isTouchDevice } from '~/components/utils/common';
 import useEventListener from './useEventListener';
 import { useRef } from 'react';
-import throttle from '~/components/utils/throttle';
 import { UPDATE_SCROLL_REGION } from '../DrawAreaContext';
 
 function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, changeToTextTool, tool, disableScroll }) {
@@ -10,7 +9,30 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
   let touchStartY = useRef(null);
   let touchStartTimer = useRef(null);
   let DELTA_TIME_THRESHOLD_MS = 700;
+  let touchIdentifier = useRef(null);
+  let lastTouchTime = useRef(0);
 
+
+  function handleClickDetection(ev) {
+    if (ev.changedTouches.length === 1) {
+      touchIdentifier.current = ev.changedTouches[0].identifier;
+    }
+
+    const currentTime = Date.now();
+    const timeSinceLastTouch = currentTime - lastTouchTime.current;
+
+    if (timeSinceLastTouch <= 300 && touchIdentifier.current === ev.changedTouches[0].identifier) {
+      // Double click detected
+      ev.x = ev.changedTouches[0].clientX;;
+      ev.y = ev.changedTouches[0].clientY;
+      changeToTextTool(ev);
+      clearTimeout(touchStartTimer.current);
+      touchStartTimer.current = null;
+    }
+
+    // Update the last touch time
+    lastTouchTime.current = currentTime;
+  }
   function filterEvent(e) {
     if (isTouchDevice()) {
       return;
@@ -19,7 +41,7 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
   }
 
   function onTouchStart(ev) {
-    ev.preventDefault();
+    // ev.preventDefault();
     if (ev.targetTouches.length === 1) {
       console.log('Touch Start Event Called');
       touchStartX.current = ev.targetTouches[0].clientX;
@@ -28,15 +50,13 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
       ev.y = ev.targetTouches[0].clientY;
       onEvent(ev);
     }
-    //  else {
-    //   onEvent(ev);
-    // }
   }
 
   function onTouchEnd(ev) {
-    ev.preventDefault();
+    // ev.preventDefault();
     if (ev.changedTouches.length === 1) {
       if (touchStartTimer.current === null) {
+        lastTouchTime.current = Date.now();
         touchStartTimer.current = setTimeout(() => {
           touchStartTimer.current = null;
         }, DELTA_TIME_THRESHOLD_MS);
@@ -45,13 +65,7 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
         console.log('Touch End Event Called');
         onEvent(ev);
       } else {
-        console.log('else case');
-        if ((Math.abs(ev.changedTouches[0].clientX - touchStartX.current) < 10) && (Math.abs(ev.changedTouches[0].clientY - touchStartY.current) < 10)) {
-          ev.preventDefault();
-          ev.x = ev.changedTouches[0].clientX;
-          ev.y = ev.changedTouches[0].clientY;
-          changeToTextTool(ev);
-        }
+        handleClickDetection(ev);
       }
 
     }
@@ -93,10 +107,7 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
         onEvent(ev);
       }
 
-    } 
-    // else {
-    //   onEvent(ev);
-    // }
+    }
   };
 
 

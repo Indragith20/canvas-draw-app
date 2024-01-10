@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { getChalkRectValues, getElementsAtPosition } from '~/components/utils/getElementsAtPosition';
 import { changeFromOneScalingFactor, changeToOneScalingFactor } from '~/components/utils/redrawCanvas';
-import { UPDATE_CANVAS_AREA } from '../DrawAreaContext';
+import { UPDATE_CANVAS_AREA, UPDATE_SELECTED_TOOL } from '../DrawAreaContext';
 import { getEdges } from '~/components/utils/common';
 import { restoreContext } from '../utils';
 import useEventListener from './useEventListener';
@@ -68,6 +68,12 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
     if (selectedTool === 'text') {
       //Revertting tyhius is required.
       tool.current['onBlur']();
+      dispatch({
+        type: UPDATE_SELECTED_TOOL,
+        payload: {
+          selectedTool: 'select'
+        }
+      })
       return;
     }
     if (selectedTool === 'select') {
