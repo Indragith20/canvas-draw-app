@@ -69,12 +69,12 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
     if (selectedTool === 'text') {
       //Revertting tyhius is required.
       tool.current['onBlur']();
-      // dispatch({
-      //   type: UPDATE_SELECTED_TOOL,
-      //   payload: {
-      //     selectedTool: 'select'
-      //   }
-      // })
+      dispatch({
+        type: UPDATE_SELECTED_TOOL,
+        payload: {
+          selectedTool: 'select'
+        }
+      })
       return;
     }
     if (selectedTool === 'select') {
