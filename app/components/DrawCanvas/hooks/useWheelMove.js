@@ -14,6 +14,7 @@ function useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool 
     if (selectedTool === 'text') {
       tool.current['onBlur']();
     }
+    e.preventDefault();
     dispatch({
       type: UPDATE_SCROLL_REGION,
       payload: {
@@ -23,7 +24,7 @@ function useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool 
     });
   }
 
-  useEventListener('wheel', onWheelMove, tempCanvas, { passive: true });
+  useEventListener('wheel', onWheelMove, tempCanvas);
 
   return onWheelMove;
 }

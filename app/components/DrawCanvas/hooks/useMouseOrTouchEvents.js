@@ -24,11 +24,13 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
     if (timeSinceLastTouch <= 300) {
       // Double click detected
       ev.preventDefault();
+      ev.stopPropagation();
       ev.x = ev.changedTouches[0].clientX;;
       ev.y = ev.changedTouches[0].clientY;
       changeToTextTool(ev);
       clearTimeout(touchStartTimer.current);
       touchStartTimer.current = null;
+      return;
     }
 
     // Update the last touch time
