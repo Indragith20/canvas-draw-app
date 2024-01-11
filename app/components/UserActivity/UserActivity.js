@@ -25,9 +25,6 @@ function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape
   const [users, updateUsers] = useState({});
   const { theme } = useTheme();
 
-  useEffect(() => {
-
-  }, []);
 
   useEffect(() => {
     let userActivityContext = userActivityCanvasRef.current.getContext('2d');
@@ -38,10 +35,10 @@ function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape
     userActivityContext.lineWidth = 1.0;
     //userActivityContext.current.globalAlpha = 0.75;
     Object.keys(users).forEach((user => {
-      let x = changeFromOneScalingFactor(users.current[user].x, scalingFactor) + scrollX;
-      let y = changeFromOneScalingFactor(users.current[user].y, scalingFactor) + scrollY;
-      userActivityContext.strokeStyle = users.current[user].color ? users.current[user].color : 'red';
-      userActivityContext.fillStyle = users.current[user].color ? users.current[user].color : 'red';
+      let x = changeFromOneScalingFactor(users[user].x, scalingFactor) + scrollX;
+      let y = changeFromOneScalingFactor(users[user].y, scalingFactor) + scrollY;
+      userActivityContext.strokeStyle = users[user].color ? users[user].color : 'red';
+      userActivityContext.fillStyle = users[user].color ? users[user].color : 'red';
       userActivityContext.lineWidth = "1"
       userActivityContext.beginPath();
       userActivityContext.moveTo(x - 7, y - 7);
@@ -52,7 +49,7 @@ function UserActivity({ scrollX, scrollY, scalingFactor, width, height, addShape
       //userActivityContext.current.closePath();
 
 
-      drawText(users.current[user].name, userActivityContext, x + 5, y + 5, 40, baseLineHeight, users.current[user].color ? users.current[user].color : 'red', 14)
+      drawText(users[user].name, userActivityContext, x + 5, y + 5, 40, baseLineHeight, users[user].color ? users[user].color : 'red', 14)
 
     }))
   }, [baseLineHeight, scalingFactor, scrollX, scrollY, theme, users])
