@@ -1,7 +1,7 @@
 import { isTouchDevice } from '~/components/utils/common';
 import useEventListener from './useEventListener';
 import { useRef } from 'react';
-import { UPDATE_SCROLL_REGION } from '../DrawAreaContext';
+import { UPDATE_SCROLL_REGION } from '../../DrawCanvas/DrawAreaConstants';
 
 function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, changeToTextTool, tool, disableScroll }) {
   let dpr = useRef(typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1);

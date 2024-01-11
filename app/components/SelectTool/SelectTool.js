@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './SelectTool.css';
-import { UPDATE_SELECTED_TOOL } from '../DrawCanvas/DrawAreaContext';
+import { UPDATE_SELECTED_TOOL } from '../DrawCanvas/DrawAreaConstants';
 
 export function SelectToolLinks() {
   return [{ rel: 'stylesheet', href: styles }];

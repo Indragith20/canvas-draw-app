@@ -14,7 +14,8 @@ import DeletePopup, { DeletePopupLinks } from './DeleteCanvasPopup/DeletePopup';
 import ShareLink, { ShareLinks } from './ShareLink/ShareLink';
 import { CollaboratorsLinks } from './Collaborators/Collaborators';
 import DrawCanvas from './DrawCanvas/DrawCanvas';
-import DrawAreaContext, { ADD_NEW_SHAPE, DELETE_EXISTING_SHAPE, DELETE_SHAPE, UPDATE_CANVAS_AREA, UPDATE_MODAL_TYPE } from './DrawCanvas/DrawAreaContext';
+import DrawAreaContext from './DrawCanvas/DrawAreaContext';
+import { ADD_NEW_SHAPE, DELETE_EXISTING_SHAPE, DELETE_SHAPE, UPDATE_CANVAS_AREA, UPDATE_MODAL_TYPE } from './DrawCanvas/DrawAreaConstants';
 import drawAreaReducer, { baseConfig } from './DrawCanvas/DrawAreaReducer';
 
 export function MainComponentStyles() {
@@ -42,6 +43,7 @@ function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTh
   let cursorType = `${selectedTool === 'select' || selectedElement !== null ? `move` : 'crosshair'}`;
 
   const mainContainerRef = useRef(null);
+  const updateShapeRef = useRef(updateShape);
 
   const preferences = useMemo(() => {
     return {
@@ -109,9 +111,24 @@ function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTh
 
   useEffect(() => {
     updateDb(scalingFactor, 'scalingFactor');
-  }, [scalingFactor, updateDb])
+  }, [scalingFactor, updateDb]);
 
 
+  useEffect(() => {
+    if (state.actionToBeSent) {
+      let { element, actionName } = state.actionToBeSent;
+      if (element && actionName) {
+        console.log('sending socket events');
+        updateShapeRef.current(element, actionName);
+      }
+    }
+  }, [state.actionToBeSent])
+
+
+  /** Need to find the permenant fix */
+  useEffect(() => {
+    updateShapeRef.current = updateShape;
+  }, [updateShape])
 
   return (
     <DrawAreaContext.Provider value={{ state, dispatch }}>

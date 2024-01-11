@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './ZoomContainer.css';
-import { DECREASE_SCALING_FACTOR, INCREASE_SCALING_FACTOR, RESET_SCALING_FACTOR } from '../DrawCanvas/DrawAreaContext';
+import { DECREASE_SCALING_FACTOR, INCREASE_SCALING_FACTOR, RESET_SCALING_FACTOR } from '../DrawCanvas/DrawAreaConstants';
 
 export function ZoomContainerLinks() {
   return [{ rel: 'stylesheet', href: styles }];
@@ -62,4 +62,4 @@ function ZoomContainer({ zoomRange, dispatch }) {
   );
 }
 
-export default ZoomContainer;
+export default React.memo(ZoomContainer);

@@ -18,8 +18,8 @@ function initRedisConnection() {
     });
 
     redisClient.on('error', (err) => {
-      // console.log(err);
-      // console.log('Failed to initialize redis client');
+      console.log(err);
+      console.log('Failed to initialize redis client');
     });
 
     promise = redisClient.connect();

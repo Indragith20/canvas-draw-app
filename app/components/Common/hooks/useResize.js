@@ -1,4 +1,4 @@
-import { UPDATE_CANVAS_AREA } from '../DrawAreaContext';
+import { UPDATE_CANVAS_AREA } from '../../DrawCanvas/DrawAreaConstants';
 import useEventListener from './useEventListener';
 
 function useResize({ dispatch }) {

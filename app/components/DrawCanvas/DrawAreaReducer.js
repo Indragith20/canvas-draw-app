@@ -1,5 +1,5 @@
 import { getUpdatedPerformedActions } from '../utils/common';
-import { ADD_NEW_SHAPE, DECREASE_SCALING_FACTOR, DELETE_EXISTING_SHAPE, DELETE_SHAPE, INCREASE_SCALING_FACTOR, REDO_ACTION, RESET_SCALING_FACTOR, UNDO_ACTION, UPDATE_CANVAS_AREA, UPDATE_MODAL_TYPE, UPDATE_SCROLL_REGION, UPDATE_SELECTED_TOOL } from './DrawAreaContext';
+import { ADD_NEW_SHAPE, DECREASE_SCALING_FACTOR, DELETE_EXISTING_SHAPE, DELETE_SHAPE, INCREASE_SCALING_FACTOR, REDO_ACTION, RESET_SCALING_FACTOR, UNDO_ACTION, UPDATE_CANVAS_AREA, UPDATE_MODAL_TYPE, UPDATE_SCROLL_REGION, UPDATE_SELECTED_TOOL } from './DrawAreaConstants';
 
 export const baseConfig = {
   scalingFactor: 1,
@@ -30,7 +30,11 @@ function performUndoAction(state) {
       modifiedShapes.push(lastAddedElement);
     }
     let updatedUndoActions = undoActions.concat({ ...lastAddedElement, isExistingShape });
-    return { ...state, shapes: modifiedShapes, performedActions: actionsPerformed, undoActions: updatedUndoActions }
+    let actionToBeSent = {
+      element: isExistingShape ? originalValueInCaseOfDragging : lastAddedElement,
+      actionName: isExistingShape ? 'update' : isDeletedShape ? 'add' : 'delete'
+    };
+    return { ...state, shapes: modifiedShapes, performedActions: actionsPerformed, undoActions: updatedUndoActions, actionToBeSent }
   } else {
     return state;
   }
@@ -77,8 +81,12 @@ function performRedoAction(state) {
       updatedShapes = [...originalShapes, shapeToBeAdded];
     }
 
+    let actionToBeSent = {
+      element: shapeToBeAdded,
+      actionName: isExistingShape ? 'update' : 'add'
+    };
     let performedActions = getUpdatedPerformedActions(originalPerformedActions, [shapeToBeAdded]);
-    return { ...state, shapes: updatedShapes, performedActions, undoActions: [...undoTobeModified] }
+    return { ...state, shapes: updatedShapes, performedActions, undoActions: [...undoTobeModified], actionToBeSent }
   } else {
     return state;
   }
@@ -140,7 +148,11 @@ function drawAreaReducer(state, action) {
         let { selectedElement, performedActions: originalPerformedActions, shapes } = state;
         let filteredShapes = shapes.filter(shape => shape.id !== selectedElement.id);
         let performedActions = getUpdatedPerformedActions(originalPerformedActions, [{ ...selectedElement, isDeletedShape: true }]);
-        return { ...state, shapes: filteredShapes, selectedElement: null, performedActions };
+        let actionToBeSent = {
+          element: selectedElement,
+          actionName: 'delete'
+        };
+        return { ...state, shapes: filteredShapes, selectedElement: null, performedActions, actionToBeSent };
       } else {
         return state;
       }

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import useEventListener from '../DrawCanvas/hooks/useEventListener';
-import { DELETE_SHAPE, REDO_ACTION, UNDO_ACTION, UPDATE_MODAL_TYPE } from '../DrawCanvas/DrawAreaContext';
+import useEventListener from '../Common/hooks/useEventListener';
+import { DELETE_SHAPE, REDO_ACTION, UNDO_ACTION, UPDATE_MODAL_TYPE } from '../DrawCanvas/DrawAreaConstants';
 
 
 // Note: shortcutkey can be hook instead of component but there will be need of UI. hence it is added as component

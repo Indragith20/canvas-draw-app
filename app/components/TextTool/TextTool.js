@@ -53,4 +53,4 @@ function TextTool() {
 }
 
 
-export default TextTool;
+export default React.memo(TextTool);

@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { UPDATE_SCROLL_REGION } from '../DrawAreaContext';
+import { UPDATE_SCROLL_REGION } from '../../DrawCanvas/DrawAreaConstants';
 import useEventListener from './useEventListener';
 
 function useWheelMove({ tempCanvas, disableScroll, dispatch, tool, selectedTool }) {

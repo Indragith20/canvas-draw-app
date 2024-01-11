@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { getChalkRectValues, getElementsAtPosition } from '~/components/utils/getElementsAtPosition';
 import { changeFromOneScalingFactor, changeToOneScalingFactor } from '~/components/utils/redrawCanvas';
-import { UPDATE_CANVAS_AREA, UPDATE_SELECTED_TOOL } from '../DrawAreaContext';
+import { UPDATE_CANVAS_AREA, UPDATE_SELECTED_TOOL } from '../../DrawCanvas/DrawAreaConstants';
 import { getEdges } from '~/components/utils/common';
-import { restoreContext } from '../utils';
+import { restoreContext } from '../../DrawCanvas/utils';
 import useEventListener from './useEventListener';
 
 function getEdgesForSelectedElement(elementX, elementY, width, height, state, elementType = 'rectangle') {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useIsomorphicLayoutEffect } from '~/components/DrawCanvas/hooks/useIsomorphicLayoutEffect';
+import { useIsomorphicLayoutEffect } from '~/components/Common/hooks/useIsomorphicLayoutEffect';
 
 function getDefaultMatch(query) {
   if (typeof window === "undefined") {

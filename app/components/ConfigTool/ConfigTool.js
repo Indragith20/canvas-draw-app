@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Collaborators from '../Collaborators/Collaborators';
 import DisabledDiv from '../Common/DisabledDiv/DisabledDiv';
 import styles from './ConfigTool.css';
-import { UPDATE_MODAL_TYPE } from '../DrawCanvas/DrawAreaContext';
+import { UPDATE_MODAL_TYPE } from '../DrawCanvas/DrawAreaConstants';
 
 export function ConfigToolLinks() {
   return [{ rel: 'stylesheet', href: styles }]

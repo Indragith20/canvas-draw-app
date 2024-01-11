@@ -1,7 +1,8 @@
 import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { changeFromOneScalingFactor, changeToOneScalingFactor, redraw } from '../utils/redrawCanvas';
-import DrawAreaContext, { UPDATE_CANVAS_AREA, UPDATE_SELECTED_TOOL } from './DrawAreaContext';
+import DrawAreaContext from './DrawAreaContext';
+import { UPDATE_CANVAS_AREA, UPDATE_SELECTED_TOOL } from './DrawAreaConstants';
 import Chalk from '../Shapes/Chalk';
 import Line from '../Shapes/Line';
 import Rect from '../Shapes/Rectangle';
@@ -13,12 +14,12 @@ import { getUpdatedPerformedActions } from '../utils/common';
 import { changeCoordsForMoveTool, changeCoordsForResizeTool, changeDrawenImageCoords, checkAndGetFilteredShapes, detectDragging, getCursorPositionAndType, restoreContext } from './utils';
 import { getElementsAtPosition } from '../utils/getElementsAtPosition';
 import MoveTool from '../Shapes/MoveTool';
-import useClickHandler from './hooks/useClickHandler';
-import useWheelMove from './hooks/useWheelMove';
-import useResize from './hooks/useResize';
-import useTextTool from './hooks/useTextTool';
+import useClickHandler from '../Common/hooks/useClickHandler';
+import useWheelMove from '../Common/hooks/useWheelMove';
+import useResize from '../Common/hooks/useResize';
+import useTextTool from '../Common/hooks/useTextTool';
 import ResizeTool from '../Shapes/ResizeTool';
-import useMouseOrTouchEvents from './hooks/useMouseOrTouchEvents';
+import useMouseOrTouchEvents from '../Common/hooks/useMouseOrTouchEvents';
 
 let eventTypeMapping = {
   'mouseup': 'mouseup',

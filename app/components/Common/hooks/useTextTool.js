@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import DrawText from '~/components/Shapes/DrawText';
 import { getElementsAtPosition } from '~/components/utils/getElementsAtPosition';
 import { changeToOneScalingFactor } from '~/components/utils/redrawCanvas';
-import { UPDATE_CANVAS_AREA } from '../DrawAreaContext';
+import { UPDATE_CANVAS_AREA } from '../../DrawCanvas/DrawAreaConstants';
 import useEventListener from './useEventListener';
 
 function isTextType(enclosedElement) {
