@@ -1,11 +1,22 @@
 import React from 'react';
 import styles from './SelectTool.css';
+import { UPDATE_SELECTED_TOOL } from '../DrawCanvas/DrawAreaConstants';
 
 export function SelectToolLinks() {
   return [{ rel: 'stylesheet', href: styles }];
 }
 
-function SelectTool({ selectedTool, updateTool }) {
+function SelectTool({ selectedTool, dispatch }) {
+
+  function updateTool(e) {
+    dispatch({
+      type: UPDATE_SELECTED_TOOL,
+      payload: {
+        selectedTool: e.currentTarget.id
+      }
+    })
+  }
+
   return (
     <div className='selectTool'>
       <span

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useActionData, useOutletContext, useFetcher, Form } from '@remix-run/react';
+import { useActionData, useOutletContext, useFetcher } from '@remix-run/react';
 import styles from '../styles/form.css';
 import { createRoom } from '../../server/db';
 import { redirect } from '@remix-run/node';
@@ -32,7 +32,6 @@ export async function action({ request }) {
   let userName = body.get('userName');
   const draw = await createRoom(userId, userName, name);
   const session = await getSession(request.headers.get('Cookie'));
-  console.log('Action called', request.headers.get('Cookie'));
   return redirect(`/draw/${draw.id}`, {
     headers: {
       'Set-Cookie': await commitSession(session)

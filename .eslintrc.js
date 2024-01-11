@@ -6,6 +6,7 @@ module.exports = {
   rules: {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    "comma-dangle": 0
+    "comma-dangle": 0,
+    "indent": ["error", 2, { "SwitchCase": 1 }]
   }
 };

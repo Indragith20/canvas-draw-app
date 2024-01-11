@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useMatchMedia } from '~/components/Common/hooks/useMatchMedia';
 import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
-import MainComponent, { MainComponentStyles } from '~/components/main';
+import MainComponent, { MainComponentStyles } from '~/components/main-revamped';
 import { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';

@@ -1,5 +1,6 @@
 class DrawText {
   constructor(tempCanvas, tempContext, callback, id, selectedTheme) {
+    console.trace('Draw Text Intialized', id)
     this.started = false;
 
     this.id = id;

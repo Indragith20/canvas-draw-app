@@ -1,11 +1,29 @@
 import React from 'react';
 import styles from './ZoomContainer.css';
+import { DECREASE_SCALING_FACTOR, INCREASE_SCALING_FACTOR, RESET_SCALING_FACTOR } from '../DrawCanvas/DrawAreaConstants';
 
 export function ZoomContainerLinks() {
   return [{ rel: 'stylesheet', href: styles }];
 }
 
-function ZoomContainer({ zoomRange, zoomIn, zoomOut, resetZoom }) {
+function ZoomContainer({ zoomRange, dispatch }) {
+
+  function zoomIn(e) {
+    e.stopPropagation();
+    dispatch({
+      type: DECREASE_SCALING_FACTOR
+    })
+  }
+
+  function resetZoom(e) {
+    e.stopPropagation();
+    dispatch({ type: RESET_SCALING_FACTOR })
+  }
+
+  function zoomOut(e) {
+    e.stopPropagation();
+    dispatch({ type: INCREASE_SCALING_FACTOR })
+  }
   return (
     <div className='zoomContainer'>
       <span id='minus' className='zoom-sign' onClick={zoomIn}>
@@ -44,4 +62,4 @@ function ZoomContainer({ zoomRange, zoomIn, zoomOut, resetZoom }) {
   );
 }
 
-export default ZoomContainer;
+export default React.memo(ZoomContainer);

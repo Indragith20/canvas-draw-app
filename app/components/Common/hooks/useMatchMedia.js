@@ -1,4 +1,5 @@
-import { useState, useLayoutEffect } from 'react';
+import { useState } from 'react';
+import { useIsomorphicLayoutEffect } from '~/components/Common/hooks/useIsomorphicLayoutEffect';
 
 function getDefaultMatch(query) {
   if (typeof window === "undefined") {
@@ -10,7 +11,7 @@ function getDefaultMatch(query) {
 
 export function useMatchMedia(query) {
   const [match, setMatch] = useState(getDefaultMatch(query));
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     let mediaQuery = window.matchMedia(query)
 
     function onMediaQueryChange(e) {

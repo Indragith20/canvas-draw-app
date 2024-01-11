@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 import ErrorBoundaryStyles from '../styles/errorBoundary.css';
 
 import { ConfigToolLinks } from '~/components/ConfigTool/ConfigTool';
-import MainComponent, { MainComponentStyles } from '~/components/main';
+import MainComponent, { MainComponentStyles } from '~/components/main-revamped';
 import { SelectToolLinks } from '~/components/SelectTool/SelectTool';
 import { TextToolLinks } from '~/components/TextTool/TextTool';
 import { ZoomContainerLinks } from '~/components/ZoomContainer/ZoomContainer';
@@ -30,6 +30,7 @@ import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { isTouchDevice } from '~/components/utils/common';
 import { PopOverLinks } from '~/components/Common/Popover/PopOver';
+import useEventListener from '~/components/Common/hooks/useEventListener';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -146,30 +147,14 @@ function DrawIndex() {
       });
     }
 
-    function removeLiveUser() {
-      socket.emit('removeliveuser', {
-        roomId: roomId,
-        userDetails: { id, name, isActive: false }
-      });
-    }
-
-    function onVisibilityChange() {
-      if (document.visibilityState === 'visible') {
-        onConfirm();
-      } else {
-        removeLiveUser();
-      }
-    }
-
     socket.on('confirmation', onConfirm);
-    window.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       socket.off('confirmation', onConfirm);
-      window.removeEventListener('visibilitychange', onVisibilityChange);
       socket.close();
     };
   }, [roomId, id, name]);
+
 
   useEffect(() => {
     updateTheme(darkMode === 'true' ? 'dark' : 'light');
@@ -215,6 +200,25 @@ function DrawIndex() {
   const onChangePreference = useCallback((e, preference) => {
     localStorage.setItem(preference, e.target.checked);
   }, []);
+
+  function onVisibilityChange() {
+    if (!socket) {
+      return;
+    }
+    if (document.visibilityState === 'visible') {
+      socket.emit('setliveuser', {
+        roomId: roomId,
+        userDetails: { id, name, isActive: true }
+      });
+    } else {
+      socket.emit('removeliveuser', {
+        roomId: roomId,
+        userDetails: { id, name, isActive: false }
+      });
+    }
+  }
+
+  useEventListener('visibilitychange', onVisibilityChange)
 
   return (
     <div>

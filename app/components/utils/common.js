@@ -92,3 +92,7 @@ export const CURSOR_BIDIRECTIONAL_MAPPING = {
   6: ['ew-resize', RESIZE_MAPPING.LEFT_MIDDLE],
   7: ['ew-resize', RESIZE_MAPPING.RIGHT_MIDDLE]
 }
+
+export function clamp(value, clampValue) {
+  return Math.min(Math.max(value, -clampValue), clampValue);
+};
