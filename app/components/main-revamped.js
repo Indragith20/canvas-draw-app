@@ -118,7 +118,6 @@ function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTh
     if (state.actionToBeSent) {
       let { element, actionName } = state.actionToBeSent;
       if (element && actionName) {
-        console.log('sending socket events');
         updateShapeRef.current(element, actionName);
       }
     }

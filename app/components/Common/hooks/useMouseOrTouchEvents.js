@@ -46,7 +46,6 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
   function onTouchStart(ev) {
     // ev.preventDefault();
     if (ev.targetTouches.length === 1) {
-      console.log('Touch Start Event Called');
       touchStartX.current = ev.targetTouches[0].clientX;
       touchStartY.current = ev.targetTouches[0].clientY;
       ev.x = ev.targetTouches[0].clientX;
@@ -65,7 +64,6 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
         }, DELTA_TIME_THRESHOLD_MS);
         ev.x = ev.changedTouches[0].clientX;
         ev.y = ev.changedTouches[0].clientY;
-        console.log('Touch End Event Called');
         onEvent(ev);
       } else {
         handleClickDetection(ev);
@@ -82,7 +80,6 @@ function useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, ch
     if (selectedTool === 'text') {
       tool.current['onBlur']();
     }
-    console.log('dispatching', e.deltaX / dpr.current, e.deltaY / dpr.current)
     dispatch({
       type: UPDATE_SCROLL_REGION,
       payload: {

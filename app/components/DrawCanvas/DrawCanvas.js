@@ -100,7 +100,6 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
 
 
   const imgUpdate = useCallback((drawenImage) => {
-    console.log("drawenImage", drawenImage)
     // Check whether we can move this logic to reducer 
     if (drawenImage && drawenImage.type) {
 
@@ -110,7 +109,6 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
 
       let updatedPerformedActions = getUpdatedPerformedActions(performedActions, isExistingShape ? [{ ...draggingElement.current }, { ...modifiedImage, isExistingShape: true }] : [modifiedImage]);
 
-      console.log("modifed", modifiedImage);
       dispatch({
         type: UPDATE_CANVAS_AREA,
         payload: {

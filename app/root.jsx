@@ -155,7 +155,7 @@ export default function App() {
                   <GlobalLoading />
                   <ScrollRestoration />
                   <Scripts />
-                  {/* <LiveReload /> */}
+                  <LiveReload />
                   <div id='modal-root'></div>
                 </ToastProvider>
               </body>

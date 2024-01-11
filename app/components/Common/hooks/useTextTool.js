@@ -12,7 +12,6 @@ function isTextType(enclosedElement) {
 
 function getUpdatedShapes(shapes, enclosedElement) {
   if (isTextType(enclosedElement)) {
-    console.log('Exisiting');
     return shapes.filter(shape => shape.id !== enclosedElement.id);
   }
   return shapes;
@@ -39,17 +38,13 @@ function useTextTool({ scrollX, scrollY, shapes, scalingFactor, tool, tempCanvas
 
     let tempContext = tempCanvas.current.getContext('2d');
     tool.current = new DrawText(tempCanvas.current, tempContext, imgUpdate, textId, selectedTheme);
-    console.log(tool.current);
     // Problem: Might be a problem with mobile device
     let eventMapping = ev.type === 'touchstart' ? 'dblclick' : 'dblclick';
     let func = tool.current[eventMapping];
     if (func) {
       tempContext.clearRect(0, 0, tempCanvas.current.width, tempCanvas.current.height);
-      console.log('Inside Fn', func);
       func(ev, enclosedElement, { scrollX: scrollX, scrollY: scrollY, scalingFactor: scalingFactor });
     }
-
-    console.log('Main', tool.current);
 
     dispatch({
       type: UPDATE_CANVAS_AREA,

@@ -21,7 +21,6 @@ function getEdgesForSelectedElement(elementX, elementY, width, height, state, el
     width: scaledWidth,
     height: scaledHeight
   });
-  console.log(scaledWidth, scaledHeight)
   return [edges, scaledWidth, scaledHeight];
 }
 
@@ -61,7 +60,6 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
   }
 
   function onDocumentClick(ev) {
-    console.log('Document click event');
     ev._x = changeToOneScalingFactor(ev.x - scrollX, scalingFactor);
     ev._y = changeToOneScalingFactor(ev.y - scrollY, scalingFactor);
 
@@ -79,7 +77,6 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
     }
     if (selectedTool === 'select') {
       let selectedElement = getElementsAtPosition(ev._x, ev._y, shapes);
-      console.log("selectedEle", selectedElement);
       if (selectedElement) {
         dispatch({
           type: UPDATE_CANVAS_AREA,

@@ -138,7 +138,6 @@ class DrawText {
       // this.textBoxContainer.style.height = this.height + 'px';
     }
     this.tetxtareaClientStyle = this.textBox.getBoundingClientRect();
-    console.log('Inside dbl click', this.tetxtareaClientStyle)
   }
 }
 

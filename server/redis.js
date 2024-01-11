@@ -11,14 +11,12 @@ function initRedisConnection() {
     let promise;
 
     // eslint-disable-next-line no-undef
-    console.log('redis url', process.env.REDIS_URL);
     redisClient = createClient({
       // eslint-disable-next-line no-undef
       url: process.env.REDIS_URL
     });
 
     redisClient.on('error', (err) => {
-      console.log(err);
       console.log('Failed to initialize redis client');
     });
 
