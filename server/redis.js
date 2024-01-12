@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { createClient } from 'redis';
 
 
@@ -10,14 +11,15 @@ function initRedisConnection() {
   return new Promise((resolve, reject) => {
     let promise;
 
-    // eslint-disable-next-line no-undef
     redisClient = createClient({
-      // eslint-disable-next-line no-undef
       url: process.env.REDIS_URL
     });
 
     redisClient.on('error', (err) => {
-      console.log('Failed to initialize redis client');
+      if (process.env.NODE_ENV !== 'development') {
+        console.log('Failed to initialize redis client');
+      }
+
     });
 
     promise = redisClient.connect();

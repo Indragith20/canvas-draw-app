@@ -7,6 +7,7 @@ import path from 'path';
 import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from '@remix-run/express';
+import { broadcastDevReady } from "@remix-run/node";
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { onSocketConnect } from './socket';
@@ -75,9 +76,12 @@ app.all(
 );
 
 const port = process.env.PORT || 3000;
-httpServer.listen(port, () => {
+httpServer.listen(port, async () => {
   // Think of an alternate way 
   //resetAllLiveUsers();
+  if (process.env.NODE_ENV === 'development') {
+    broadcastDevReady(await import(BUILD_DIR));
+  }
   deleteAllCaches();
   console.log(`Express server listening on port ${port}`);
 });
