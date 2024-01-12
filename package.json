@@ -1,26 +1,22 @@
 {
-  "name": "remix-app-template-js",
+  "name": "draw-anything-app",
   "private": true,
   "description": "",
-  "license": "",
+  "license": "MIT",
   "sideEffects": false,
   "scripts": {
-    "build": "cross-env NODE_ENV=production remix build",
+    "build": "remix build",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
-    "dev": "cross-env NODE_ENV=development remix build && run-p dev:*",
-    "dev:node": "npm run transpile && cross-env NODE_ENV=development nodemon ./build/server/server.js --watch server",
-    "dev:remix": "cross-env NODE_ENV=development remix watch",
-    "postinstall": "remix setup node",
+    "dev": "npm run transpile && remix dev -c 'nodemon ./build/server/server.js --watch server'",
     "transpile": "babel ./server -d build/server",
     "clean": "rimraf dist-server",
-    "start": "npm run transpile && cross-env NODE_ENV=production node ./build/server/server.js"
+    "start": "npm run transpile && node ./build/server/server.js"
   },
   "dependencies": {
-    "@remix-run/express": "2.4.0",
-    "@remix-run/node": "2.4.0",
-    "@remix-run/react": "2.4.0",
+    "@remix-run/express": "2.5.0",
+    "@remix-run/node": "2.5.0",
+    "@remix-run/react": "2.5.0",
     "compression": "^1.7.4",
-    "cross-env": "^7.0.3",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "firebase": "^10.7.1",
@@ -45,7 +41,6 @@
     "eslint": "^8.9.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "nodemon": "^3.0.2",
-    "npm-run-all": "^4.1.5",
     "source-map-support": "^0.5.21"
   },
   "eslintIgnore": [
