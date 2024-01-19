@@ -1,19 +1,20 @@
-class LocalIdb {
-  constructor() {
+
+export class LocalIdb {
+  constructor(dbName = 'redux-state', storeName = 'redux-persistance') {
     this.initializeIndexedDb = this.initializeIndexedDb.bind(this);
     this.performTransaction = this.performTransaction.bind(this);
     this.getDataFromIdb = this.getDataFromIdb.bind(this);
     this.updateDb = this.updateDb.bind(this);
+    this.dbName = dbName;
+    this.storeName = storeName
   }
 
   initializeIndexedDb() {
     return new Promise((resolve, reject) => {
-      this.request = self.indexedDB.open('redux-state', '1');
+      this.request = self.indexedDB.open(this.dbName, '1');
       this.request.onupgradeneeded = (event) => {
         this.db = event.target.result;
-        this.db.createObjectStore('redux-persistance', {
-          key: 'app-state-persist'
-        });
+        this.db.createObjectStore(this.storeName);
       };
       // eslint-disable-next-line no-unused-vars
       this.request.onerror = (event) => {
@@ -35,8 +36,8 @@ class LocalIdb {
         promises.push(this.initializeIndexedDb());
       }
       Promise.all(promises).then(() => {
-        const transaction = this.db.transaction(['redux-persistance'], mode);
-        const reduxState = transaction.objectStore('redux-persistance');
+        const transaction = this.db.transaction([this.storeName], mode);
+        const reduxState = transaction.objectStore(this.storeName);
         if (clearDb) {
           this.transactionReq = reduxState.clear();
         } else if (mode === 'readonly') {
@@ -71,7 +72,6 @@ class LocalIdb {
   }
 }
 
-const Idb = new LocalIdb();
-
+const Idb = new LocalIdb('redux-state', 'redux-persistance');
 
 export default Idb;
