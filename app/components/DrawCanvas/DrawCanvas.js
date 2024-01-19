@@ -20,6 +20,7 @@ import useResize from '../Common/hooks/useResize';
 import useTextTool from '../Common/hooks/useTextTool';
 import ResizeTool from '../Shapes/ResizeTool';
 import useMouseOrTouchEvents from '../Common/hooks/useMouseOrTouchEvents';
+import useImageHandler from '../Common/hooks/useImageHandler';
 
 let eventTypeMapping = {
   'mouseup': 'mouseup',
@@ -267,6 +268,8 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
   let changeToTextTool = useTextTool({ scrollX, scrollY, shapes, scalingFactor, tool, tempCanvas, selectedTheme, imgUpdate, dispatch })
   useResize({ dispatch });
   useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, changeToTextTool, tool, disableScroll });
+  useImageHandler({ tempCanvas });
+
 
   return (
     <React.Fragment>
