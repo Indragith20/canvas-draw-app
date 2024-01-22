@@ -1,5 +1,10 @@
 import { getUpdatedPerformedActions } from '../utils/common';
-import { ADD_NEW_SHAPE, DECREASE_SCALING_FACTOR, DELETE_EXISTING_SHAPE, DELETE_SHAPE, INCREASE_SCALING_FACTOR, REDO_ACTION, RESET_SCALING_FACTOR, UNDO_ACTION, UPDATE_CANVAS_AREA, UPDATE_MODAL_TYPE, UPDATE_SCROLL_REGION, UPDATE_SELECTED_TOOL } from './DrawAreaConstants';
+import { 
+  ADD_NEW_SHAPE, DECREASE_SCALING_FACTOR, DELETE_EXISTING_SHAPE, 
+  DELETE_SHAPE, INCREASE_SCALING_FACTOR, REDO_ACTION, 
+  RESET_SCALING_FACTOR, UNDO_ACTION, UPDATE_CANVAS_AREA, UPDATE_MODAL_TYPE, UPDATE_SCROLL_REGION, 
+  UPDATE_SELECTED_TOOL 
+} from './DrawAreaConstants';
 
 export const baseConfig = {
   scalingFactor: 1,
@@ -121,7 +126,7 @@ function drawAreaReducer(state, action) {
       let baseLineHeight = (150 * baseFontSize) / 100;
       return {
         ...state,
-        scalingFactor: Number(state.scalingFactor - 0.1).toFixed(1),
+        scalingFactor: Number(Number(state.scalingFactor) - 0.1).toFixed(1),
         baseFontSize,
         baseLineHeight
       }
@@ -131,10 +136,10 @@ function drawAreaReducer(state, action) {
         return state;
       }
       let baseFontSize = state.baseFontSize + 3;
-      let baseLineHeight = (150 * baseFontSize) / 100
+      let baseLineHeight = (150 * baseFontSize) / 100;
       return {
         ...state,
-        scalingFactor: Number(state.scalingFactor + 0.1).toFixed(1),
+        scalingFactor: Number(Number(state.scalingFactor) + 0.1).toFixed(1),
         baseFontSize,
         baseLineHeight
       }
