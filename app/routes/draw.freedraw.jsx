@@ -9,7 +9,7 @@ import { LogoLinks } from '~/components/MainHeader/Logo';
 import { ThemeSwitcherLinks } from '~/components/MainHeader/ThemeSwitcher';
 import { SelectToolLinks } from '~/components/SelectTool/SelectTool';
 import { TextToolLinks } from '~/components/TextTool/TextTool';
-import Idb from '~/components/utils/idb';
+import { Idb } from '~/components/utils/idb';
 import { ZoomContainerLinks } from '~/components/ZoomContainer/ZoomContainer';
 import { useTheme } from '~/contexts/themeContext';
 import styles from '../styles/styles.css';

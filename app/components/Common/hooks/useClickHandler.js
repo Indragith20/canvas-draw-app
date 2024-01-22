@@ -1,47 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { getChalkRectValues, getElementsAtPosition } from '~/components/utils/getElementsAtPosition';
-import { changeFromOneScalingFactor, changeToOneScalingFactor } from '~/components/utils/redrawCanvas';
+import { changeToOneScalingFactor } from '~/components/utils/redrawCanvas';
 import { UPDATE_CANVAS_AREA, UPDATE_SELECTED_TOOL } from '../../DrawCanvas/DrawAreaConstants';
-import { getEdges } from '~/components/utils/common';
 import { restoreContext } from '../../DrawCanvas/utils';
 import useEventListener from './useEventListener';
-
-function getEdgesForSelectedElement(elementX, elementY, width, height, state, elementType = 'rectangle') {
-  let { scrollX, scrollY, scalingFactor } = state;
-  let x = changeFromOneScalingFactor(elementX, scalingFactor) + scrollX;
-  let y = changeFromOneScalingFactor(elementY, scalingFactor) + scrollY;
-  let scaledWidth = changeFromOneScalingFactor(width, scalingFactor);
-  let scaledHeight = changeFromOneScalingFactor(height, scalingFactor);
-  let edges = getEdges({
-    type: elementType,
-    x: x,
-    y: y,
-    endX: x + scaledWidth,
-    endY: y + scaledHeight,
-    width: scaledWidth,
-    height: scaledHeight
-  });
-  return [edges, scaledWidth, scaledHeight];
-}
-
-function drawOuterRect(tempContext, edges, { x, y, scaledWidth, scaledHeight, scrollX, scrollY, scalingFactor }) {
-  let modX = changeFromOneScalingFactor(x, scalingFactor) + scrollX;
-  let modY = changeFromOneScalingFactor(y, scalingFactor) + scrollY;
-  tempContext.lineWidth = 2;
-  tempContext.strokeStyle = "#9b9ef3";
-  tempContext.strokeRect(modX - 5, modY - 5, scaledWidth + 10, scaledHeight + 10);
-  edges.filter(([x, y]) => x !== null && y !== null).forEach(([x, y]) => {
-    tempContext.setLineDash([]);
-    tempContext.strokeStyle = "#9b9ef3";
-    tempContext.beginPath();
-    tempContext.arc(x, y, 5, 0, 2 * Math.PI);
-    tempContext.stroke();
-  })
-}
+import { drawOuterRect, getEdgesForSelectedElement } from '~/components/utils/edgeAndDrawouterRect';
 
 function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, selectedTool, shapes, selectedElement, selectedTheme, lineWidth, dispatch }) {
-
-
+  let lastClickedRef = useRef(null);
   let edgesForResize = useRef([]);
 
   function clearSelectedElement() {
@@ -62,7 +28,7 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
   function onDocumentClick(ev) {
     ev._x = changeToOneScalingFactor(ev.x - scrollX, scalingFactor);
     ev._y = changeToOneScalingFactor(ev.y - scrollY, scalingFactor);
-
+    lastClickedRef.current = { scaledX: ev._x, scaledY: ev._y, x: ev.x, y: ev.y };
     // NOTE: selectedtool in click handler and wheel move. If possible refactor the early return
     if (selectedTool === 'text') {
       //Revertting tyhius is required.
@@ -94,7 +60,7 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
     if (selectedElement && selectedTool === 'select') {
       let tempContext = tempCanvas.current.getContext('2d');
       tempContext.clearRect(0, 0, tempCanvas.current.width, tempCanvas.current.height);
-      if (selectedElement.type === 'rectangle') {
+      if (selectedElement.type === 'rectangle' || selectedElement.type === 'image') {
         let { x, y, width, height } = selectedElement;
         let [edges, scaledWidth, scaledHeight] = getEdgesForSelectedElement(x, y, width, height, { scrollX, scrollY, scalingFactor });
         edgesForResize.current = edges;
@@ -132,7 +98,7 @@ function useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, se
 
   useEventListener('click', onDocumentClick, tempCanvas, false);
 
-  return edgesForResize;
+  return { edgesForResize, lastClickedRef };
 }
 
 

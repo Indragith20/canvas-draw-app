@@ -20,7 +20,7 @@ import {
   updateShape,
   updateUser
 } from '../../server/db';
-import Idb from '~/components/utils/idb';
+import { Idb } from '~/components/utils/idb';
 import { requireAuth } from '../../server/auth';
 import { UserActivityLinks } from '~/components/UserActivity/UserActivity';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';

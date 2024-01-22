@@ -74,4 +74,6 @@ export class LocalIdb {
 
 const Idb = new LocalIdb('redux-state', 'redux-persistance');
 
-export default Idb;
+const ImageIdb = new LocalIdb('image-list', 'image-list-persist')
+
+export { Idb, ImageIdb };

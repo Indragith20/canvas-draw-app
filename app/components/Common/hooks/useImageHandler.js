@@ -1,32 +1,44 @@
 import useEventListener from './useEventListener';
+import { v4 as uuidv4 } from 'uuid';
+import { loadImage, saveImageToDb } from '~/components/utils/imgUtils';
 
+function useImageHandler({ lastClickedRef, imgUpdate }) {
 
-function useImageHandler({ tempCanvas }) {
 
   function convertImage(item) {
     const blob = item.getAsFile();
-    const img = new Image();
-    console.log(blob);
+    
     const reader = new FileReader();
     reader.onload = function (e) {
-      img.onload = function () {
-        let tempContext = tempCanvas.current.getContext('2d');
-        tempContext.drawImage(img, tempCanvas.current.width / 2, tempCanvas.current.height / 2, img.width, img.height);
-      };
-      console.log(e.target.result);
-      img.src = e.target.result;
-      img.width = window.innerWidth / 4;
-      img.height = window.innerHeight / 4;
+      let imageId = uuidv4();
+      loadImage(e.target.result, (img) => {
+        let { x, y } = lastClickedRef.current;
+        let imageX = x || window.innerWidth / 2;
+        let imageY =  y || window.innerHeight / 2;
+        let imageEndX = x + img.width;
+        let imageEndY = y + img.height;
+        let callbackObj = {
+          id: uuidv4(),
+          imageId,
+          type: 'image',
+          x: imageX,
+          y: imageY,
+          width: img.width,
+          height: img.height,
+          endX: imageEndX,
+          endY: imageEndY
+        };
+        imgUpdate(callbackObj);
+      });
+      saveImageToDb(imageId, e.target.result);
     };
-
     reader.readAsDataURL(blob);
   }
+
   function onPasteImage(e) {
     e.preventDefault();
-    console.log('paste image event called');
     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
     for (const clipboardItem of items) {
-      console.log(clipboardItem);
       if (clipboardItem.type.indexOf('image/') !== -1) {
         // Do something with the image file.
         console.log(clipboardItem);

@@ -23,7 +23,7 @@ function getElementsAtPosition(x, y, shapes) {
   let diffY = null;
   if (shapes.length > 0) {
     shapes.forEach(shape => {
-      if (shape.type === 'rectangle') {
+      if (shape.type === 'rectangle' || shape.type === 'image') {
         let width = shape.width;
         let height = shape.height;
         let endX = shape.x + width;

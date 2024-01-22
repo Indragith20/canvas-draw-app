@@ -1,5 +1,6 @@
 import { drawArrow } from './drawArrow';
 import { drawCircle, drawDiamond, drawFreeShape, drawLine, drawText } from './drawShapes';
+import { drawImage } from './imgUtils';
 
 export function changeFromOneScalingFactor(coords, scalingFactor) {
   return coords * scalingFactor;
@@ -42,6 +43,8 @@ export function redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, 
         })
       }
       drawFreeShape(tempContext, modifiedShape);
+    } else if (shape.type === 'image') {
+      drawImage({...shape, width: changeFromOneScalingFactor(shape.width, scalingFactor), height:changeFromOneScalingFactor(shape.height, scalingFactor) }, tempContext);
     }
   });
 }

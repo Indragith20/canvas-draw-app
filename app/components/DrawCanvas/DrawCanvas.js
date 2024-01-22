@@ -73,7 +73,7 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
   } = state;
 
   // NOTE: selectedtool in click handler and wheel move. If possible refactor the early return
-  let edgesForResize = useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, selectedTool, shapes, selectedElement, selectedTheme, lineWidth, dispatch });
+  let { edgesForResize, lastClickedRef } = useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, selectedTool, shapes, selectedElement, selectedTheme, lineWidth, dispatch });
 
 
   const drawImage = useCallback(() => {
@@ -268,7 +268,7 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
   let changeToTextTool = useTextTool({ scrollX, scrollY, shapes, scalingFactor, tool, tempCanvas, selectedTheme, imgUpdate, dispatch })
   useResize({ dispatch });
   useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, changeToTextTool, tool, disableScroll });
-  useImageHandler({ tempCanvas });
+  useImageHandler({ lastClickedRef, imgUpdate });
 
 
   return (
