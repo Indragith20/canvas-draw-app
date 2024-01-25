@@ -1,6 +1,7 @@
 import { getEdges } from "../utils/common";
 import { drawArrow } from "../utils/drawArrow";
 import { drawDiamond, drawFreeShape, drawText } from "../utils/drawShapes";
+import { drawImage } from '../utils/imgUtils';
 
 class DrawShapeOnCanvas {
   constructor() {
@@ -60,6 +61,8 @@ class DrawShapeOnCanvas {
       drawText(this.element.textContent, this.tempContext, this.element.x, this.element.y, this.element.width, undefined, color);
     } else if (this.element.type === 'chalk') {
       drawFreeShape(this.tempContext, this.element);
+    } else if (this.element.type === 'image') {
+      drawImage(this.element, this.tempContext);
     }
   }
 

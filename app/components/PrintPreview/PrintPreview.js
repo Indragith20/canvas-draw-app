@@ -31,10 +31,10 @@ function PrintPreview({ shapes, showPreview, onCancel, baseLineHeight, baseFontS
 
 
 
-    printCanvas({ shapes, tempContext, bufferX, bufferY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor, canvasHeight, canvasWidth, lineWidth })
-
-    let dataURL = canvas.toDataURL('image/png', 1.0);
-    setsrc(dataURL);
+    printCanvas({ shapes, tempContext, bufferX, bufferY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor, canvasHeight, canvasWidth, lineWidth }).then(() => {
+      let dataURL = canvas.toDataURL('image/png', 1.0);
+      setsrc(dataURL);
+    })
   }
 
 

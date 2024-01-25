@@ -2,6 +2,7 @@ import { RESIZE_MAPPING } from '~/constants/resizeMapping';
 import { drawArrow } from '../utils/drawArrow';
 import { drawDiamond } from '../utils/drawShapes';
 import DrawShapeOnCanvas from './DrawShapeOnCanvas';
+import { drawImage } from '../utils/imgUtils';
 
 class ResizeTool extends DrawShapeOnCanvas {
   constructor(tempCanvas, tempContext, callback, id, element, cursorPosition, { selectedTheme, lineWidth }) {
@@ -33,7 +34,6 @@ class ResizeTool extends DrawShapeOnCanvas {
       this.started = true;
       this.startX = ev._x;
       this.startY = ev._y;
-      //this.drawExisitingElementOnTemp();
       this.strokeOuterRect(this.element.x, this.element.y, this.element.width, this.element.height);
     }
   }
@@ -42,7 +42,7 @@ class ResizeTool extends DrawShapeOnCanvas {
     if (this.started) {
       let diffX = this.startX - ev._x;
       let diffY = this.startY - ev._y;
-      if (this.element.type === 'rectangle') {
+      if (this.element.type === 'rectangle' || this.element.type === 'image') {
         let modifiedRect = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
         this.callback({ ...modifiedRect, id: this.element.id, isResizedElement: true });
       } else if (this.element.type === 'circle') {
@@ -241,7 +241,7 @@ class ResizeTool extends DrawShapeOnCanvas {
       this.tempContext.beginPath();
       this.tempContext.strokeRect(modifiedElement.x, modifiedElement.y, modifiedElement.width, modifiedElement.height);
       this.tempContext.closePath();
-      this.strokeOuterRect(modifiedElement.x, modifiedElement.y, modifiedElement.width, modifiedElement.height)
+      this.strokeOuterRect(modifiedElement.x, modifiedElement.y, modifiedElement.width, modifiedElement.height);
     } else if (this.element.type === 'circle') {
       let modifiedElement = this.getResizeCircleCoords(this.element, this.cursorPositionOnElement, { diffX, diffY });
       this.tempContext.beginPath();
@@ -270,6 +270,10 @@ class ResizeTool extends DrawShapeOnCanvas {
       let size = modifiedElement.x - modifiedElement.endX;
       drawDiamond(xCenter, yCenter, size, this.tempContext);
       this.strokeOuterRect(modifiedElement.startX, modifiedElement.startY, modifiedElement.width, modifiedElement.height, 'diamond');
+    } else if (this.element.type === 'image') {
+      let modifiedElement = this.getModifiedRect(this.element, this.cursorPositionOnElement, { diffX, diffY });
+      drawImage(modifiedElement, this.tempContext);
+      this.strokeOuterRect(modifiedElement.x, modifiedElement.y, modifiedElement.width, modifiedElement.height)
     }
   }
 }

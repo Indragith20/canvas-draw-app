@@ -78,7 +78,6 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
 
   const drawImage = useCallback(() => {
     resetDraggingValues();
-
     requestAnimationFrame(() => {
 
       if (selectedTool === 'move' || selectedTool === 'text' || selectedTool === 'select' || !keepLastSelected) {
@@ -191,7 +190,6 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
   function onEvent(ev) {
     ev._x = ev.x;
     ev._y = ev.y;
-
     let { scrollX, scrollY, selectedElement, scalingFactor, selectedTool } = state;
     mouseMove({ x: changeToOneScalingFactor(ev.x - scrollX, scalingFactor), y: changeToOneScalingFactor(ev.y - scrollY, scalingFactor) })
 
@@ -225,11 +223,11 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
       tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
       tempContext.lineWidth = lineWidth;
 
-      redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor })
-
-      mainContext.clearRect(0, 0, mainCanvas.current.width, mainCanvas.current.height);
-      mainContext.drawImage(tempCanvas.current, 0, 0);
-      restoreContext(tempContext, tempCanvas.current.width, tempCanvas.current.height, selectedTheme, lineWidth);
+      redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor }).then(() => {
+        mainContext.clearRect(0, 0, mainCanvas.current.width, mainCanvas.current.height);
+        mainContext.drawImage(tempCanvas.current, 0, 0);
+        restoreContext(tempContext, tempCanvas.current.width, tempCanvas.current.height, selectedTheme, lineWidth);
+      })
     }
 
   }, [shapes, baseLineHeight, baseFontSize, scalingFactor, lineWidth, canvasHeight, canvasWidth, selectedTheme, scrollX, scrollY, disableScroll]);

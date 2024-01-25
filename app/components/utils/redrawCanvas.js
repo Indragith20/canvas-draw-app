@@ -10,9 +10,9 @@ export function changeToOneScalingFactor(coords, scalingFactor) {
   return coords / scalingFactor;
 }
 
-export function redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor }) {
+export async function redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor }) {
   // TODO: If the shape is outside the scrolling area skip the draw process(Possible Improvementt
-
+  let promises = [];
   shapes.forEach(originalShape => {
     let shape = {
       ...originalShape,
@@ -44,12 +44,15 @@ export function redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, 
       }
       drawFreeShape(tempContext, modifiedShape);
     } else if (shape.type === 'image') {
-      drawImage({...shape, width: changeFromOneScalingFactor(shape.width, scalingFactor), height:changeFromOneScalingFactor(shape.height, scalingFactor) }, tempContext);
+      promises.push(drawImage({...shape, width: changeFromOneScalingFactor(shape.width, scalingFactor), height:changeFromOneScalingFactor(shape.height, scalingFactor) }, tempContext));
     }
   });
+
+  await Promise.all(promises);
+  
 }
 
-export function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedTheme, baseLineHeight, baseFontSize, scalingFactor, canvasWidth, canvasHeight, lineWidth }) {
+export async function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedTheme, baseLineHeight, baseFontSize, scalingFactor, canvasWidth, canvasHeight, lineWidth }) {
   tempContext.clearRect(0, 0, canvasWidth, canvasHeight);
   tempContext.restore();
   tempContext.setLineDash([]);
@@ -58,6 +61,7 @@ export function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedThe
   tempContext.fillRect(0, 0, canvasWidth, canvasHeight);
   tempContext.fillStyle = selectedTheme === 'dark' ? '#424242' : '#000000';
   tempContext.lineWidth = lineWidth;
+  let promises = [];
   shapes.forEach(shape => {
     if (shape.type === 'rectangle') {
       tempContext.strokeRect(shape.x + bufferX, shape.y + bufferY, changeFromOneScalingFactor(shape.width, scalingFactor), changeFromOneScalingFactor(shape.height, scalingFactor));
@@ -95,8 +99,12 @@ export function printCanvas({ shapes, tempContext, bufferX, bufferY, selectedThe
       });
       tempContext.stroke();
       tempContext.closePath();
+    } else if (shape.type === 'image') {
+      promises.push(drawImage({...shape, x: shape.x + bufferX, y: shape.y + bufferY, width: changeFromOneScalingFactor(shape.width, scalingFactor), height:changeFromOneScalingFactor(shape.height, scalingFactor) }, tempContext));
     }
-  });
 
+    
+  });
+  await Promise.all(promises);
   return tempContext;
 }

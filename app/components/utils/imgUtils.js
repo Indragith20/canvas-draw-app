@@ -21,18 +21,23 @@ function getImageFromDb(id) {
 }
 
 function drawImage({ imageId, width, height, x, y }, context) {
-  let imageInCache = imgCache.get(imageId);
-  if (imageInCache) {
-    context.drawImage(imageInCache.image, x, y, imageInCache.width, imageInCache.height)
-  } else {
-    getImageFromDb(imageId).then((imgUrl) => {
-      loadImage(imgUrl, (img) => {
-        context.drawImage(img, x, y, img.width, img.height);
-        imgCache.set(imageId, { image: img, width: img.width, height: img.height });
-      }, width, height);
-    })
-  }
-  
+  return new Promise((resolve, reject) => {
+    let imageInCache = imgCache.get(imageId);
+    if (imageInCache) {
+      context.drawImage(imageInCache.image, x, y, width, height);
+      resolve();
+    } else {
+      getImageFromDb(imageId).then((imgUrl) => {
+        loadImage(imgUrl, (img) => {
+          context.drawImage(img, x, y, width, height);
+          imgCache.set(imageId, { image: img, width: width, height: height });
+          resolve();
+        }, width, height);
+      }).catch(err => {
+        resolve(err);
+      })
+    }
+  })
 }
 
 export { loadImage, saveImageToDb, getImageFromDb, drawImage };
