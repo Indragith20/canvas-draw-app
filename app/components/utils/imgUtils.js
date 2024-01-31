@@ -20,14 +20,30 @@ function getImageFromDb(id) {
   return ImageIdb.getDataFromIdb(id);
 }
 
-function drawImage({ imageId, width, height, x, y }, context) {
+
+async function getSignedUrl(roomId, imageId, imageType, action) {
+  let { url: signedUrl } = await fetch(`/getSignedUploadUrl?filePath=${roomId}/${imageId}.${imageType}&action=${action}`).then(res => res.json());
+
+  return signedUrl;
+}
+
+
+function drawImage({ imageId, width, height, x, y, roomId, imageType }, context) {
   return new Promise((resolve, reject) => {
     let imageInCache = imgCache.get(imageId);
     if (imageInCache) {
       context.drawImage(imageInCache.image, x, y, width, height);
       resolve();
     } else {
-      getImageFromDb(imageId).then((imgUrl) => {
+      getImageFromDb(imageId).then(async (imgUrl) => {
+        if (!imgUrl && roomId) {
+          try {
+            imgUrl = await getSignedUrl(roomId, imageId, imageType, 'read');
+            console.log('After getting url from cloud', imgUrl);
+          } catch(err) {
+            reject();
+          }
+        }
         loadImage(imgUrl, (img) => {
           context.drawImage(img, x, y, width, height);
           imgCache.set(imageId, { image: img, width: width, height: height });
@@ -40,4 +56,4 @@ function drawImage({ imageId, width, height, x, y }, context) {
   })
 }
 
-export { loadImage, saveImageToDb, getImageFromDb, drawImage };
+export { loadImage, saveImageToDb, getImageFromDb, drawImage, getSignedUrl };

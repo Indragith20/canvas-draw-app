@@ -69,7 +69,8 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
     scrollX, scrollY, selectedElement,
     lineWidth, baseLineHeight, baseFontSize,
     canvasHeight, canvasWidth, disableScroll,
-    performedActions
+    performedActions,
+    roomId
   } = state;
 
   // NOTE: selectedtool in click handler and wheel move. If possible refactor the early return
@@ -223,14 +224,14 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
       tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
       tempContext.lineWidth = lineWidth;
 
-      redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor }).then(() => {
+      redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor, roomId }).then(() => {
         mainContext.clearRect(0, 0, mainCanvas.current.width, mainCanvas.current.height);
         mainContext.drawImage(tempCanvas.current, 0, 0);
         restoreContext(tempContext, tempCanvas.current.width, tempCanvas.current.height, selectedTheme, lineWidth);
       })
     }
 
-  }, [shapes, baseLineHeight, baseFontSize, scalingFactor, lineWidth, canvasHeight, canvasWidth, selectedTheme, scrollX, scrollY, disableScroll]);
+  }, [shapes, baseLineHeight, baseFontSize, scalingFactor, lineWidth, canvasHeight, canvasWidth, selectedTheme, scrollX, scrollY, disableScroll, roomId]);
 
 
   function resetDraggingValues() {

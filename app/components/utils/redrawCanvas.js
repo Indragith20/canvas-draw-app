@@ -10,7 +10,7 @@ export function changeToOneScalingFactor(coords, scalingFactor) {
   return coords / scalingFactor;
 }
 
-export async function redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor }) {
+export async function redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor, roomId }) {
   // TODO: If the shape is outside the scrolling area skip the draw process(Possible Improvementt
   let promises = [];
   shapes.forEach(originalShape => {
@@ -44,7 +44,7 @@ export async function redraw({ tempContext, shapes, scrollX, scrollY, baseLineHe
       }
       drawFreeShape(tempContext, modifiedShape);
     } else if (shape.type === 'image') {
-      promises.push(drawImage({...shape, width: changeFromOneScalingFactor(shape.width, scalingFactor), height:changeFromOneScalingFactor(shape.height, scalingFactor) }, tempContext));
+      promises.push(drawImage({...shape, width: changeFromOneScalingFactor(shape.width, scalingFactor), height:changeFromOneScalingFactor(shape.height, scalingFactor), roomId }, tempContext));
     }
   });
 

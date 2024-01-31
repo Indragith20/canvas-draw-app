@@ -1,14 +1,29 @@
+import { useLoaderData } from '@remix-run/react';
 import useEventListener from './useEventListener';
 import { v4 as uuidv4 } from 'uuid';
-import { loadImage, saveImageToDb } from '~/components/utils/imgUtils';
+import { getSignedUrl, loadImage, saveImageToDb } from '~/components/utils/imgUtils';
 
 function useImageHandler({ lastClickedRef, imgUpdate }) {
+  const { roomId } = useLoaderData();
 
+  async function uploadImage(blob, imageId, imageType) {
+    let signedUrl = await getSignedUrl(roomId, imageId, imageType, 'write');
+
+    fetch(signedUrl, {
+      method: 'PUT',
+      body: blob,
+    }).then(() => {
+      console.log('File uploaded successfully!');
+    })
+      .catch((error) => {
+        console.error('Error uploading file:', error);
+      });
+  }
 
   function convertImage(item) {
     const blob = item.getAsFile();
-    
     const reader = new FileReader();
+    let [,imageType] = blob.type.split('/');
     reader.onload = function (e) {
       let imageId = uuidv4();
       loadImage(e.target.result, (img) => {
@@ -26,11 +41,13 @@ function useImageHandler({ lastClickedRef, imgUpdate }) {
           width: img.width,
           height: img.height,
           endX: imageEndX,
-          endY: imageEndY
+          endY: imageEndY,
+          imageType
         };
         imgUpdate(callbackObj);
       });
       saveImageToDb(imageId, e.target.result);
+      roomId !== null && uploadImage(blob, imageId, imageType);
     };
     reader.readAsDataURL(blob);
   }
@@ -47,7 +64,7 @@ function useImageHandler({ lastClickedRef, imgUpdate }) {
     }
   }
 
-  useEventListener('paste', onPasteImage, document);
+  useEventListener('paste', onPasteImage);
 }
 
 export default useImageHandler;

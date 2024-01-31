@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { json, redirect } from '@remix-run/node';
+
 import { useLoaderData, useFetcher, Link } from '@remix-run/react';
+
 import io from 'socket.io-client';
 import ErrorBoundaryStyles from '../styles/errorBoundary.css';
 
@@ -82,6 +84,7 @@ export const action = async ({ request, params }) => {
   const body = await request.formData();
   let actionData = body.get('data');
   let action = body.get('action');
+  console.log('action', action);
   let data = null;
   if (action === 'add') {
     data = await addShape(params.drawId, actionData);
@@ -224,6 +227,7 @@ function DrawIndex() {
     <div>
       <SocketProvider socket={socket}>
         <MainComponent
+          roomId={roomId}
           shapes={shapes}
           mouseMove={onMouseMove}
           updateShape={updateShape}

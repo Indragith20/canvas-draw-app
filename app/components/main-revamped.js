@@ -22,7 +22,7 @@ export function MainComponentStyles() {
   return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...PreferencePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), ...HintComponentLinks(), { rel: 'stylesheet', href: styles }];
 }
 
-function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTheme, updateDb, updateShape, keepLastSelected, onChangePreference }) {
+function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTheme, updateDb, updateShape, keepLastSelected, onChangePreference, roomId = null }) {
   const [state, dispatch] = useReducer(drawAreaReducer, {
     scrollX: 0,
     scrollY: 0,
@@ -35,6 +35,7 @@ function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTh
     performedActions: [],
     undoActions: [],
     modalType: null,
+    roomId,
     ...baseConfig
   });
 
@@ -121,7 +122,7 @@ function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTh
         updateShapeRef.current(element, actionName);
       }
     }
-  }, [state.actionToBeSent])
+  }, [state.actionToBeSent]);
 
 
   /** Need to find the permenant fix */
