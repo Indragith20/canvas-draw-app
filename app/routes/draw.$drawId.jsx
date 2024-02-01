@@ -173,15 +173,6 @@ function DrawIndex() {
   }, [darkMode, updateTheme]);
 
   useEffect(() => {
-    let formData = new FormData();
-    formData.set('preference', 'darkMode');
-    formData.set('changedPreference', theme === 'dark' ? 'true' : 'false');
-    formData.set('userId', id);
-    formData.set('action', 'changePreference');
-    submit(formData, { method: 'POST' });
-  }, [theme, id, submit]);
-
-  useEffect(() => {
     if (actionData && actionData.error) {
       addToast({ message: `Something Bad Happened. Please Reload the page` })
     }

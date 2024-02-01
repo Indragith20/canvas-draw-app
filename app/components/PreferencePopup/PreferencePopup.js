@@ -25,7 +25,7 @@ const defaultpreferences = {
 
 function PreferencePopup({ showPreferencePopup, onCancel, preferences = defaultpreferences, onChangePreference }) {
   const { submit, state } = useFetcher();
-  const { updateTheme } = useTheme();
+  const { theme, updateTheme } = useTheme();
   const { currentUser } = useLoaderData();
   function onChange(e, preference) {
 
@@ -39,6 +39,12 @@ function PreferencePopup({ showPreferencePopup, onCancel, preferences = defaultp
         submit(formData, { method: 'post' });
       }
     } else if (preference === 'darkMode') {
+      let formData = new FormData();
+      formData.set('preference', 'darkMode');
+      formData.set('changedPreference', theme === 'dark' ? 'true' : 'false');
+      formData.set('userId', currentUser.id);
+      formData.set('action', 'changePreference');
+      submit(formData, { method: 'POST' });
       updateTheme();
     }
     onChangePreference && onChangePreference(e, preference);
