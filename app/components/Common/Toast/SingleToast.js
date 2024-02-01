@@ -7,7 +7,7 @@ export const ToastStyleLinks = () => ([
   { rel: 'stylesheet', href: styles }
 ])
 
-function Toast({ message = 'Sucess Message', timeout = 5000, type, onDismiss, id }) {
+function Toast({ message = 'Sucess Message', timeout = 5000, type = 'success', onDismiss, id }) {
   let timer = useRef(null);
   let toastRef = useRef(null);
 
@@ -35,7 +35,7 @@ function Toast({ message = 'Sucess Message', timeout = 5000, type, onDismiss, id
   }
 
   return (
-    <div className={`single-toast enter-animation`} ref={toastRef}>
+    <div className={`single-toast enter-animation ${type}`} ref={toastRef}>
       <div className='main-toast'>
         <span>{message}</span>
         <svg onClick={onClose} xmlns="http://www.w3.org/2000/svg" className='icon-style' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>

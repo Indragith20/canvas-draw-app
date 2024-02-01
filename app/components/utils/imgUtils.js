@@ -46,7 +46,7 @@ function drawImage({ imageId, width, height, x, y, roomId, imageType }, context)
         }
         loadImage(imgUrl, (img) => {
           context.drawImage(img, x, y, width, height);
-          imgCache.set(imageId, { image: img, width: width, height: height });
+          imgCache.set(imageId, { image: img, width: width, height: height, src: img.src });
           resolve();
         }, width, height);
       }).catch(err => {

@@ -14,10 +14,9 @@ function useImageHandler({ lastClickedRef, imgUpdate }) {
       body: blob,
     }).then(() => {
       console.log('File uploaded successfully!');
-    })
-      .catch((error) => {
-        console.error('Error uploading file:', error);
-      });
+    }).catch((error) => {
+      console.error('Error uploading file:', error);
+    });
   }
 
   function convertImage(item) {

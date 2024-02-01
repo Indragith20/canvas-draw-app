@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { json, redirect } from '@remix-run/node';
 
-import { useLoaderData, useFetcher, Link } from '@remix-run/react';
+import { useLoaderData, useFetcher, Link, useActionData } from '@remix-run/react';
 
 import io from 'socket.io-client';
 import ErrorBoundaryStyles from '../styles/errorBoundary.css';
@@ -33,6 +33,7 @@ import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { isTouchDevice } from '~/components/utils/common';
 import { PopOverLinks } from '~/components/Common/Popover/PopOver';
 import useEventListener from '~/components/Common/hooks/useEventListener';
+import { useToast } from '~/components/Common/Toast/ToastContext';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -84,23 +85,29 @@ export const action = async ({ request, params }) => {
   const body = await request.formData();
   let actionData = body.get('data');
   let action = body.get('action');
-  console.log('action', action);
   let data = null;
-  if (action === 'add') {
-    data = await addShape(params.drawId, actionData);
-  } else if (action === 'delete') {
-    data = await deleteShape(params.drawId, actionData);
-  } else if (action === 'update') {
-    data = await updateShape(params.drawId, actionData);
-  } else if (action === 'deleteAll') {
-    data = await deleteAllShapes(params.drawId);
-  } else if (action === 'changePreference') {
-    let preference = {};
-    preference[body.get('preference')] = body.get('changedPreference');
-    data = await updateUser(preference, body.get('userId'));
-  }
 
-  return json({ actionData: data, action });
+  try {
+    if (action === 'add') {
+      data = await addShape(params.drawId, actionData);
+    } else if (action === 'delete') {
+      data = await deleteShape(params.drawId, actionData);
+    } else if (action === 'update') {
+      data = await updateShape(params.drawId, actionData);
+    } else if (action === 'deleteAll') {
+      data = await deleteAllShapes(params.drawId);
+    } else if (action === 'changePreference') {
+      let preference = {};
+      preference[body.get('preference')] = body.get('changedPreference');
+      data = await updateUser(preference, body.get('userId'));
+    }
+    return json({ actionData: data, action, error: null });
+  } catch (err) {
+    return json({ action,  error: err })
+  }
+  
+
+  
 };
 
 export function ErrorBoundary() {
@@ -131,6 +138,8 @@ export function ErrorBoundary() {
 
 function DrawIndex() {
   const { submit } = useFetcher();
+  const actionData = useActionData();
+  const { addToast } = useToast()
   const isMobile = isTouchDevice();
   const { currentUser, shapes, roomId } = useLoaderData();
   let { id, name, darkMode, lastSelected } = currentUser;
@@ -171,6 +180,12 @@ function DrawIndex() {
     formData.set('action', 'changePreference');
     submit(formData, { method: 'POST' });
   }, [theme, id, submit]);
+
+  useEffect(() => {
+    if (actionData && actionData.error) {
+      addToast({ message: `Something Bad Happened. Please Reload the page` })
+    }
+  }, [actionData, addToast]);
 
   const updateShape = useCallback(
     (shape, action = 'add') => {

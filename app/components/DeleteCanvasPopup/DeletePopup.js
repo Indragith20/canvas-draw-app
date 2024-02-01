@@ -37,7 +37,7 @@ function DeletePopup({ showDeletePopup, onCancel, deleteCanvas }) {
     if (action === 'deleteAll' && submission === true) {
       if (message && message === 'success') {
         socket.emit('deleteAllShapes', { user: currentUser, roomId, action: 'deleteAll' })
-        addToast({ message: 'Canvas Deleted Successfully', timeout: 5000 })
+        addToast({ message: 'Canvas Deleted Successfully',timeout: 5000 })
         deleteCanvas();
       }
       setSubmission(false);
