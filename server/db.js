@@ -1,4 +1,5 @@
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { deleteFolder, deleteImage } from './fileUploadHandler';
 const dataPoint = (collectionPath) => {
   return getFirestore().collection(collectionPath);
 };
@@ -124,15 +125,29 @@ function addShape(roomId, shape) {
   });
 }
 
+function isImageType(shape) {
+  return shape.type === 'image';
+}
+
+function imageFilePath(roomId, imageId, imageType) {
+  return `${roomId}/${imageId}.${imageType}`;
+}
+
 async function deleteShape(roomId, shapeTobeDeleted) {
   return new Promise((resolve, reject) => {
     const shapeJSON = JSON.parse(shapeTobeDeleted);
     let docRef = db.shapeCollection(roomId).doc('shapeList');
+    let promises = [];
+    if (isImageType(shapeJSON)) {
+      let { imageId, imageType } = shapeJSON;
+      promises.push(deleteImage(imageFilePath(roomId, imageId, imageType)));
+    }
     docRef.get().then((snapshot) => {
       if (snapshot.exists) {
         let { shapeList } = snapshot.data();
         let updatedShapeList = shapeList.filter(shape => shape.id !== shapeJSON.id);
-        docRef.set({ shapeList: updatedShapeList }).then(() => {
+        promises.push(docRef.set({ shapeList: updatedShapeList }));
+        Promise.all(promises).then(() => {
           resolve({ message: 'success' });
         }).catch((err) => {
           reject(err);
@@ -146,8 +161,12 @@ async function deleteShape(roomId, shapeTobeDeleted) {
 
 function deleteAllShapes(roomId) {
   return new Promise((resolve, reject) => {
+    let promises = [];
+   
     let docRef = db.shapeCollection(roomId).doc('shapeList');
-    docRef.set({ shapeList: [] }).then(() => {
+    promises.push(docRef.set({ shapeList: [] }));
+    promises.push(deleteFolder(roomId));
+    Promise.all(promises).then(() => {
       resolve({ message: 'success' });
     }).catch(err => {
       reject(err);

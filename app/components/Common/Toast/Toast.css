@@ -11,10 +11,17 @@
   position: relative;
   font-size: large;
   margin-top: 10px;
+  padding: 1rem;
+}
+
+.single-toast.success {
   background-color: #82dd87;
   color: black;
-  padding: 1rem;
-  width: 100%;
+}
+
+.single-toast.error {
+  background-color: #cd5c5c;
+  color: black;
 }
 
 .enter-animation {
@@ -61,7 +68,6 @@
     opacity: 0;
   }
 }
-
 
 @media (min-width: 320px) and (max-width: 767px) {
   .toast-container {

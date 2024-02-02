@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { json, redirect } from '@remix-run/node';
-import { useLoaderData, useFetcher, Link } from '@remix-run/react';
+
+import { useLoaderData, useFetcher, Link, useActionData } from '@remix-run/react';
+
 import io from 'socket.io-client';
 import ErrorBoundaryStyles from '../styles/errorBoundary.css';
 
@@ -20,7 +22,7 @@ import {
   updateShape,
   updateUser
 } from '../../server/db';
-import Idb from '~/components/utils/idb';
+import { Idb } from '~/components/utils/idb';
 import { requireAuth } from '../../server/auth';
 import { UserActivityLinks } from '~/components/UserActivity/UserActivity';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
@@ -31,6 +33,7 @@ import { ModalLinks } from '~/components/Common/Modal/Modal';
 import { isTouchDevice } from '~/components/utils/common';
 import { PopOverLinks } from '~/components/Common/Popover/PopOver';
 import useEventListener from '~/components/Common/hooks/useEventListener';
+import { useToast } from '~/components/Common/Toast/ToastContext';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -83,21 +86,25 @@ export const action = async ({ request, params }) => {
   let actionData = body.get('data');
   let action = body.get('action');
   let data = null;
-  if (action === 'add') {
-    data = await addShape(params.drawId, actionData);
-  } else if (action === 'delete') {
-    data = await deleteShape(params.drawId, actionData);
-  } else if (action === 'update') {
-    data = await updateShape(params.drawId, actionData);
-  } else if (action === 'deleteAll') {
-    data = await deleteAllShapes(params.drawId);
-  } else if (action === 'changePreference') {
-    let preference = {};
-    preference[body.get('preference')] = body.get('changedPreference');
-    data = await updateUser(preference, body.get('userId'));
-  }
 
-  return json({ actionData: data, action });
+  try {
+    if (action === 'add') {
+      data = await addShape(params.drawId, actionData);
+    } else if (action === 'delete') {
+      data = await deleteShape(params.drawId, actionData);
+    } else if (action === 'update') {
+      data = await updateShape(params.drawId, actionData);
+    } else if (action === 'deleteAll') {
+      data = await deleteAllShapes(params.drawId);
+    } else if (action === 'changePreference') {
+      let preference = {};
+      preference[body.get('preference')] = body.get('changedPreference');
+      data = await updateUser(preference, body.get('userId'));
+    }
+    return json({ actionData: data, action, error: null });
+  } catch (err) {
+    return json({ action,  error: err })
+  }
 };
 
 export function ErrorBoundary() {
@@ -128,6 +135,8 @@ export function ErrorBoundary() {
 
 function DrawIndex() {
   const { submit } = useFetcher();
+  const actionData = useActionData();
+  const { addToast } = useToast()
   const isMobile = isTouchDevice();
   const { currentUser, shapes, roomId } = useLoaderData();
   let { id, name, darkMode, lastSelected } = currentUser;
@@ -161,20 +170,17 @@ function DrawIndex() {
   }, [darkMode, updateTheme]);
 
   useEffect(() => {
-    let formData = new FormData();
-    formData.set('preference', 'darkMode');
-    formData.set('changedPreference', theme === 'dark' ? 'true' : 'false');
-    formData.set('userId', id);
-    formData.set('action', 'changePreference');
-    submit(formData, { method: 'POST' });
-  }, [theme, id, submit]);
+    if (actionData && actionData.error) {
+      addToast({ message: `Something Bad Happened. Please Reload the page` })
+    }
+  }, [actionData, addToast]);
 
   const updateShape = useCallback(
     (shape, action = 'add') => {
       let formData = new FormData();
       formData.set('data', JSON.stringify({ ...shape }));
       formData.set('action', action);
-      submit(formData, { method: 'POST' });
+      submit(formData, { method: 'POST' }); 
       if (!socket) {
         return;
       }
@@ -224,6 +230,7 @@ function DrawIndex() {
     <div>
       <SocketProvider socket={socket}>
         <MainComponent
+          roomId={roomId}
           shapes={shapes}
           mouseMove={onMouseMove}
           updateShape={updateShape}

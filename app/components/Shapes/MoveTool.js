@@ -1,5 +1,6 @@
 import { drawArrow } from "../utils/drawArrow.js";
 import { drawDiamond, drawFreeShape, drawText } from "../utils/drawShapes.js";
+import { drawImage } from '../utils/imgUtils.js';
 import { changeFromOneScalingFactor } from "../utils/redrawCanvas.js";
 import DrawShapeOnCanvas from "./DrawShapeOnCanvas.js";
 
@@ -138,6 +139,16 @@ class MoveTool extends DrawShapeOnCanvas {
             return [point.x - diffBetweenPoints.x, point.y - diffBetweenPoints.y];
           })
         });
+      } else if (this.element.type === 'image') {
+        this.callback({
+          ...this.element,
+          id: this.id,
+          type: 'image',
+          x: e._x,
+          y: e._y,
+          endX: e._x + this.element.width,
+          endY: e._y + this.element.height
+        })
       }
 
       this.started = false;
@@ -214,6 +225,9 @@ class MoveTool extends DrawShapeOnCanvas {
         })
       };
       drawFreeShape(this.tempContext, modifiedShape);
+    } else if(this.element.type === 'image') {
+      this.tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+      drawImage({ ...this.element, x: e._x, y: e._y, endX: e._x + this.element.width, endY: e._y + this.element.height }, this.tempContext);
     }
   }
 }

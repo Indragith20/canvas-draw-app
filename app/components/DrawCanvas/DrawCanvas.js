@@ -20,6 +20,7 @@ import useResize from '../Common/hooks/useResize';
 import useTextTool from '../Common/hooks/useTextTool';
 import ResizeTool from '../Shapes/ResizeTool';
 import useMouseOrTouchEvents from '../Common/hooks/useMouseOrTouchEvents';
+import useImageHandler from '../Common/hooks/useImageHandler';
 
 let eventTypeMapping = {
   'mouseup': 'mouseup',
@@ -68,16 +69,16 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
     scrollX, scrollY, selectedElement,
     lineWidth, baseLineHeight, baseFontSize,
     canvasHeight, canvasWidth, disableScroll,
-    performedActions
+    performedActions,
+    roomId
   } = state;
 
   // NOTE: selectedtool in click handler and wheel move. If possible refactor the early return
-  let edgesForResize = useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, selectedTool, shapes, selectedElement, selectedTheme, lineWidth, dispatch });
+  let { edgesForResize, lastClickedRef } = useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, selectedTool, shapes, selectedElement, selectedTheme, lineWidth, dispatch });
 
 
   const drawImage = useCallback(() => {
     resetDraggingValues();
-
     requestAnimationFrame(() => {
 
       if (selectedTool === 'move' || selectedTool === 'text' || selectedTool === 'select' || !keepLastSelected) {
@@ -190,7 +191,6 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
   function onEvent(ev) {
     ev._x = ev.x;
     ev._y = ev.y;
-
     let { scrollX, scrollY, selectedElement, scalingFactor, selectedTool } = state;
     mouseMove({ x: changeToOneScalingFactor(ev.x - scrollX, scalingFactor), y: changeToOneScalingFactor(ev.y - scrollY, scalingFactor) })
 
@@ -224,14 +224,14 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
       tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
       tempContext.lineWidth = lineWidth;
 
-      redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor })
-
-      mainContext.clearRect(0, 0, mainCanvas.current.width, mainCanvas.current.height);
-      mainContext.drawImage(tempCanvas.current, 0, 0);
-      restoreContext(tempContext, tempCanvas.current.width, tempCanvas.current.height, selectedTheme, lineWidth);
+      redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor, roomId }).then(() => {
+        mainContext.clearRect(0, 0, mainCanvas.current.width, mainCanvas.current.height);
+        mainContext.drawImage(tempCanvas.current, 0, 0);
+        restoreContext(tempContext, tempCanvas.current.width, tempCanvas.current.height, selectedTheme, lineWidth);
+      })
     }
 
-  }, [shapes, baseLineHeight, baseFontSize, scalingFactor, lineWidth, canvasHeight, canvasWidth, selectedTheme, scrollX, scrollY, disableScroll]);
+  }, [shapes, baseLineHeight, baseFontSize, scalingFactor, lineWidth, canvasHeight, canvasWidth, selectedTheme, scrollX, scrollY, disableScroll, roomId]);
 
 
   function resetDraggingValues() {
@@ -267,6 +267,8 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
   let changeToTextTool = useTextTool({ scrollX, scrollY, shapes, scalingFactor, tool, tempCanvas, selectedTheme, imgUpdate, dispatch })
   useResize({ dispatch });
   useMouseOrTouchEvents({ tempCanvas, onEvent, dispatch, selectedTool, changeToTextTool, tool, disableScroll });
+  useImageHandler({ lastClickedRef, imgUpdate });
+
 
   return (
     <React.Fragment>

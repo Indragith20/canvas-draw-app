@@ -17,12 +17,13 @@ import DrawCanvas from './DrawCanvas/DrawCanvas';
 import DrawAreaContext from './DrawCanvas/DrawAreaContext';
 import { ADD_NEW_SHAPE, DELETE_EXISTING_SHAPE, DELETE_SHAPE, UPDATE_CANVAS_AREA, UPDATE_MODAL_TYPE } from './DrawCanvas/DrawAreaConstants';
 import drawAreaReducer, { baseConfig } from './DrawCanvas/DrawAreaReducer';
+import { deleteImageAction, updateImageForUndoRedoAction } from './utils/imgUtils';
 
 export function MainComponentStyles() {
   return [...PrintPreviewLinks(), ...ShareLinks(), ...DeletePopupLinks(), ...PreferencePopupLinks(), ...BackIconStyles(), ...CollaboratorsLinks(), ...HintComponentLinks(), { rel: 'stylesheet', href: styles }];
 }
 
-function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTheme, updateDb, updateShape, keepLastSelected, onChangePreference }) {
+function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTheme, updateDb, updateShape, keepLastSelected, onChangePreference, roomId = null }) {
   const [state, dispatch] = useReducer(drawAreaReducer, {
     scrollX: 0,
     scrollY: 0,
@@ -35,6 +36,7 @@ function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTh
     performedActions: [],
     undoActions: [],
     modalType: null,
+    roomId,
     ...baseConfig
   });
 
@@ -115,13 +117,24 @@ function DrawArea({ shapes: existingShapes = [], backLink, mouseMove, selectedTh
 
 
   useEffect(() => {
+    // This effect will run for undo/redo action
     if (state.actionToBeSent) {
       let { element, actionName } = state.actionToBeSent;
       if (element && actionName) {
+        // element.type === 'image' ???
+        if (element.type === 'image') {
+          // TODO: Possible Refactor here. While adding we are adding directly using signed url. But while deleting image we
+          // are doing it using firebase admin. 
+          if (actionName === 'add') {
+            updateImageForUndoRedoAction({ ...element, roomId })
+          } else if (actionName === 'delete') {
+            deleteImageAction({ ...element });
+          }
+        }
         updateShapeRef.current(element, actionName);
       }
     }
-  }, [state.actionToBeSent])
+  }, [state.actionToBeSent, roomId]);
 
 
   /** Need to find the permenant fix */

@@ -71,6 +71,12 @@ export default function Profile() {
       formData.set('action', 'changePreference');
       fetcher.submit(formData, { method: 'post' });
     } else if (preference === 'darkMode') {
+      let formData = new FormData();
+      formData.set('preference', 'darkMode');
+      formData.set('changedPreference', theme === 'dark' ? 'true' : 'false');
+      formData.set('userId', userData.id);
+      formData.set('action', 'changePreference');
+      fetcher.submit(formData, { method: 'POST' });
       updateTheme();
     }
     //localStorage.setItem(preference, String(e.target.checked));

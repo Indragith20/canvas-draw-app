@@ -13,9 +13,9 @@
     "start": "npm run transpile && node ./build/server/server.js"
   },
   "dependencies": {
-    "@remix-run/express": "2.5.0",
-    "@remix-run/node": "2.5.0",
-    "@remix-run/react": "2.5.0",
+    "@remix-run/express": "2.5.1",
+    "@remix-run/node": "2.5.1",
+    "@remix-run/react": "2.5.1",
     "compression": "^1.7.4",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
@@ -35,8 +35,8 @@
     "@babel/core": "^7.14.6",
     "@babel/node": "^7.14.7",
     "@babel/preset-env": "^7.14.7",
-    "@remix-run/dev": "2.4.0",
-    "@remix-run/eslint-config": "2.4.0",
+    "@remix-run/dev": "2.5.1",
+    "@remix-run/eslint-config": "^2.5.1",
     "babel-plugin-source-map-support": "^2.2.0",
     "eslint": "^8.9.0",
     "eslint-plugin-react-hooks": "^4.6.0",
