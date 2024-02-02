@@ -105,9 +105,6 @@ export const action = async ({ request, params }) => {
   } catch (err) {
     return json({ action,  error: err })
   }
-  
-
-  
 };
 
 export function ErrorBoundary() {
@@ -183,7 +180,7 @@ function DrawIndex() {
       let formData = new FormData();
       formData.set('data', JSON.stringify({ ...shape }));
       formData.set('action', action);
-      submit(formData, { method: 'POST' });
+      submit(formData, { method: 'POST' }); 
       if (!socket) {
         return;
       }

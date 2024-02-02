@@ -6,25 +6,59 @@ function loadImage(imgUrl, onLoadCallback, width = null, height = null) {
   const img = new Image();
   img.onload = function () {
     onLoadCallback(img);
+    img.width = width || img.naturalWidth;
+    img.height = height || img.naturalHeight;
   };
   img.src = imgUrl;
-  img.width = width || (window.innerWidth / 4);
-  img.height = height || (window.innerHeight / 4);
 }
 
 function saveImageToDb(id, imgUrl) {
-  ImageIdb.updateDb(imgUrl, id);
+  return ImageIdb.updateDb(imgUrl, id);
 }
 
 function getImageFromDb(id) {
   return ImageIdb.getDataFromIdb(id);
 }
 
+function deleteImageFromDb(id) {
+  return ImageIdb.deleteFromDb(id);
+}
+
+function dataURLToBlob(dataURL) {
+  return new Promise((resolve, reject) => {
+    fetch(dataURL)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        resolve(blob);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+}
 
 async function getSignedUrl(roomId, imageId, imageType, action) {
   let { url: signedUrl } = await fetch(`/getSignedUploadUrl?filePath=${roomId}/${imageId}.${imageType}&action=${action}`).then(res => res.json());
 
   return signedUrl;
+}
+
+async function uploadImage(blob, imageId, imageType, roomId) {
+  let signedUrl = await getSignedUrl(roomId, imageId, imageType, 'write');
+
+  fetch(signedUrl, {
+    method: 'PUT',
+    body: blob,
+  }).then(() => {
+    console.log('File uploaded successfully!');
+  }).catch((error) => {
+    console.error('Error uploading file:', error);
+  });
 }
 
 
@@ -56,4 +90,29 @@ function drawImage({ imageId, width, height, x, y, roomId, imageType }, context)
   })
 }
 
-export { loadImage, saveImageToDb, getImageFromDb, drawImage, getSignedUrl };
+async function updateImageForUndoRedoAction({ imageId, imageType, roomId }) {
+  let imageInCache = imgCache.get(imageId);
+  if (imageInCache) {
+    let { src: dataURL } = imageInCache;
+    let imageBlob = dataURLToBlob(dataURL);
+    let promises = [];
+    if (roomId) {
+      promises.push(uploadImage(imageBlob, imageId, imageType, roomId));
+    }
+    promises.push(saveImageToDb(imageId, dataURL));
+    await Promise.all(promises);
+  }
+}
+
+async function deleteImageAction({ imageId }) {
+  let promises = [];
+  promises.push(deleteImageFromDb(imageId));
+  await Promise.all(promises);
+}
+
+export { 
+  loadImage, saveImageToDb, getImageFromDb, 
+  drawImage, getSignedUrl, uploadImage, 
+  dataURLToBlob, updateImageForUndoRedoAction,
+  deleteImageAction
+};

@@ -29,7 +29,7 @@ export class LocalIdb {
 
 
   // transaction data will be key in readonly mode and value to be stored in case of update
-  performTransaction(mode, { key = null, transactionData = null, clearDb = false }) {
+  performTransaction(mode, { key = null, transactionData = null, clearDb = false, action = 'put' }) {
     return new Promise((resolve, reject) => {
       const promises = [];
       if (!this.db || !this.db.transaction) {
@@ -37,13 +37,18 @@ export class LocalIdb {
       }
       Promise.all(promises).then(() => {
         const transaction = this.db.transaction([this.storeName], mode);
-        const reduxState = transaction.objectStore(this.storeName);
+        const idbState = transaction.objectStore(this.storeName);
         if (clearDb) {
-          this.transactionReq = reduxState.clear();
+          this.transactionReq = idbState.clear();
         } else if (mode === 'readonly') {
-          this.transactionReq = reduxState.get(key);
+          this.transactionReq = idbState.get(key);
         } else {
-          this.transactionReq = reduxState.put(transactionData, key);
+          if (action === 'put') {
+            this.transactionReq = idbState.put(transactionData, key);
+          } else if (action === 'delete') {
+            this.transactionReq = idbState.delete(key);
+          }
+          
         }
         this.transactionReq.onsuccess = (event) => {
           resolve(event);
@@ -63,6 +68,12 @@ export class LocalIdb {
 
   updateDb(data, key) {
     this.performTransaction('readwrite', { transactionData: data, key }).then((transactionDet) => {
+      console.log('Performed transaction');
+    });
+  }
+
+  deleteFromDb(key) {
+    this.performTransaction('readwrite', { key, action: 'delete' }).then((transactionDet) => {
       console.log('Performed transaction');
     });
   }

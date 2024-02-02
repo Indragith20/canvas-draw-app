@@ -1,23 +1,10 @@
 import { useLoaderData } from '@remix-run/react';
 import useEventListener from './useEventListener';
 import { v4 as uuidv4 } from 'uuid';
-import { getSignedUrl, loadImage, saveImageToDb } from '~/components/utils/imgUtils';
+import { loadImage, saveImageToDb, uploadImage } from '~/components/utils/imgUtils';
 
 function useImageHandler({ lastClickedRef, imgUpdate }) {
   const { roomId } = useLoaderData();
-
-  async function uploadImage(blob, imageId, imageType) {
-    let signedUrl = await getSignedUrl(roomId, imageId, imageType, 'write');
-
-    fetch(signedUrl, {
-      method: 'PUT',
-      body: blob,
-    }).then(() => {
-      console.log('File uploaded successfully!');
-    }).catch((error) => {
-      console.error('Error uploading file:', error);
-    });
-  }
 
   function convertImage(item) {
     const blob = item.getAsFile();
@@ -46,7 +33,7 @@ function useImageHandler({ lastClickedRef, imgUpdate }) {
         imgUpdate(callbackObj);
       });
       saveImageToDb(imageId, e.target.result);
-      roomId !== null && uploadImage(blob, imageId, imageType);
+      roomId !== null && uploadImage(blob, imageId, imageType, roomId);
     };
     reader.readAsDataURL(blob);
   }
