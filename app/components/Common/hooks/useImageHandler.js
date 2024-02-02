@@ -43,8 +43,6 @@ function useImageHandler({ lastClickedRef, imgUpdate }) {
     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
     for (const clipboardItem of items) {
       if (clipboardItem.type.indexOf('image/') !== -1) {
-        // Do something with the image file.
-        console.log(clipboardItem);
         convertImage(clipboardItem);
       }
     }

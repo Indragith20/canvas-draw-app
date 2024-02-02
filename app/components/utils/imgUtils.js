@@ -5,10 +5,13 @@ let imgCache = new Map();
 function loadImage(imgUrl, onLoadCallback, width = null, height = null) {
   const img = new Image();
   img.onload = function () {
-    onLoadCallback(img);
+    onLoadCallback({ image: img, error: null });
     img.width = width || img.naturalWidth;
     img.height = height || img.naturalHeight;
   };
+  img.onerror = function(err) {
+    onLoadCallback({ error: 'Unable to load Image from db' })
+  }
   img.src = imgUrl;
 }
 
@@ -61,27 +64,35 @@ async function uploadImage(blob, imageId, imageType, roomId) {
   });
 }
 
-
 function drawImage({ imageId, width, height, x, y, roomId, imageType }, context) {
   return new Promise((resolve, reject) => {
     let imageInCache = imgCache.get(imageId);
     if (imageInCache) {
-      context.drawImage(imageInCache.image, x, y, width, height);
-      resolve();
+      if (!imageInCache.error) {
+        context.drawImage(imageInCache.image, x, y, width, height);
+        resolve();
+      } else {
+        resolve();
+      }
     } else {
       getImageFromDb(imageId).then(async (imgUrl) => {
         if (!imgUrl && roomId) {
           try {
             imgUrl = await getSignedUrl(roomId, imageId, imageType, 'read');
-            console.log('After getting url from cloud', imgUrl);
           } catch(err) {
             reject();
           }
         }
-        loadImage(imgUrl, (img) => {
-          context.drawImage(img, x, y, width, height);
-          imgCache.set(imageId, { image: img, width: width, height: height, src: img.src });
-          resolve();
+        loadImage(imgUrl, ({image: img, error = null}) => {
+          if (error) {
+            imgCache.set(imageId, { error });
+            resolve();
+          } else {
+            context.drawImage(img, x, y, width, height);
+            imgCache.set(imageId, { image: img, width: width, height: height, src: img.src });
+            resolve();
+          }
+          
         }, width, height);
       }).catch(err => {
         resolve(err);

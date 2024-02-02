@@ -3,7 +3,7 @@ import { getSignedUrl } from '../../server/fileUploadHandler';
 import { requireAuth } from '../../server/auth';
 
 export async function loader({ request }) {
-  const { uid } = await requireAuth(request);
+  await requireAuth(request);
 
   let { searchParams } = new URL(request.url);
 
