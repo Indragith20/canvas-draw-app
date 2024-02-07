@@ -23,6 +23,12 @@ export default function handleRequest(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loadContext
 ) {
+  // Extract the User-Agent header from the request
+  const userAgent = request.headers.get('user-agent');
+  // Check if the User-Agent header indicates a mobile device
+  console.log(userAgent);
+  const isMobile = /Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile/.test(userAgent);
+  global.isMobile = isMobile;
   return isbot(request.headers.get('user-agent') || '')
     ? handleBotRequest(
       request,
