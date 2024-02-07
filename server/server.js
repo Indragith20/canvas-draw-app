@@ -63,10 +63,6 @@ app.all(
   "*",
   process.env.NODE_ENV === "development"
     ? (req, res, next) => {
-      // const userAgent = req.headers['user-agent'];
-      // // Check if the User-Agent header indicates a mobile device
-      // const isMobile = /Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile/.test(userAgent);
-      // global.isMobile = isMobile;
       purgeRequireCache();
       return createRequestHandler({
         build: require(BUILD_DIR),
