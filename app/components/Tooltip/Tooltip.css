@@ -1,0 +1,24 @@
+/* .tooltip {
+  width: 100%;
+} */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: max-content;
+  color: var(--primary-font-color);
+  font-size: var(--tooltip-font-size);
+  text-align: center;
+  border-radius: 6px;
+  border: var(--border-style) solid var(--border-color);
+  background-color: var(--tooltip-background-color);
+  padding: 10px 5px;
+  position: fixed;
+  z-index: 1;
+  margin-top: 10px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}

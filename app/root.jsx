@@ -27,6 +27,7 @@ import AppleTouchIcon60 from './assets/apple-icon-60x60.png';
 import AppleTouchIcon57 from './assets/apple-icon-57x57.png';
 import AndroidTouchIcon48 from './assets/android-icon-48x48.png';
 import AndroidTouchIcon192 from './assets/android-icon-192x192.png';
+import { TooltipStyles } from './components/Tooltip/Tooltip';
 
 export function links() {
   return [
@@ -121,7 +122,8 @@ export function links() {
       href: AndroidTouchIcon192
     },
     ...LoaderLinks(),
-    ...ToastStyleLinks()
+    ...ToastStyleLinks(),
+    ...TooltipStyles()
   ];
 }
 export function meta() {

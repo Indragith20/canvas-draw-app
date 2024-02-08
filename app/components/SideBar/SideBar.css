@@ -19,6 +19,7 @@
 .sidebar:not(.active) {
   width: max-content;
   animation: collapseSidebar 0.5s forwards;
+  align-items: center;
 }
 
 .sidebar ul {
@@ -26,15 +27,19 @@
   padding: 0;
 }
 
-.sidebar .sidebar-link a {
+.sidebar .sidebar-link {
+  margin-bottom: 50px;
+}
+
+.sidebar .sidebar-link .link-text {
   display: flex;
   flex-direction: row;
   gap: 10px;
-  margin-bottom: 50px;
+ 
   justify-content: center;
 }
 
-.sidebar.active a {
+.sidebar.active .link-text  {
   justify-content: flex-start;
 }
 
