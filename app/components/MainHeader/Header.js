@@ -5,6 +5,7 @@ import styles from './Header.css';
 import Logo from './Logo';
 import ThemeSwitcher from './ThemeSwitcher';
 import { useMatchMedia } from '../Common/hooks/useMatchMedia';
+import Tooltip from '../Tooltip/Tooltip';
 
 export const HeaderStyleLinks = () => [{ rel: 'stylesheet', href: styles }];
 
@@ -26,7 +27,9 @@ function Header({ headerLinks, isLoggedInUser = false }) {
       headerLinks.map((headerLink) => {
         return (
           <div key={headerLink.link} className='main-header-link' onClick={closeMenu}>
-            <Link className={pathname === headerLink.link ? 'activeLink' : ''} to={headerLink.link}>{headerLink.text}</Link>
+            <Tooltip text={`${headerLink.text} Page`}>
+              <Link className={pathname === headerLink.link ? 'activeLink' : ''} to={headerLink.link}>{headerLink.text}</Link>
+            </Tooltip>
           </div>
         )
       })
@@ -42,9 +45,14 @@ function Header({ headerLinks, isLoggedInUser = false }) {
         </div>
 
         <ThemeSwitcher />
-        {isLoggedInUser ? <Link to='/logout' className='logout'>
-          <svg xmlns="http://www.w3.org/2000/svg" className='icon-style' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-        </Link> : null}
+        {isLoggedInUser ? (
+          <Tooltip text='Logout'>
+            <Link to='/logout' className='logout'>
+              <svg xmlns="http://www.w3.org/2000/svg" className='icon-style' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </Link> 
+          </Tooltip>
+        )
+          : null}
 
         {headerLinks && headerLinks.length > 0 ? <div className='mobile-icon' onClick={showMenus}>
           <svg xmlns="http://www.w3.org/2000/svg" className='icon-style' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>

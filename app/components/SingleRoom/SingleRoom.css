@@ -34,6 +34,15 @@
   white-space: nowrap;
   text-align: center;
 }
+
+.room-text {
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+}
+
 .room-link {
   font-size: 1.75rem;
 }

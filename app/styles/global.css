@@ -44,6 +44,7 @@ html, body {
   --canvas-text-area-background: var(--primary-background);
 
   --secondary-color: hsl(210deg, 38%, 15%);
+  --tertiary-color: hsl(246, 100%, 5%);
   --border-color: hsl(230deg, 100%, 69%);
 }
 
@@ -63,6 +64,7 @@ html, body {
   --canvas-text-area-background: var(--primary-background);
 
   --secondary-color: lightgrey;
+  --tertiary-color: #EEEDEB;
   --border-color: black;
 }
 

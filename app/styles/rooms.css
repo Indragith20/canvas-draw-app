@@ -1,0 +1,13 @@
+
+.room-main-container .container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: calc(100vh - 100px);
+  overflow: hidden;
+  position: relative;
+}
+
+.room-main-container .content-outlet {
+  width: 100%;
+}

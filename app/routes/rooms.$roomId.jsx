@@ -6,7 +6,7 @@ import {
   useNavigation
 } from '@remix-run/react';
 
-import styles from '~/styles/room.css';
+import styles from '~/styles/room.index.css';
 import {
   deleteRoom,
   getCollaboratorsList,

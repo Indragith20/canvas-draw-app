@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useFetcher, useOutletContext } from '@remix-run/react';
 
 import SingleRoom, { RoomLinks } from '../components/SingleRoom/SingleRoom';
-import styles from '~/styles/room.css';
+import styles from '~/styles/room.index.css';
 import { deleteRoom, getCollaboratorsList, getRoomDetails } from 'server/db';
 import { json } from '@remix-run/node';
 import { ModalLinks } from '~/components/Common/Modal/Modal';

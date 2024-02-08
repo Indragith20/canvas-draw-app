@@ -3,6 +3,7 @@ import React from 'react';
 import PopOver from '../Common/Popover/PopOver';
 import { formatDate } from '../utils/formatDate';
 import styles from './SingleRoom.css';
+import Tooltip from '../Tooltip/Tooltip';
 
 
 export function RoomLinks() {
@@ -36,9 +37,13 @@ export default function SingleRoom({ id, roomName, createdAt, createdBy, onDelet
         </PopOver>
       </div>
       <div className='room-name'>
-        <Link to={`/draw/${id}`} className='room-link' replace={true}>
-          {roomName}
-        </Link>
+        <Tooltip text={roomName} needBorder={true} fontSize={15}>
+          <div className='room-text'>
+            <Link to={`/draw/${id}`} className='room-link' replace={true}>
+              {roomName}
+            </Link>
+          </div>
+        </Tooltip>
       </div>
 
       <div className='room-details'>

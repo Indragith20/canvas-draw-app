@@ -3,7 +3,7 @@ import { useIsomorphicLayoutEffect } from '~/components/Common/hooks/useIsomorph
 
 function getDefaultMatch(query) {
   if (typeof window === "undefined") {
-    return false;
+    return global.isMobile || false;
   }
   let media = window.matchMedia && window.matchMedia(query);
   return media ? media.matches : false;

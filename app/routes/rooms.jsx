@@ -7,6 +7,9 @@ import {
   useRouteError
 } from '@remix-run/react';
 import React, { useEffect } from 'react';
+import { PlusCircle, Merge, LayoutList, Settings } from 'lucide-react';
+
+import styles from '../styles/rooms.css';
 import ErrorBoundaryStyles from '../styles/errorBoundary.css';
 import Header, { HeaderStyleLinks } from '~/components/MainHeader/Header';
 import { LogoLinks } from '~/components/MainHeader/Logo';
@@ -16,6 +19,7 @@ import { requireAuth } from '../../server/auth';
 import { getRoomDetails, getUser, updateUser } from '../../server/db';
 import { PopOverLinks } from '~/components/Common/Popover/PopOver';
 import { useTheme } from '~/contexts/themeContext';
+import SideBar, { SideBarStyleLinks } from '~/components/SideBar/SideBar';
 
 export const links = () => [
   ...HeaderStyleLinks(),
@@ -23,7 +27,9 @@ export const links = () => [
   ...ModalLinks(),
   ...PopOverLinks(),
   ...ThemeSwitcherLinks(),
-  { rel: 'stylesheet', href: ErrorBoundaryStyles }
+  ...SideBarStyleLinks(),
+  { rel: 'stylesheet', href: ErrorBoundaryStyles },
+  { rel: 'stylesheet', href: styles}
 ];
 
 export async function loader({ request }) {
@@ -71,19 +77,23 @@ export async function action({ request }) {
 const MainRoomLinks = [
   {
     link: '/rooms/createRoom',
-    text: 'Create Room'
+    text: 'Create Room',
+    icon: <PlusCircle />
   },
   {
     link: '/rooms/enterRoom',
-    text: 'Enter Room'
+    text: 'Enter Room',
+    icon: <Merge />
   },
   {
     link: '/rooms',
-    text: 'Room List'
+    text: 'Room List',
+    icon: <LayoutList />
   },
   {
     link: '/rooms/userProfile',
-    text: 'Profile'
+    text: 'Profile',
+    icon: <Settings />
   }
 ];
 
@@ -107,10 +117,16 @@ function Rooms() {
   }, [data.darkMode, updateTheme]);
 
   return (
-    <>
-      <Header headerLinks={MainRoomLinks} isLoggedInUser={true} />
-      <Outlet context={data} />
-    </>
+    <div className='room-main-container'>
+      
+      <Header headerLinks={[]} isLoggedInUser={true} />
+      <div className='container'>
+        <SideBar sidebarLinks={MainRoomLinks}></SideBar>
+        <main className='content-outlet'>
+          <Outlet context={data} />
+        </main>
+      </div>
+    </div>
   );
 }
 
