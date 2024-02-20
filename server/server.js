@@ -41,6 +41,11 @@ io.on('connection', (socket) => {
   onSocketConnect(socket, io);
 });
 
+io.sockets.on("disconnect", () => {
+  console.log("Socket connection closed");
+  io.sockets.disconnect();
+});
+
 
 app.use(compression());
 
