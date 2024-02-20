@@ -76,6 +76,7 @@ export default function EnterRoom() {
               <label className='label'>Room Unique Code </label>
               <div className='url-field'>
                 <span className='origin-url'>{`${origin}/draw/`}</span>
+                
                 <div className='input-with-error'>
                   <input
                     name='name'

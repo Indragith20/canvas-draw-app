@@ -79,6 +79,7 @@ function onSocketConnect(socket, io) {
 
   socket.on('disconnect', (data) => {
     removeLiveUsers(socket.id);
+    socket.disconnect();
   })
 }
 
