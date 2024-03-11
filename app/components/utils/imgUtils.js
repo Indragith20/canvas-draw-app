@@ -5,9 +5,9 @@ let imgCache = new Map();
 function loadImage(imgUrl, onLoadCallback, width = null, height = null) {
   const img = new Image();
   img.onload = function () {
-    onLoadCallback({ image: img, error: null });
     img.width = width || img.naturalWidth;
     img.height = height || img.naturalHeight;
+    onLoadCallback({ image: img, error: null });
   };
   img.onerror = function(err) {
     onLoadCallback({ error: 'Unable to load Image from db' })
