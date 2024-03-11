@@ -12,7 +12,10 @@ function useImageHandler({ lastClickedRef, imgUpdate }) {
     let [,imageType] = blob.type.split('/');
     reader.onload = function (e) {
       let imageId = uuidv4();
-      loadImage(e.target.result, (img) => {
+      loadImage(e.target.result, ({ image: img, error = null }) => {
+        if (error) {
+          return;
+        }
         let { x, y } = lastClickedRef.current;
         let imageX = x || window.innerWidth / 2;
         let imageY =  y || window.innerHeight / 2;
