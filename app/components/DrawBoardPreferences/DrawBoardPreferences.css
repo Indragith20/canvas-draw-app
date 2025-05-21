@@ -30,3 +30,54 @@
   color: gray;
   align-self: center;
 }
+
+.color-picker-style {
+  width: 3em;
+  height: 1.5em;
+  border: 0.15em solid gray;
+  border-radius: 0.15em;
+  padding: 2px;
+  background-color: white;
+  vertical-align: middle;
+  /* Override default browser appearance for the color input */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* Ensure the actual color selection area is not hidden by custom styles */
+  /* For Webkit browsers, you might need to style ::-webkit-color-swatch and ::-webkit-color-swatch-wrapper */
+}
+
+/* Add a small clickable area for the color picker */
+.color-picker-style::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.color-picker-style::-webkit-color-swatch {
+  border: none;
+  border-radius: 0.10em; /* Slightly smaller radius for the swatch itself */
+}
+
+/* For Firefox */
+.color-picker-style::-moz-color-swatch {
+  border: none;
+  border-radius: 0.10em;
+}
+
+
+.dropdown-style {
+  padding: 0.3em 0.5em;
+  border: 0.15em solid gray;
+  border-radius: 0.15em;
+  background-color: white;
+  color: #333;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  min-width: 100px;
+  height: auto; /* Or set a specific height like 2em to match other inputs */
+  line-height: normal; /* Ensure text is centered if height is fixed */
+}
+
+.dropdown-style:focus {
+  outline: none;
+  border-color: #007bff; /* Example focus color */
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); /* Example focus shadow */
+}

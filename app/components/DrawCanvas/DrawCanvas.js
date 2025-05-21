@@ -70,7 +70,10 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
     lineWidth, baseLineHeight, baseFontSize,
     canvasHeight, canvasWidth, disableScroll,
     performedActions,
-    roomId
+    roomId,
+    // Add new state variables for stroke style and color
+    strokeColor,
+    strokeStyle
   } = state;
 
   // NOTE: selectedtool in click handler and wheel move. If possible refactor the early return
@@ -220,18 +223,27 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
       let mainContext = mainCanvas.current.getContext('2d');
       restoreContext(tempContext, tempCanvas.current.width, tempCanvas.current.height, selectedTheme, lineWidth);
 
-      tempContext.strokeStyle = selectedTheme === 'dark' ? "#FFFFFF" : '#000000';
-      tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000';
+      // Apply strokeColor and strokeStyle from state
+      tempContext.strokeStyle = strokeColor;
+      tempContext.setLineDash(strokeStyleToLineDash(strokeStyle));
+      tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000'; // Keep existing fill logic
       tempContext.lineWidth = lineWidth;
 
       redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor, roomId }).then(() => {
         mainContext.clearRect(0, 0, mainCanvas.current.width, mainCanvas.current.height);
         mainContext.drawImage(tempCanvas.current, 0, 0);
+        
+        // After drawing to main, restore temp context again for subsequent operations
         restoreContext(tempContext, tempCanvas.current.width, tempCanvas.current.height, selectedTheme, lineWidth);
+        // And re-apply current stroke settings for the temp context
+        tempContext.strokeStyle = strokeColor;
+        tempContext.setLineDash(strokeStyleToLineDash(strokeStyle));
+        tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000'; // Keep existing fill logic
+        tempContext.lineWidth = lineWidth;
       })
     }
 
-  }, [shapes, baseLineHeight, baseFontSize, scalingFactor, lineWidth, canvasHeight, canvasWidth, selectedTheme, scrollX, scrollY, disableScroll, roomId]);
+  }, [shapes, baseLineHeight, baseFontSize, scalingFactor, lineWidth, canvasHeight, canvasWidth, selectedTheme, scrollX, scrollY, disableScroll, roomId, strokeColor, strokeStyle]);
 
 
   function resetDraggingValues() {
@@ -245,8 +257,13 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
 
   useEffect(() => {
     let tempContext = tempCanvas.current.getContext('2d');
-    restoreContext(tempContext, tempCanvas.width, tempCanvas.height, selectedTheme, lineWidth)
-  }, [selectedTheme, lineWidth, selectedTool])
+    restoreContext(tempContext, tempCanvas.width, tempCanvas.height, selectedTheme, lineWidth);
+    // Apply current stroke settings after restoring context
+    tempContext.strokeStyle = strokeColor;
+    tempContext.setLineDash(strokeStyleToLineDash(strokeStyle));
+    tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000'; // Keep fill consistent for now
+    tempContext.lineWidth = lineWidth;
+  }, [selectedTheme, lineWidth, selectedTool, strokeColor, strokeStyle])
 
 
   useEffect(() => {
@@ -254,10 +271,24 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
       tool.current = null;
     } else if (selectedTool !== 'move' && selectedTool !== 'text' && !isResizing.current) {
       let tempContext = tempCanvas.current.getContext('2d');
+      // Ensure context is styled correctly before tool instantiation.
+      tempContext.strokeStyle = strokeColor;
+      tempContext.setLineDash(strokeStyleToLineDash(strokeStyle));
+      tempContext.lineWidth = lineWidth;
+      tempContext.fillStyle = selectedTheme === 'dark' ? "#424242" : '#000000'; // Keep existing fill logic
+
       let toolSelected = tools.current[selectedTool];
-      tool.current = new toolSelected(tempCanvas.current, tempContext, imgUpdate, uuidv4());
+      if (toolSelected) { // Ensure toolSelected is valid
+        const styleOptions = {
+          strokeColor,
+          strokeStyleString: strokeStyle, // Pass the string value
+          lineWidth,
+          selectedTheme, 
+        };
+        tool.current = new toolSelected(tempCanvas.current, tempContext, imgUpdate, uuidv4(), styleOptions);
+      }
     }
-  }, [selectedTool, imgUpdate]);
+  }, [selectedTool, imgUpdate, strokeColor, strokeStyle, lineWidth, selectedTheme]);
 
 
 

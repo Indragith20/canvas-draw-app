@@ -6,10 +6,16 @@ import {
   UPDATE_SELECTED_TOOL 
 } from './DrawAreaConstants';
 
+// New action types
+export const SET_STROKE_COLOR = 'SET_STROKE_COLOR';
+export const SET_STROKE_STYLE = 'SET_STROKE_STYLE';
+
 export const baseConfig = {
   scalingFactor: 1,
   baseFontSize: 24,
-  baseLineHeight: (150 * 24) / 100
+  baseLineHeight: (150 * 24) / 100,
+  strokeColor: '#000000', // Default stroke color: black
+  strokeStyle: 'solid'  // Default stroke style: solid
 }
 
 function performUndoAction(state) {
@@ -179,6 +185,14 @@ function drawAreaReducer(state, action) {
     case DELETE_EXISTING_SHAPE: {
       let { shape } = action.payload;
       return deleteExistinghape(state, shape);
+    }
+
+    case SET_STROKE_COLOR: {
+      return { ...state, strokeColor: action.payload.strokeColor };
+    }
+
+    case SET_STROKE_STYLE: {
+      return { ...state, strokeStyle: action.payload.strokeStyle };
     }
 
     default: {
