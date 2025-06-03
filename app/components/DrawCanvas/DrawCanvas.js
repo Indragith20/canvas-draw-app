@@ -79,6 +79,18 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
   // NOTE: selectedtool in click handler and wheel move. If possible refactor the early return
   let { edgesForResize, lastClickedRef } = useClickHandler({ tempCanvas, tool, scalingFactor, scrollX, scrollY, selectedTool, shapes, selectedElement, selectedTheme, lineWidth, dispatch });
 
+  // Helper function to convert strokeStyle string to lineDash array
+  const strokeStyleToLineDash = (style) => {
+    switch (style) {
+      case 'dashed':
+        return [10, 5]; // Example: 10px line, 5px gap
+      case 'dotted':
+        return [2, 5];  // Example: 2px line, 5px gap
+      case 'solid':
+      default:
+        return []; // Empty array means solid line
+    }
+  };
 
   const drawImage = useCallback(() => {
     resetDraggingValues();
@@ -232,7 +244,7 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
       redraw({ tempContext, shapes, scrollX, scrollY, baseLineHeight, baseFontSize, selectedTheme, scalingFactor, roomId }).then(() => {
         mainContext.clearRect(0, 0, mainCanvas.current.width, mainCanvas.current.height);
         mainContext.drawImage(tempCanvas.current, 0, 0);
-        
+
         // After drawing to main, restore temp context again for subsequent operations
         restoreContext(tempContext, tempCanvas.current.width, tempCanvas.current.height, selectedTheme, lineWidth);
         // And re-apply current stroke settings for the temp context
@@ -283,7 +295,7 @@ function DrawCanvas({ selectedTheme, updateShape, keepLastSelected, mouseMove, u
           strokeColor,
           strokeStyleString: strokeStyle, // Pass the string value
           lineWidth,
-          selectedTheme, 
+          selectedTheme,
         };
         tool.current = new toolSelected(tempCanvas.current, tempContext, imgUpdate, uuidv4(), styleOptions);
       }
