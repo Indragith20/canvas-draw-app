@@ -24,7 +24,7 @@
     "isbot": "^4.4.0",
     "lucide-react": "0.323.0",
     "morgan": "^1.10.1",
-    "nodemailer": "^7.0.7",
+    "nodemailer": "^7.0.11",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "redis": "^4.3.1",
