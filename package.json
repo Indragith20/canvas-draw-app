@@ -15,7 +15,7 @@
   "dependencies": {
     "@remix-run/express": "2.5.1",
     "@remix-run/node": "2.5.1",
-    "@remix-run/react": "2.17.3",
+    "@remix-run/react": "2.17.4",
     "compression": "^1.8.1",
     "dotenv": "^16.0.1",
     "express": "^4.22.1",
